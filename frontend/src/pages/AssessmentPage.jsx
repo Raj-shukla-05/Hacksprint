@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Hand, MoveUp, Scale, Sparkles, AlertCircle, FileText, X } from 'lucide-react';
+import { Check, Hand, MoveUp, Scale, Sparkles, AlertCircle, FileText, X, Clock, ShieldCheck, ChevronRight } from 'lucide-react';
 import CameraAssessment from '../components/CameraAssessment';
+import { api } from '../lib/api';
 
 const exercises = [
-  { id: 'arm_raise', title: 'Arm Raise', desc: 'Range, symmetry and movement control', icon: MoveUp, featured: true },
-  { id: 'sit_to_stand', title: 'Sit-to-Stand', desc: 'Repetitions, stability and completion', icon: Scale },
-  { id: 'seated_reach', title: 'Seated Reach', desc: 'Reach consistency and path efficiency', icon: Hand },
+  { id: 'arm_raise', title: 'Arm Raise', desc: 'Range, symmetry and control', icon: MoveUp, featured: true },
+  { id: 'sit_to_stand', title: 'Sit-to-Stand', desc: 'Repetitions and stability', icon: Scale },
+  { id: 'seated_reach', title: 'Seated Reach', desc: 'Reach and path efficiency', icon: Hand },
 ];
 
-export default function AssessmentPage({ onSave, onDone, assignment, onClearAssignment }) {
+const titleOf = (type) => exercises.find((e) => e.id === type)?.title || type;
+
+export default function AssessmentPage({ onSave, onDone, assignment, onClearAssignment, onSelectAssignment, userId }) {
   const [exercise, setExercise] = useState(() => assignment?.exerciseType || 'arm_raise');
   const [sessionResult, setSessionResult] = useState(null);
   const [trackingWarning, setTrackingWarning] = useState(null);
+  const [plan, setPlan] = useState([]);
 
   useEffect(() => {
     if (assignment?.exerciseType) {
       setExercise(assignment.exerciseType);
     }
   }, [assignment?.exerciseType]);
+
+  useEffect(() => {
+    if (!userId) return undefined;
+    let cancelled = false;
+    api.patientAssignments(userId)
+      .then((list) => { if (!cancelled) setPlan((list || []).filter((a) => ['assigned', 'in_progress'].includes(a.status))); })
+      .catch(() => { if (!cancelled) setPlan([]); });
+    return () => { cancelled = true; };
+  }, [userId, sessionResult]);
 
   const handleAssessmentComplete = (result) => {
     setTrackingWarning(null);
@@ -41,118 +54,119 @@ export default function AssessmentPage({ onSave, onDone, assignment, onClearAssi
   };
 
   return (
-    <div className="page">
-      {/* Clinician Prescription Banner */}
-      {assignment && (
-        <div style={{
-          background: 'rgba(59, 130, 246, 0.08)',
-          border: '1px solid rgba(59, 130, 246, 0.3)',
-          borderRadius: '8px',
-          padding: '1rem',
-          marginBottom: '1.25rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
-              <FileText size={16} style={{ color: '#3b82f6' }} />
-              <span style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#3b82f6' }}>
-                Assigned Protocol
-              </span>
-            </div>
-            <h3 style={{ margin: '0 0 0.3rem 0', fontSize: '1.05rem' }}>
-              {assignment.exerciseType === 'arm_raise' ? 'Arm Raise' : assignment.exerciseType}
-            </h3>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
-              <strong>Clinician Instructions: </strong>{assignment.instructions}
-            </p>
-          </div>
-          <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Target: <strong>{assignment.targetReps} reps</strong></span>
-            {onClearAssignment && (
-              <button
-                type="button"
-                className="secondary"
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
-                onClick={onClearAssignment}
-              >
-                <X size={12} /> Switch to Free Practice
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="hero-row compact">
+    <div className="page exercise-page">
+      <div className="exercise-head">
         <div>
-          <span className="eyebrow">{assignment ? 'Assigned Session' : 'Today’s check'}</span>
-          <h1>{assignment ? 'Performing Assigned Protocol' : 'One short session. Better visibility.'}</h1>
+          <h1>{assignment ? 'Assigned protocol' : 'Today’s check'}</h1>
           <p>
             {assignment
-              ? 'Complete the repetitions according to your clinician’s instructions. Processing happens locally on your device.'
-              : 'Choose one structured assessment. Your movement is processed in your browser; only metrics are saved.'}
+              ? 'Complete the repetitions according to your clinician’s instructions.'
+              : 'Pick an exercise. Movement is analysed in your browser; only scores are saved.'}
           </p>
         </div>
         <span className="privacy-pill"><Sparkles size={14} /> Privacy-first</span>
       </div>
 
-      {!assignment && (
-        <div className="exercise-picker">
-          {exercises.map(({ id, title, desc, icon: Icon, featured }) => (
-            <button
-              className={`exercise-card ${exercise === id ? 'selected' : ''}`}
-              key={id}
-              onClick={() => { setExercise(id); setSessionResult(null); }}
-            >
-              <div className="exercise-icon"><Icon size={21} /></div>
-              <div><strong>{title}</strong><span>{desc}</span></div>
-              {exercise === id && <Check className="exercise-check" size={16} />}
-              {featured && <span className="recommended">Recommended</span>}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="exercise-shell">
+        {/* Left column */}
+        <aside className="exercise-left">
+          <section className="panel">
+            <div className="panel-head">
+              <h3>Exercises</h3>
+              {assignment && onClearAssignment && (
+                <button type="button" className="link-button" onClick={onClearAssignment}><X size={12} /> Free practice</button>
+              )}
+            </div>
+            <div className="exercise-tiles">
+              {exercises.map(({ id, title, desc, icon: Icon, featured }) => (
+                <button
+                  key={id}
+                  type="button"
+                  disabled={!!assignment && assignment.exerciseType !== id}
+                  className={`exercise-tile ${exercise === id ? 'selected' : ''}`}
+                  onClick={() => { setExercise(id); setSessionResult(null); }}
+                >
+                  <span className="tile-icon"><Icon size={18} /></span>
+                  <span className="tile-text"><strong>{title}</strong><small>{desc}</small></span>
+                  {exercise === id ? <Check size={16} className="tile-check" /> : featured && <span className="recommended">Suggested</span>}
+                </button>
+              ))}
+            </div>
+          </section>
 
-      {trackingWarning && (
-        <div style={{
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid #ef4444',
-          color: '#ef4444',
-          padding: '0.75rem',
-          borderRadius: '8px',
-          marginBottom: '1rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '0.85rem',
-        }}>
-          <AlertCircle size={18} />
-          <span>{trackingWarning}</span>
-        </div>
-      )}
+          <section className="panel">
+            <div className="panel-head"><h3>Treatment plan</h3><span className="soft-badge">{plan.length} assigned</span></div>
+            {assignment && (
+              <div className="plan-active">
+                <div className="plan-active-head"><FileText size={14} /> Current protocol</div>
+                <strong>{titleOf(assignment.exerciseType)}</strong>
+                <p>{assignment.instructions}</p>
+                <small>Target: {assignment.targetReps} reps</small>
+              </div>
+            )}
+            {plan.length > 0 ? (
+              <div className="plan-list">
+                {plan.map((asgn) => {
+                  const daysLeft = Math.ceil((new Date(asgn.dueDate) - new Date()) / 86400000);
+                  const isCurrent = assignment?.id === asgn.id;
+                  return (
+                    <button
+                      key={asgn.id}
+                      type="button"
+                      className={`plan-item ${isCurrent ? 'current' : ''}`}
+                      onClick={() => onSelectAssignment?.(asgn)}
+                    >
+                      <span className="plan-time"><Clock size={12} /> {daysLeft > 0 ? `${daysLeft}d left` : 'Today'}</span>
+                      <strong>{titleOf(asgn.exerciseType)}</strong>
+                      <small>{asgn.targetReps} controlled reps</small>
+                      <ChevronRight size={16} className="plan-go" />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              !assignment && <p className="empty-note">No clinician protocols right now. Free practice is always available.</p>
+            )}
+          </section>
 
-      <CameraAssessment
-        exercise={exercise}
-        onComplete={handleAssessmentComplete}
-      />
+          <section className="panel privacy-tile">
+            <ShieldCheck size={18} />
+            <div><strong>Stays on your device</strong><span>Raw video is never uploaded. Only the scores are saved.</span></div>
+          </section>
+        </aside>
 
-      {sessionResult && (
-        <div className="post-session">
-          <div>
-            <span className="eyebrow">
-              {assignment ? 'Protocol Session Recorded' : 'Saved to NeuroGuard'}
-            </span>
-            <h3>{sessionResult.exerciseTitle}: {sessionResult.score}/100</h3>
-            <p>
-              {assignment
-                ? 'Your session has been recorded against your prescribed protocol and is now ready for clinician review.'
-                : 'The new session will be compared with your personal baseline.'}
-            </p>
-          </div>
-          <button className="primary" onClick={onDone}>Back to overview</button>
+        {/* Camera + detail column */}
+        <div className="exercise-main">
+          {trackingWarning && (
+            <div className="warn-banner">
+              <AlertCircle size={18} />
+              <span>{trackingWarning}</span>
+            </div>
+          )}
+
+          <CameraAssessment
+            exercise={exercise}
+            onComplete={handleAssessmentComplete}
+          />
+
+          {sessionResult && (
+            <div className="post-session">
+              <div>
+                <span className="eyebrow">
+                  {assignment ? 'Protocol session recorded' : 'Saved to NeuroGuard'}
+                </span>
+                <h3>{sessionResult.exerciseTitle}: {sessionResult.score}/100</h3>
+                <p>
+                  {assignment
+                    ? 'Your session was recorded against your prescribed protocol and is ready for clinician review.'
+                    : 'The new session will be compared with your personal baseline.'}
+                </p>
+              </div>
+              <button className="primary" onClick={onDone}>Back to overview</button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
