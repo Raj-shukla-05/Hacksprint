@@ -91,10 +91,10 @@ npm run dev
 
 ### Act III: The "Decline Scenario" (Showcasing the Safety Alert Engine)
 - [ ] **Step 9: Trigger Decline Scenario**
-  - Switch profile to patient or caregiver (or use the sidebar link *"Load decline demo"*).
+  - Switch profile to patient (or use the sidebar link *"Load decline demo"*).
   - Point out to judges: In a hackathon demo, you cannot wait 3 weeks to see deterioration.
   - Click *"Load decline demo"*.
-  - Switch to Doctor panel or Caregiver view.
+  - Switch to Doctor panel.
   - Show that Raj Kumar has automatically moved to **"Review Recommended"** with an amber/red alert:  
     *"Persistent deviation: Functional performance is trending below Raj's recent baseline across the last three sessions."*
   - Show the Gemini insight explaining the persistent decline.

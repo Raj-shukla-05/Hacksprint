@@ -43,8 +43,6 @@ async function seedDatabaseIfEmpty() {
             age: u.age || null,
             preferredLanguage: u.preferredLanguage || 'English',
             doctorId: u.doctorId || null,
-            authorizedCaregivers: u.authorizedCaregivers || [],
-            caregiverPatients: u.caregiverPatients || [],
           });
         }
       }

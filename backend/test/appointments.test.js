@@ -22,20 +22,6 @@ const otherPatientToken = generateToken({
   email: 'anita-pat@neuroguard.demo',
 });
 
-const caregiverToken = generateToken({
-  userId: 'caregiver-anita',
-  role: 'caregiver',
-  name: 'Anita Sharma (Caregiver)',
-  email: 'anita@neuroguard.demo',
-});
-
-const unauthorizedCaregiverToken = generateToken({
-  userId: 'caregiver-unauthorized',
-  role: 'caregiver',
-  name: 'Stranger Caregiver',
-  email: 'stranger@neuroguard.demo',
-});
-
 const doctorPriyaToken = generateToken({
   userId: 'doctor-priya',
   role: 'doctor',
@@ -171,47 +157,6 @@ describe('Doctor Appointment Management & Clinical Recovery System Tests', () =>
     assert(/unavailable|reserved|already been booked/i.test(body.message));
   });
 
-  test('5. Caregiver Booking: Authorized caregiver books on behalf of patient', async () => {
-    const res = await fetch(`${baseUrl}/appointments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${caregiverToken}`,
-      },
-      body: JSON.stringify({
-        doctorId: 'doc-priya',
-        patientId: 'user-raj',
-        date: futureTestDate,
-        startTime: '11:00',
-        reason: 'Caregiver arranged mobility review',
-      }),
-    });
-
-    assert.equal(res.status, 201);
-    const body = await res.json();
-    assert.equal(body.appointment.patientId, 'user-raj');
-    assert.equal(body.appointment.bookedBy.role, 'caregiver');
-  });
-
-  test('6. Unauthorized Caregiver: Blocked from booking for unassigned patient', async () => {
-    const res = await fetch(`${baseUrl}/appointments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${unauthorizedCaregiverToken}`,
-      },
-      body: JSON.stringify({
-        doctorId: 'doc-priya',
-        patientId: 'user-raj',
-        date: futureTestDate,
-        startTime: '11:30',
-        reason: 'Unauthorized attempt',
-      }),
-    });
-
-    assert.equal(res.status, 403);
-  });
-
   test('7. Patient Retrieval: Patient accesses only own appointments', async () => {
     const res = await fetch(`${baseUrl}/appointments/my`, {
       headers: { Authorization: `Bearer ${patientToken}` },
@@ -219,7 +164,7 @@ describe('Doctor Appointment Management & Clinical Recovery System Tests', () =>
 
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert(body.appointments.length >= 2);
+    assert(body.appointments.length >= 1);
     assert(body.appointments.every((a) => a.patientId === 'user-raj'));
   });
 
@@ -230,7 +175,7 @@ describe('Doctor Appointment Management & Clinical Recovery System Tests', () =>
 
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert(body.appointments.length >= 2);
+    assert(body.appointments.length >= 1);
     assert(body.appointments.every((a) => a.doctorId === 'doc-priya'));
   });
 

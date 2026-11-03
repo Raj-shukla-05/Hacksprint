@@ -20,13 +20,6 @@ const patientAnitaToken = generateToken({
   email: 'anita-pat@neuroguard.demo',
 });
 
-const unauthorizedCaregiverToken = generateToken({
-  userId: 'caregiver-stranger',
-  role: 'caregiver',
-  name: 'Stranger Caregiver',
-  email: 'stranger@neuroguard.demo',
-});
-
 const doctorPriyaToken = generateToken({
   userId: 'doctor-priya',
   role: 'doctor',
@@ -119,13 +112,6 @@ describe('Doctor Appointment Security & Vulnerability Defense Tests', () => {
   test('S4: Horizontal privilege escalation: Patient cannot view another patient’s appointment (IDOR)', async () => {
     const res = await fetch(`${baseUrl}/appointments/${testAppointmentId}`, {
       headers: { Authorization: `Bearer ${patientAnitaToken}` },
-    });
-    assert.equal(res.status, 403);
-  });
-
-  test('S5: Caregiver isolation: Unauthorized caregiver cannot view patient appointment', async () => {
-    const res = await fetch(`${baseUrl}/appointments/${testAppointmentId}`, {
-      headers: { Authorization: `Bearer ${unauthorizedCaregiverToken}` },
     });
     assert.equal(res.status, 403);
   });

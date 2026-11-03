@@ -120,7 +120,4 @@ export const api = {
   notifications: () => request('/notifications'),
   markNotificationRead: (id) => request(`/notifications/${id}/read`, { method: 'PATCH' }),
   markAllNotificationsRead: () => request('/notifications/read-all', { method: 'POST' }),
-
-  // --- Caregiver APIs ---
-  caregiverPatients: (caregiverId) => request(`/caregivers/${caregiverId}/patients`),
 };

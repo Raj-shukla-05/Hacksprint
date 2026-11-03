@@ -118,12 +118,10 @@ async function shareRecoveryReport({
     throw error;
   }
 
-  // Check that requester is the patient or authorized caregiver
+  // Check that requester is the patient
   const isSelf = actingUser.role === 'patient' && actingUser.userId === patientId;
-  const isAuthorizedCaregiver =
-    actingUser.role === 'caregiver' && patient.authorizedCaregivers?.includes(actingUser.userId);
 
-  if (!isSelf && !isAuthorizedCaregiver) {
+  if (!isSelf) {
     const error = new Error('Forbidden: You can only share your own recovery reports.');
     error.statusCode = 403;
     throw error;
@@ -233,16 +231,13 @@ async function getSharedReport(shareId, actingUser, clientIp = null, userAgent =
 
   // 1. Patient viewing own report
   const isPatientOwner = actingUser.role === 'patient' && actingUser.userId === record.patientId;
-  const isAuthorizedCaregiver =
-    actingUser.role === 'caregiver' &&
-    users[record.patientId]?.authorizedCaregivers?.includes(actingUser.userId);
 
   // 2. Doctor viewing shared report
   const isDoctorRecipient =
     actingUser.role === 'doctor' &&
     (actingUser.userId === doctor?.userId || actingUser.userId === record.doctorId || actingUser.userId === record.doctorUserId);
 
-  if (!isPatientOwner && !isAuthorizedCaregiver && !isDoctorRecipient) {
+  if (!isPatientOwner && !isDoctorRecipient) {
     const error = new Error('Forbidden: You do not have permission to view this recovery report.');
     error.statusCode = 403;
     throw error;
@@ -298,11 +293,8 @@ async function revokeReportAccess(shareId, actingUser, clientIp = null, userAgen
   }
 
   const isPatientOwner = actingUser.role === 'patient' && actingUser.userId === record.patientId;
-  const isAuthorizedCaregiver =
-    actingUser.role === 'caregiver' &&
-    users[record.patientId]?.authorizedCaregivers?.includes(actingUser.userId);
 
-  if (!isPatientOwner && !isAuthorizedCaregiver) {
+  if (!isPatientOwner) {
     const error = new Error('Forbidden: Only the patient can revoke access to their recovery report.');
     error.statusCode = 403;
     throw error;

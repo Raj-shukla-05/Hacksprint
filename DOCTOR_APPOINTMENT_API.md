@@ -123,7 +123,7 @@ Authorization: Bearer <token>
 
 ### 2.1. Book In-Person Appointment
 `POST /api/appointments`
-- **Auth:** `patient` or `caregiver` role. Rate-limited (15 req/min).
+- **Auth:** `patient` role. Rate-limited (15 req/min).
 - **Request Body:**
 ```json
 {
@@ -134,7 +134,7 @@ Authorization: Bearer <token>
   "patientId": "user-raj"
 }
 ```
-*Note: `patientId` is required when a caregiver books on behalf of an authorized patient.*
+*Note: `patientId` is optional; if supplied it must match the authenticated patient.*
 - **Response (201 Created):**
 ```json
 {
@@ -164,12 +164,11 @@ Authorization: Bearer <token>
 ```
 - **Error Codes:**
   - `400 Bad Request`: Past date, invalid time format, or clinic closed.
-  - `403 Forbidden`: Caregiver not authorized for the requested patient.
   - `409 Conflict`: Slot already reserved or concurrent collision.
 
 ### 2.2. Patient's Appointments
 `GET /api/appointments/my`
-- **Auth:** `patient` (returns own visits) or `caregiver` (returns authorized patients' visits).
+- **Auth:** `patient` (returns own visits).
 - **Response (200 OK):** `{ "appointments": [ ... ] }`
 
 ### 2.3. Doctor's Clinic Appointments
@@ -179,7 +178,7 @@ Authorization: Bearer <token>
 
 ### 2.4. Appointment Detail
 `GET /api/appointments/:appointmentId`
-- **Auth:** Patient owner, authorized caregiver, or assigned doctor.
+- **Auth:** Patient owner or assigned doctor.
 - **Errors:** `403 Forbidden` if an unauthorized user attempts access.
 
 ### 2.5. Confirm Appointment
@@ -195,13 +194,13 @@ Authorization: Bearer <token>
 
 ### 2.7. Cancel Appointment
 `PATCH /api/appointments/:appointmentId/cancel`
-- **Auth:** Patient, authorized caregiver, or attending doctor.
+- **Auth:** Patient or attending doctor.
 - **Request Body:** `{ "reason": "Patient fever" }`
 - **Response (200 OK):** `{ "appointment": { "status": "cancelled", ... } }`
 
 ### 2.8. Reschedule Appointment
 `PATCH /api/appointments/:appointmentId/reschedule`
-- **Auth:** Patient, authorized caregiver, or attending doctor.
+- **Auth:** Patient or attending doctor.
 - **Request Body:**
 ```json
 {
@@ -223,7 +222,7 @@ Authorization: Bearer <token>
 
 ### 3.1. Preview Recovery Report
 `GET /api/reports/preview`
-- **Auth:** `patient` or authorized `caregiver`.
+- **Auth:** `patient`.
 - **Response (200 OK):**
 ```json
 {
@@ -246,7 +245,7 @@ Authorization: Bearer <token>
 
 ### 3.2. Authorize & Share Report
 `POST /api/reports/share`
-- **Auth:** `patient` or authorized `caregiver`.
+- **Auth:** `patient`.
 - **Request Body:**
 ```json
 {
@@ -269,12 +268,12 @@ Authorization: Bearer <token>
 
 ### 3.5. Revoke Report Access
 `DELETE /api/reports/shares/:shareId`
-- **Auth:** Owning patient or authorized caregiver only.
+- **Auth:** Owning patient only.
 - **Response (200 OK):** `{ "message": "Report access successfully revoked", "report": { "status": "revoked" } }`
 
 ---
 
-## 4. Notifications & Caregiver APIs
+## 4. Notifications APIs
 
 ### 4.1. Get User Notifications
 `GET /api/notifications`
@@ -287,8 +286,3 @@ Authorization: Bearer <token>
 ### 4.3. Mark All Notifications as Read
 `POST /api/notifications/read-all`
 - **Response (200 OK):** `{ "ok": true }`
-
-### 4.4. Caregiver Patient Roster
-`GET /api/caregivers/:id/patients`
-- **Auth:** `caregiver` role (must match token userId) or authorized `doctor`.
-- **Response (200 OK):** Returns authorized patients list with status and score summaries.

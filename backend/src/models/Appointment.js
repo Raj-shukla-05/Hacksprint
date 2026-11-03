@@ -27,7 +27,7 @@ const AppointmentSchema = new mongoose.Schema({
   reason: { type: String, default: '', trim: true },
   bookedBy: {
     userId: { type: String, required: true },
-    role: { type: String, enum: ['patient', 'caregiver'], required: true },
+    role: { type: String, enum: ['patient'], required: true },
     name: { type: String, required: true },
   },
   cancellation: {

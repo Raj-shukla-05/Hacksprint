@@ -39,26 +39,8 @@ function requireRole(...allowedRoles) {
 }
 
 /**
- * Checks whether a given caregiver user is explicitly authorized for a patient.
- */
-function isCaregiverAuthorized(caregiverUserId, patientId) {
-  if (!caregiverUserId || !patientId) return false;
-  const { users } = require('../store');
-  const patient = users[patientId];
-  const caregiver = users[caregiverUserId];
-
-  if (patient?.authorizedCaregivers && patient.authorizedCaregivers.includes(caregiverUserId)) {
-    return true;
-  }
-  if (caregiver?.caregiverPatients && caregiver.caregiverPatients.includes(patientId)) {
-    return true;
-  }
-  return false;
-}
-
-/**
  * Middleware ensuring a user can only access their own record,
- * unless they are an authorized doctor or authorized caregiver.
+ * unless they are an authorized doctor.
  */
 function requireSelfOrDoctor(req, res, next) {
   if (!req.user) {
@@ -73,14 +55,6 @@ function requireSelfOrDoctor(req, res, next) {
       return next();
     }
     return res.status(403).json({ message: "Forbidden: cannot access another patient's private medical records." });
-  }
-
-  // Caregivers can only access their authorized patient's records
-  if (req.user.role === 'caregiver') {
-    if (isCaregiverAuthorized(req.user.userId, requestedUserId)) {
-      return next();
-    }
-    return res.status(403).json({ message: 'Forbidden: caregiver is not authorized for this patient.' });
   }
 
   // Doctors have oversight access only to their authorized patients
@@ -103,5 +77,4 @@ module.exports = {
   authenticateToken,
   requireRole,
   requireSelfOrDoctor,
-  isCaregiverAuthorized,
 };

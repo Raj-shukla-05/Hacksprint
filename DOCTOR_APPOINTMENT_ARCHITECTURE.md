@@ -19,11 +19,9 @@ flowchart TD
     subgraph Client["Frontend Layer (React 19 + Vite 6)"]
         UI_Pat["Patient View\n(Discovery, Slot Booking, My Appointments)"]
         UI_Doc["Doctor View\n(Clinic Schedule, Hours, Slot Block, Reports)"]
-        UI_Car["Caregiver View\n(Proxy Booking for Authorized Patient)"]
         API_Client["API Service Layer (api.js)\nJWT Bearer + Error Interceptor"]
         UI_Pat --> API_Client
         UI_Doc --> API_Client
-        UI_Car --> API_Client
     end
 
     subgraph Security["Security & Middleware Layer"]
@@ -31,8 +29,8 @@ flowchart TD
         CORS["CORS (Controlled Cross-Origin)"]
         RL["Rate Limiter (Sliding Window Counter)"]
         Auth["JWT Token Verifier (auth.js)"]
-        RoleCheck["Role Guard (Patient, Doctor, Caregiver)"]
-        IDORCheck["Resource Ownership / Caregiver Auth Guard"]
+        RoleCheck["Role Guard (Patient, Doctor)"]
+        IDORCheck["Resource Ownership Guard"]
         Hlm --> CORS --> RL --> Auth --> RoleCheck --> IDORCheck
     end
 
@@ -110,7 +108,7 @@ Represents an in-person physical clinical visit with controlled lifecycle state 
 - `status`: Enum (`pending`, `confirmed`, `rejected`, `cancelled`, `completed`, `no-show`)
 - `consultationFee`: Number (Fee snapshot at booking time)
 - `reason`: String (Patient-provided reason / symptoms)
-- `bookedBy`: Object (`userId`, `role`: `patient` | `caregiver`, `name`)
+- `bookedBy`: Object (`userId`, `role`: `patient`, `name`)
 - `cancellation`: Object (`cancelledBy`, `cancelledByRole`, `cancelledAt`, `reason`)
 - `rejection`: Object (`rejectedBy`, `rejectedAt`, `reason`)
 - `sharedReportId`: String (Optional reference to authorized `SharedRecoveryReport`)
@@ -182,11 +180,11 @@ To prevent double booking when two patients click "Confirm" on the exact same do
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending : Patient / Caregiver Books Slot
+    [*] --> Pending : Patient Books Slot
     Pending --> Confirmed : Doctor Confirms Visit
     Pending --> Rejected : Doctor Declines (Reason Required)
-    Pending --> Cancelled : Patient / Caregiver / Doctor Cancels
-    Confirmed --> Cancelled : Patient / Caregiver / Doctor Cancels
+    Pending --> Cancelled : Patient / Doctor Cancels
+    Confirmed --> Cancelled : Patient / Doctor Cancels
     Confirmed --> Completed : Doctor Marks Completed Visit
     Confirmed --> NoShow : Doctor Marks Patient No-Show
     Pending --> Cancelled : Rescheduled to New Slot

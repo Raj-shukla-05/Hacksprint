@@ -93,7 +93,7 @@ Enforce authorization on the backend, not merely by hiding frontend buttons.
 
 Users must not be able to access another patient's private records by changing a URL, identifier, or API request.
 
-Do not introduce a caregiver role unless the project requirements explicitly call for it.
+The only roles are patient and doctor.
 
 ## 7. Assessment and Computer Vision Safety
 

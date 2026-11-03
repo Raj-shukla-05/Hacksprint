@@ -5,7 +5,6 @@ import { api } from '../lib/api';
 
 const DEMO_ACCOUNTS = [
   { label: 'Patient — Raj Kumar', email: 'raj@neuroguard.demo', password: 'patient123' },
-  { label: 'Caregiver — Anita Sharma', email: 'anita@neuroguard.demo', password: 'caregiver123' },
   { label: 'Doctor — Dr. Priya Nair', email: 'priya@neuroguard.demo', password: 'doctor123' },
 ];
 
@@ -83,8 +82,8 @@ export default function LoginPage({ onLogin }) {
         <p>{signup ? 'Set up NeuroGuard to start monitoring recovery.' : 'Sign in to continue your recovery monitoring.'}</p>
         {signup && (
           <>
-            <div className="role-toggle" role="radiogroup" aria-label="Account type" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-              {['patient', 'caregiver', 'doctor'].map((r) => (
+            <div className="role-toggle" role="radiogroup" aria-label="Account type" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+              {['patient', 'doctor'].map((r) => (
                 <button
                   key={r}
                   type="button"
@@ -93,7 +92,7 @@ export default function LoginPage({ onLogin }) {
                   className={role === r ? 'active' : ''}
                   onClick={() => setRole(r)}
                 >
-                  {r === 'patient' ? 'Patient' : r === 'caregiver' ? 'Caregiver' : 'Doctor'}
+                  {r === 'patient' ? 'Patient' : 'Doctor'}
                 </button>
               ))}
             </div>

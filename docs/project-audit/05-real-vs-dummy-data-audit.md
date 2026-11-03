@@ -170,7 +170,7 @@ The frontend directly checks `explanation.source === 'gemini'` before displaying
 However, because the server does not post-filter the raw text string returned by Gemini, an LLM hallucination could theoretically bypass this instruction.
 
 ### 9. Are demo credentials or sample records available in production builds?
-**YES.** `LoginPage.jsx` contains static `DEMO_ACCOUNTS` array with `raj@neuroguard.demo` / `patient123`, `anita@neuroguard.demo` / `caregiver123`, and `priya@neuroguard.demo` / `doctor123`. These quick-fill buttons are compiled into the production bundle.
+**YES.** `LoginPage.jsx` contains static `DEMO_ACCOUNTS` array with `raj@neuroguard.demo` / `patient123` and `priya@neuroguard.demo` / `doctor123`. These quick-fill buttons are compiled into the production bundle.
 
 ### 10. Do in-memory records disappear after a server restart?
 **YES.** Because the primary operational store is `backend/src/store.js`, any assessment recorded or user registered during server execution is lost upon process termination or restart. Even if MongoDB is connected, the backend does not load documents from MongoDB on startup.

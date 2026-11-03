@@ -24,7 +24,6 @@ flowchart TB
         subgraph Presentation["React 19 SPA (UI Shell)"]
             PatientDash["Patient Dashboard\n(ScoreRing, MetricCard, Alerts)"]
             DocPortal["Doctor Panel\n(Triage Roster, Prescription Form, Review)"]
-            CaregiverDash["Caregiver View\n(Status Overview, Trends)"]
             AuthView["Login & Registration\n(SessionStorage JWT Cache)"]
         end
 
@@ -34,7 +33,7 @@ flowchart TB
     end
 
     subgraph Backend["NeuroGuard API Server (Node.js + Express)"]
-        AuthMid["Security Middleware (auth.js)\n- verifyToken (JWT HS256)\n- requireRole ('doctor', 'patient', 'caregiver')\n- requireSelfOrDoctor (Patient Record Isolation)"]
+        AuthMid["Security Middleware (auth.js)\n- verifyToken (JWT HS256)\n- requireRole ('doctor', 'patient')\n- requireSelfOrDoctor (Patient Record Isolation)"]
         
         subgraph Endpoints["Express Route Handlers (server.js)"]
             AuthRoutes["/api/auth/*\n(login, signup)"]

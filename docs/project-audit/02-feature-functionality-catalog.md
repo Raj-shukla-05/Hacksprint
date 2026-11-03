@@ -8,10 +8,10 @@ This catalog documents every feature and capability discovered in the NeuroGuard
 
 | ID | Feature Name | Intended Role | UI Surface | Backend Route(s) | Status | Test Coverage |
 |---|---|---|---|---|---|---|
-| **F-01** | User Authentication (Login/Signup) | Patient, Doctor, Caregiver | `LoginPage.jsx` | `POST /api/auth/login`, `POST /api/auth/signup` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/auth.test.js` (5 tests) |
+| **F-01** | User Authentication (Login/Signup) | Patient, Doctor | `LoginPage.jsx` | `POST /api/auth/login`, `POST /api/auth/signup` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/auth.test.js` (5 tests) |
 | **F-02** | Role-Based Access Control (RBAC) | All Roles | `App.jsx`, `Sidebar.jsx`, `Topbar.jsx` | Express middleware (`auth.js`) | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/auth.test.js` (6 tests) |
 | **F-03** | Patient Dashboard & Score Ring | Patient | `PatientDashboard.jsx` | `GET /api/users/:id/dashboard` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/auth.test.js`, `trendEngine.test.js` |
-| **F-04** | Personal Baseline & Trend Calculation | Patient, Doctor, Caregiver | `PatientDashboard.jsx`, `ProgressPage.jsx`, `TrendChart.jsx` | `GET /api/users/:id/trends`, `trendEngine.js` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/trendEngine.test.js` (6 tests) |
+| **F-04** | Personal Baseline & Trend Calculation | Patient, Doctor | `PatientDashboard.jsx`, `ProgressPage.jsx`, `TrendChart.jsx` | `GET /api/users/:id/trends`, `trendEngine.js` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/trendEngine.test.js` (6 tests) |
 | **F-05** | On-Device MediaPipe Movement Capture | Patient | `CameraAssessment.jsx`, `AssessmentPage.jsx` | Pure Client (`lib/pose.js`, `@mediapipe/tasks-vision`) | **IMPLEMENTED, BUT NOT END-TO-END VERIFIED** | Manual camera required; no automated browser tests |
 | **F-06** | Exercise Kinematic Feature Extraction | Patient | `CameraAssessment.jsx` | Client (`lib/scoring.js`) | **PARTIALLY IMPLEMENTED** (Arm raise rep bug in post-session) | No unit tests for `scoring.js` |
 | **F-07** | Tracking Quality Validation | Patient | `AssessmentPage.jsx` | `POST /api/assessments` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/assignments.test.js` (2 tests) |
@@ -19,11 +19,10 @@ This catalog documents every feature and capability discovered in the NeuroGuard
 | **F-09** | Doctor Assessment Protocol Assignment | Doctor | `DoctorPage.jsx` (`PatientDetail`) | `POST /api/assignments`, `GET /api/patients/:patientId/assignments` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/assignments.test.js` (3 tests) |
 | **F-10** | Patient Assignment Retrieval & Execution | Patient | `PatientDashboard.jsx`, `AssessmentPage.jsx` | `GET /api/patients/:patientId/assignments`, `PATCH /api/assignments/:id/status` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/assignments.test.js` (3 tests) |
 | **F-11** | Doctor Session Review & Feedback | Doctor | `DoctorPage.jsx` | `PATCH /api/assignments/:id/status` (status: `reviewed`) | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/assignments.test.js` (2 tests) |
-| **F-12** | Explainable Alerts Engine | Patient, Doctor, Caregiver | `AlertCard.jsx`, `PatientDashboard.jsx`, `DoctorPage.jsx` | `GET /api/alerts/:id`, `trendEngine.createAlert` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/trendEngine.test.js` |
+| **F-12** | Explainable Alerts Engine | Patient, Doctor | `AlertCard.jsx`, `PatientDashboard.jsx`, `DoctorPage.jsx` | `GET /api/alerts/:id`, `trendEngine.createAlert` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/trendEngine.test.js` |
 | **F-13** | Gemini AI Recovery Explanation | Patient, Doctor | `PatientDashboard.jsx`, `DoctorPage.jsx` | `POST /api/explanation`, `geminiService.js` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/geminiService.test.js` (34 tests) |
 | **F-14** | Deterministic Local Explanation Fallback | Patient, Doctor | `PatientDashboard.jsx`, `DoctorPage.jsx` | `geminiService.buildLocalExplanation` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/geminiService.test.js` (9 tests) |
 | **F-15** | Doctor Patient Roster Prioritization | Doctor | `DoctorPage.jsx` | `GET /api/doctors/:id/patients` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/auth.test.js`, `assignments.test.js` |
-| **F-16** | Caregiver Patient Overview | Caregiver | `CaregiverPage.jsx` | `GET /api/caregivers/:id/patients` | **PARTIALLY IMPLEMENTED** | Route tested; UI uses hardcoded patient trend |
 | **F-17** | Hackathon Demo Decline Scenario | Judge / Presenter | `Sidebar.jsx` ("Load decline demo") | `POST /api/users/:id/demo-decline` | **MOCKED OR SIMULATED** | Working simulation, injects synthetic assessments |
 | **F-18** | Storage Mode Health & Topbar Indicator | All Roles | `Topbar.jsx` | `GET /api/health` | **IMPLEMENTED AND VERIFIED BY TEST** | Verified via test assertion & build |
 | **F-19** | Speech Analysis Endpoint | Disconnected | None (Checklist shows "Optional") | `POST /api/speech/analyze` | **DISCONNECTED OR UNUSED** | Route works in backend; zero frontend callers |
@@ -33,14 +32,14 @@ This catalog documents every feature and capability discovered in the NeuroGuard
 ## Deep-Dive Feature Specifications
 
 ### F-01: User Authentication (Login & Signup)
-- **User Problem:** Securing patient rehabilitation data and separating patient, doctor, and caregiver access.
-- **Intended Role:** All roles (Patient, Doctor, Caregiver).
+- **User Problem:** Securing patient rehabilitation data and separating patient and doctor access.
+- **Intended Role:** All roles (Patient, Doctor).
 - **UI Location:** `frontend/src/pages/LoginPage.jsx`. Accessible at initial load when no session exists.
 - **Frontend Entry:** `LoginPage.jsx` handles form state, quick-fill demo buttons, and submits via `api.login` or `api.signup` (`frontend/src/lib/api.js`).
 - **Backend Implementation:** `backend/src/server.js` (`/api/auth/login` lines 50-84, `/api/auth/signup` lines 86-142).
 - **Database / Models:** In-memory `credentials` array in `backend/src/store.js`; asynchronous persistence to `backend/src/models/User.js`.
 - **Security & Algorithms:** Passwords hashed with `bcryptjs` (salt rounds: 10). Authentication creates signed JWT tokens (`jsonwebtoken`, 7-day expiration) signed with `JWT_SECRET`.
-- **Inputs:** Email string, password string (min 8 chars), name string, role (`patient`, `doctor`, `caregiver`).
+- **Inputs:** Email string, password string (min 8 chars), name string, role (`patient`, `doctor`).
 - **Outputs:** HTTP 200/201 returning `{ user: { id, name, role, ... }, token: "Bearer ..." }`.
 - **Error Handling:** 400 for validation errors, 401 for incorrect credentials, 409 for duplicate email.
 - **Status:** **IMPLEMENTED AND VERIFIED BY TEST** (`backend/test/auth.test.js`).

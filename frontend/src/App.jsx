@@ -16,7 +16,7 @@ import { DEMO_USER_ID, fallbackAlerts, fallbackDashboard, fallbackTrends } from 
 
 const SESSION_KEY = 'neuroguard.user';
 const homeView = (r) => (r === 'doctor' ? 'doctor' : 'dashboard');
-const roleOf = (u) => (u?.role === 'doctor' ? 'doctor' : u?.role === 'caregiver' ? 'caregiver' : 'patient');
+const roleOf = (u) => (u?.role === 'doctor' ? 'doctor' : 'patient');
 
 function loadSession() {
   try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; }

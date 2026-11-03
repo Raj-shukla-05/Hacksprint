@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { appointments, users } = require('../store');
+const { appointments } = require('../store');
 const { isMongoConnected } = require('../db');
 const Appointment = require('../models/Appointment');
-const { authenticateToken, requireRole, isCaregiverAuthorized } = require('../middleware/auth');
+const { authenticateToken, requireRole } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimiter');
 const {
   findDoctor,
@@ -20,7 +20,7 @@ const bookingRateLimiter = createRateLimiter({
 });
 
 // 1. POST /api/appointments - Book an appointment
-router.post('/', authenticateToken, requireRole('patient', 'caregiver'), bookingRateLimiter, async (req, res) => {
+router.post('/', authenticateToken, requireRole('patient'), bookingRateLimiter, async (req, res) => {
   try {
     const { doctorId, date, startTime, reason = '', patientId: requestedPatientId } = req.body || {};
 
@@ -28,22 +28,10 @@ router.post('/', authenticateToken, requireRole('patient', 'caregiver'), booking
       return res.status(400).json({ message: 'doctorId, date, and startTime are required.' });
     }
 
-    let targetPatientId = req.user.userId;
+    const targetPatientId = req.user.userId;
 
-    // If caregiver is booking, ensure they are authorized for the target patient
-    if (req.user.role === 'caregiver') {
-      if (!requestedPatientId) {
-        return res.status(400).json({ message: 'Caregiver booking requires a valid patientId.' });
-      }
-      if (!isCaregiverAuthorized(req.user.userId, requestedPatientId)) {
-        return res.status(403).json({ message: 'Forbidden: You are not authorized to book for this patient.' });
-      }
-      targetPatientId = requestedPatientId;
-    } else {
-      // Patient booking for self
-      if (requestedPatientId && requestedPatientId !== req.user.userId) {
-        return res.status(403).json({ message: 'Forbidden: Patients can only book for themselves.' });
-      }
+    if (requestedPatientId && requestedPatientId !== req.user.userId) {
+      return res.status(403).json({ message: 'Forbidden: Patients can only book for themselves.' });
     }
 
     const appointment = await bookAppointment({
@@ -65,15 +53,10 @@ router.post('/', authenticateToken, requireRole('patient', 'caregiver'), booking
   }
 });
 
-// 2. GET /api/appointments/my - Patient or Caregiver view of appointments
-router.get('/my', authenticateToken, requireRole('patient', 'caregiver'), async (req, res) => {
+// 2. GET /api/appointments/my - Patient view of appointments
+router.get('/my', authenticateToken, requireRole('patient'), async (req, res) => {
   try {
-    let patientIds = [req.user.userId];
-
-    if (req.user.role === 'caregiver') {
-      const caregiver = users[req.user.userId];
-      patientIds = caregiver?.caregiverPatients || [];
-    }
+    const patientIds = [req.user.userId];
 
     let list = appointments.filter((a) => patientIds.includes(a.patientId));
 
@@ -143,14 +126,11 @@ router.get('/:appointmentId', authenticateToken, async (req, res) => {
 
   // Authorization check
   const isOwner = req.user.role === 'patient' && req.user.userId === appointment.patientId;
-  const isAuthorizedCaregiver =
-    req.user.role === 'caregiver' &&
-    isCaregiverAuthorized(req.user.userId, appointment.patientId);
   const isAssignedDoctor =
     req.user.role === 'doctor' &&
     (req.user.userId === doctor?.userId || req.user.userId === appointment.doctorId);
 
-  if (!isOwner && !isAuthorizedCaregiver && !isAssignedDoctor) {
+  if (!isOwner && !isAssignedDoctor) {
     return res.status(403).json({ message: 'Forbidden: You do not have access to this appointment.' });
   }
 
@@ -191,7 +171,7 @@ router.patch('/:appointmentId/reject', authenticateToken, requireRole('doctor'),
   }
 });
 
-// 7. PATCH /api/appointments/:appointmentId/cancel - Patient, Caregiver, or Doctor cancels
+// 7. PATCH /api/appointments/:appointmentId/cancel - Patient or Doctor cancels
 router.patch('/:appointmentId/cancel', authenticateToken, async (req, res) => {
   const { reason = 'Cancelled by user' } = req.body || {};
 

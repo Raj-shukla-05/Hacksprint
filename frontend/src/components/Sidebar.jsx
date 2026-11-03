@@ -17,13 +17,8 @@ export default function Sidebar({ view, setView, role, userName, onDemoDecline }
     { id: 'progress', label: 'Patient Progress', icon: LineChart },
     { id: 'appointments', label: 'Clinic Appointments', icon: Calendar },
   ];
-  const caregiverItems = [
-    { id: 'dashboard', label: 'Patient Overview', icon: LayoutDashboard },
-    { id: 'progress', label: 'Recovery Progress', icon: LineChart },
-    { id: 'appointments', label: 'Doctor Appointments', icon: Calendar },
-  ];
 
-  const items = role === 'doctor' ? doctorItems : role === 'caregiver' ? caregiverItems : patientItems;
+  const items = role === 'doctor' ? doctorItems : patientItems;
 
   return (
     <aside className="sidebar">
@@ -48,7 +43,7 @@ export default function Sidebar({ view, setView, role, userName, onDemoDecline }
         <div className="avatar">{(userName || 'U').replace(/^Dr\.?\s*/, '').charAt(0).toUpperCase()}</div>
         <div>
           <strong>{userName || 'Raj Kumar'}</strong>
-          <span>{role === 'doctor' ? 'Doctor account' : role === 'caregiver' ? 'Caregiver account' : 'Patient account'}</span>
+          <span>{role === 'doctor' ? 'Doctor account' : 'Patient account'}</span>
         </div>
         <Stethoscope size={16} />
       </div>

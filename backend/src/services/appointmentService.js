@@ -366,7 +366,7 @@ async function bookAppointment({
       bookedBy: {
         userId: bookedBy.userId,
         role: bookedBy.role,
-        name: bookedBy.name || (bookedBy.role === 'patient' ? patient.name : 'Caregiver'),
+        name: bookedBy.name || patient.name,
       },
       cancellation: { cancelledBy: null, cancelledByRole: null, cancelledAt: null, reason: null },
       rejection: { rejectedBy: null, rejectedAt: null, reason: null },
@@ -444,9 +444,6 @@ async function transitionAppointmentStatus({
   const doctor = await findDoctor(appointment.doctorId);
   const isDoctorUser = actingUser.role === 'doctor' && (actingUser.userId === doctor?.userId || actingUser.userId === appointment.doctorId);
   const isPatientUser = actingUser.role === 'patient' && actingUser.userId === appointment.patientId;
-  const isCaregiverUser =
-    actingUser.role === 'caregiver' &&
-    users[appointment.patientId]?.authorizedCaregivers?.includes(actingUser.userId);
 
   const currentStatus = appointment.status;
 
@@ -501,7 +498,7 @@ async function transitionAppointmentStatus({
       appointmentId: appointment.id,
     });
   } else if (targetStatus === 'cancelled') {
-    if (!isDoctorUser && !isPatientUser && !isCaregiverUser) {
+    if (!isDoctorUser && !isPatientUser) {
       const error = new Error('Forbidden: You are not authorized to cancel this appointment.');
       error.statusCode = 403;
       throw error;
@@ -616,11 +613,8 @@ async function rescheduleAppointment({
   const doctor = await findDoctor(appointment.doctorId);
   const isDoctorUser = actingUser.role === 'doctor' && (actingUser.userId === doctor?.userId || actingUser.userId === appointment.doctorId);
   const isPatientUser = actingUser.role === 'patient' && actingUser.userId === appointment.patientId;
-  const isCaregiverUser =
-    actingUser.role === 'caregiver' &&
-    users[appointment.patientId]?.authorizedCaregivers?.includes(actingUser.userId);
 
-  if (!isDoctorUser && !isPatientUser && !isCaregiverUser) {
+  if (!isDoctorUser && !isPatientUser) {
     const error = new Error('Forbidden: You are not authorized to reschedule this appointment.');
     error.statusCode = 403;
     throw error;
