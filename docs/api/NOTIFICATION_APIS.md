@@ -5,7 +5,7 @@
 Retrieves the latest in-app notifications for the authenticated user (capped at the 50 most recent records).
 
 - **Authentication:** Bearer JWT required.
-- **Allowed Roles:** All authenticated roles (`patient`, `doctor`, `caregiver`).
+- **Allowed Roles:** All authenticated roles (`patient`, `doctor`).
 
 ### Request
 ```http

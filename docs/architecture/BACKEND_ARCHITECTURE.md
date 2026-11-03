@@ -18,7 +18,6 @@ graph TD
         ApptRoutes["routes/appointmentRoutes.js (/api/appointments)"]
         RepRoutes["routes/reportRoutes.js (/api/reports)"]
         NotifRoutes["routes/notificationRoutes.js (/api/notifications)"]
-        CareRoutes["routes/caregiverRoutes.js (/api/caregivers)"]
     end
 
     subgraph ServiceLayer["Core Domain Services"]
@@ -63,7 +62,6 @@ backend/
 │   │   └── User.js                 # Unified user accounts across all roles
 │   ├── routes/                     # Specialized Express Sub-routers
 │   │   ├── appointmentRoutes.js    # /api/appointments
-│   │   ├── caregiverRoutes.js      # /api/caregivers
 │   │   ├── doctorRoutes.js         # /api/doctors
 │   │   ├── notificationRoutes.js   # /api/notifications
 │   │   └── reportRoutes.js         # /api/reports
@@ -105,14 +103,13 @@ Requests passing through `backend/src/server.js` execute through a strict, order
    - Attaches decoded `{ userId, role, name, email }` to `req.user`.
    - Returns HTTP 401 Unauthorized for missing or malformed tokens.
 6. **Role-Based Authorization (`requireRole`):**
-   - Higher-order middleware factory: `requireRole('doctor')` or `requireRole('patient', 'caregiver')`.
+   - Higher-order middleware factory: `requireRole('doctor')` or `requireRole('patient')`.
    - Enforces that only callers with appropriate claims in their JWT can access protected sub-trees.
    - Returns HTTP 403 Forbidden on role mismatch.
-7. **Resource-Level Authorization (`requireSelfOrDoctor` & `isCaregiverAuthorized`):**
+7. **Resource-Level Authorization (`requireSelfOrDoctor`):**
    - Prevents horizontal privilege escalation (IDOR).
    - Ensures patients can only access their own records (`req.params.id === req.user.userId`).
    - Ensures doctors can only access patients assigned to them (`patient.doctorId === req.user.userId`).
-   - Ensures caregivers can only access patients who have explicitly authorized them.
 
 ---
 
@@ -125,7 +122,6 @@ app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/caregivers', caregiverRoutes);
 ```
 
 In addition, core endpoints are declared directly in `server.js`:

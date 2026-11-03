@@ -21,10 +21,10 @@ Execution Duration: ~6.2 seconds
 
 | Test File | Test Suite Name | Test Count | Key Scenarios Covered |
 | :--- | :--- | :---: | :--- |
-| [appointmentSecurity.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/appointmentSecurity.test.js) | Doctor Appointment Security & Defense | 10 | Unauthenticated 401s, tampered JWTs, vertical privilege escalation, IDOR between patients, caregiver isolation, doctor isolation, status tampering, malformed date rejection, non-existent doctor validation, report sharing IDOR. |
-| [appointments.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/appointments.test.js) | Doctor Appointment & Recovery System | 20 | Doctor discovery & search, discrete slot generation, lunch break exclusion, atomic booking, double-booking 409 conflict, caregiver booking, state transitions (confirm, reject, cancel, complete), atomic rescheduling, recovery report preview & sharing, patient consent, report revocation, in-app notifications, schedule blocking, and concurrent booking race-condition simulations. |
+| [appointmentSecurity.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/appointmentSecurity.test.js) | Doctor Appointment Security & Defense | 9 | Unauthenticated 401s, tampered JWTs, vertical privilege escalation, IDOR between patients, doctor isolation, status tampering, malformed date rejection, non-existent doctor validation, report sharing IDOR. |
+| [appointments.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/appointments.test.js) | Doctor Appointment & Recovery System | 18 | Doctor discovery & search, discrete slot generation, lunch break exclusion, atomic booking, double-booking 409 conflict, state transitions (confirm, reject, cancel, complete), atomic rescheduling, recovery report preview & sharing, patient consent, report revocation, in-app notifications, schedule blocking, and concurrent booking race-condition simulations. |
 | [assignments.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/assignments.test.js) | Doctor-Patient Assignment Workflows | 15 | Protocol creation, instruction validation, unassigned doctor isolation, patient assignment retrieval, transition to in_progress, invalid camera tracking rejection, completed session linkage, doctor review with notes, doctor assignment isolation, non-patient assessment rejection, and persistence mode verification. |
-| [auth.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/auth.test.js) | Authentication & Authorization | 10 | Login for seeded patient and doctor, invalid password rejection, email/password validation on signup, duplicate email 409, doctor profile auto-provisioning, caregiver-patient relationship linking, requireRole middleware, and IDOR protection. |
+| [auth.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/auth.test.js) | Authentication & Authorization | 10 | Login for seeded patient and doctor, invalid password rejection, email/password validation on signup, duplicate email 409, doctor profile auto-provisioning, requireRole middleware, and IDOR protection. |
 | [geminiService.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/geminiService.test.js) | Gemini Service & Prompt Sanitization | 34 | `buildLocalExplanation` accuracy, single-prior-session framing, persistent decline metric specificity, error diagnostic formatting (400, 401, 403, 404, 429, 5xx), mocked API responses, prompt sanitization (`measured_metrics` whitelist, 500-char detail truncation), and live provider verification. |
 | [trendEngine.test.js](file:///home/piyush/Team Matrix/Hacksprint/backend/test/trendEngine.test.js) | Trend Engine Unit Tests | 6 | `mean()` accuracy, `deviation()` percentage deltas, `classify()` monitoring tiers, `personalBaseline()` moving-window logic, `detectPersistentDecline()` 3-session detection, and `buildTrend()` longitudinal formatting. |
 
@@ -59,7 +59,7 @@ Simulates two simultaneous HTTP booking requests targeting the identical doctor,
 ```javascript
 const [res1, res2] = await Promise.all([
   request(app).post('/api/appointments').set('Authorization', `Bearer ${patientToken}`).send(payload),
-  request(app).post('/api/appointments').set('Authorization', `Bearer ${caregiverToken}`).send(payload),
+  request(app).post('/api/appointments').set('Authorization', `Bearer ${secondPatientToken}`).send(payload),
 ]);
 
 // Exactly one request must succeed (201) and the other must be rejected (409 Conflict)

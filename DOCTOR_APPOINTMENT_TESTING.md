@@ -29,13 +29,11 @@ npm --prefix frontend run build
 
 ## 3. Test Suite Inventory
 
-### Suite A: `backend/test/appointments.test.js` (20 Integration Tests)
+### Suite A: `backend/test/appointments.test.js` (18 Integration Tests)
 1. **Doctor Discovery Listing & Filters:** Verifies full list retrieval, search by name (`Priya`), specialization filtering (`Neurology`), and city filtering (`Mumbai`).
 2. **Discrete Slot Generation:** Validates slot intervals, automatic exclusion of break hours (`13:00 - 14:00`), and rejection of past dates.
 3. **In-Person Booking Workflow:** Verifies successful creation of pending appointment with full clinic location metadata.
 4. **Double Booking Prevention:** Rejects duplicate booking attempt on the same slot with `409 Conflict`.
-5. **Caregiver Authorized Booking:** Verifies authorized caregiver can book for patient `user-raj`.
-6. **Caregiver Unauthorized Block:** Rejects booking attempt by unlinked caregiver with `403 Forbidden`.
 7. **Patient Appointments Retrieval:** Validates patient can only retrieve their own appointments.
 8. **Doctor Appointments Retrieval:** Validates doctor retrieves clinic visits scheduled with them.
 9. **Doctor Confirmation:** Validates status transition from `pending` to `confirmed`.
@@ -51,12 +49,11 @@ npm --prefix frontend run build
 19. **Doctor Availability Management:** Doctor blocks custom slot (`16:00`); slot is immediately unavailable.
 20. **Concurrency Simulation:** Simultaneous concurrent bookings of the same slot permit exactly one winner (`201 Created` vs `409 Conflict`).
 
-### Suite B: `backend/test/appointmentSecurity.test.js` (10 Security Tests)
+### Suite B: `backend/test/appointmentSecurity.test.js` (9 Security Tests)
 1. **S1 (Unauthenticated Access):** Returns `401 Unauthorized` when token is missing.
 2. **S2 (Tampered Token):** Returns `401 Unauthorized` on corrupted JWTs.
 3. **S3 (Vertical Privilege Escalation):** Patients cannot access clinician availability configuration (`403 Forbidden`).
 4. **S4 (Horizontal Privilege Escalation / IDOR):** Patients cannot view other patients' appointments (`403 Forbidden`).
-5. **S5 (Caregiver Isolation):** Unlinked caregivers cannot access unrelated patient appointments (`403 Forbidden`).
 6. **S6 (Doctor Isolation):** Clinicians cannot confirm or modify appointments of other doctors (`403 Forbidden`).
 7. **S7 (State Tampering):** Patients cannot mark visits as completed (`403 Forbidden`).
 8. **S8 (Input Validation):** Rejects malformed dates and past dates with `400 Bad Request`.

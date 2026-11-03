@@ -19,7 +19,6 @@ const doctorRoutes = require('./routes/doctorRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
-const caregiverRoutes = require('./routes/caregiverRoutes');
 const { seedDatabaseIfEmpty } = require('./services/seedService');
 
 const app = express();
@@ -122,8 +121,8 @@ app.post('/api/auth/signup', async (req, res) => {
   if (String(password).length < 8) {
     return res.status(400).json({ message: 'Password must be at least 8 characters' });
   }
-  if (!['patient', 'doctor', 'caregiver'].includes(role)) {
-    return res.status(400).json({ message: 'Role must be patient, doctor, or caregiver' });
+  if (!['patient', 'doctor'].includes(role)) {
+    return res.status(400).json({ message: 'Role must be patient or doctor' });
   }
 
   if (credentials.some((c) => c.email === cleanEmail)) {
@@ -136,10 +135,8 @@ app.post('/api/auth/signup', async (req, res) => {
   const formattedName = role === 'doctor' && !cleanName.startsWith('Dr.') ? `Dr. ${cleanName}` : cleanName;
 
   const user = role === 'patient'
-    ? { id, name: cleanName, role, preferredLanguage: 'English', doctorId: 'doctor-priya', authorizedCaregivers: [] }
-    : role === 'caregiver'
-      ? { id, name: cleanName, role, caregiverPatients: ['user-raj'] }
-      : { id, name: formattedName, role, specialty: specialization || 'Neurology' };
+    ? { id, name: cleanName, role, preferredLanguage: 'English', doctorId: 'doctor-priya' }
+    : { id, name: formattedName, role, specialty: specialization || 'Neurology' };
 
   users[id] = user;
   credentials.push({ email: cleanEmail, passwordHash, userId: id });
@@ -813,7 +810,6 @@ app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/caregivers', caregiverRoutes);
 
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 

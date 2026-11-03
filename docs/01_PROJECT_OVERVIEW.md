@@ -16,8 +16,8 @@ By leveraging client-side Computer Vision (via Google MediaPipe Tasks Vision Web
          |                                                         |
          v                                                         v
 +------------------+                                     +-------------------+
-|   PATIENT &      |                                     |  DOCTOR / CLINIC  |
-|   CAREGIVER      |                                     |    OVERSIGHT      |
+|     PATIENT      |                                     |  DOCTOR / CLINIC  |
+|                  |                                     |    OVERSIGHT      |
 +------------------+                                     +-------------------+
 | • MediaPipe CV   |                                     | • Triage Roster   |
 | • 3 Exercises    |                                     | • Protocol Prescr.|

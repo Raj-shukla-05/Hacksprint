@@ -40,7 +40,7 @@ This document provides a comprehensive inventory of all source files, configurat
 ### Database Models (`backend/src/models/`)
 | Path | Type | Purpose | Key Exports / Contents | Dependencies | Relationship & Usage |
 |---|---|---|---|---|---|
-| `backend/src/models/User.js` | Production Code | Mongoose schema for user accounts. | Mongoose Model `User` (`id`, `name`, `email`, `passwordHash`, `role`, `doctorId`, etc.). | Mongoose | Persists patient, doctor, and caregiver accounts when MongoDB is connected. |
+| `backend/src/models/User.js` | Production Code | Mongoose schema for user accounts. | Mongoose Model `User` (`id`, `name`, `email`, `passwordHash`, `role`, `doctorId`, etc.). | Mongoose | Persists patient and doctor accounts when MongoDB is connected. |
 | `backend/src/models/Assessment.js` | Production Code | Mongoose schema for completed movement sessions. | Mongoose Model `Assessment` (`id`, `userId`, `assignmentId`, `score`, `metrics`, `trackingQuality`). | Mongoose | Persists recorded assessment sessions and tracking quality metadata. |
 | `backend/src/models/Assignment.js` | Production Code | Mongoose schema for clinician-prescribed protocols. | Mongoose Model `Assignment` (`id`, `doctorId`, `patientId`, `exerciseType`, `status`, `doctorNotes`). | Mongoose | Persists assignments and doctor review feedback. |
 | `backend/src/models/Alert.js` | Production Code | Mongoose schema for longitudinal recovery alerts. | Mongoose Model `Alert` (`id`, `userId`, `severity`, `type`, `reason`, `action`). | Mongoose | **Dormant / Unused Model:** Imported in `server.js` line 12, but never written to or queried. Alerts are handled in memory. |
@@ -65,13 +65,13 @@ This document provides a comprehensive inventory of all source files, configurat
 | `frontend/vite.config.js` | Configuration | Vite compiler configuration. | React plugin setup, strict port 5173. | `@vitejs/plugin-react`, `vite` | Configures build and HMR development server. |
 | `frontend/index.html` | Asset / Entry | HTML entry point for the single-page application. | Root DOM container `#root`, viewport, font imports. | None | Vite HTML host document. |
 | `frontend/src/main.jsx` | Production Code | React application bootstrap. | Mounts `<App />` into `#root` with `StrictMode`. | React, ReactDOM, `app.css` | Entry point executed by browser. |
-| `frontend/src/App.jsx` | Production Code | Main application shell, state coordinator, and router. | Top-level component `<App />`. Manages user session, role, active view, and toast notifications. | Lucide icons, pages, components, `api.js`, `demoData.js` | Orchestrates views (`dashboard`, `assessment`, `progress`, `doctor`, `caregiver`, `settings`). |
+| `frontend/src/App.jsx` | Production Code | Main application shell, state coordinator, and router. | Top-level component `<App />`. Manages user session, role, active view, and toast notifications. | Lucide icons, pages, components, `api.js`, `demoData.js` | Orchestrates views (`dashboard`, `assessment`, `progress`, `doctor`, `settings`). |
 
 ### Libraries & Utilities (`frontend/src/lib/`)
 | Path | Type | Purpose | Key Exports / Contents | Dependencies | Relationship & Usage |
 |---|---|---|---|---|---|
 | `frontend/src/lib/api.js` | Production Code | Centralized REST client with automatic JWT attachment. | `api` object (18 API methods), `setAuthToken`, `getAuthToken`, `clearAuthToken`. | Native `fetch`, `window.sessionStorage` | Handles all network communication with backend. Dispatches `neuroguard:unauthorized` event on 401. |
-| `frontend/src/lib/demoData.js` | Production Code | Fallback demonstration data and seeded user constants. | `DEMO_USER_ID`, `DEMO_CAREGIVER_ID`, `fallbackDashboard`, `fallbackTrends`, `fallbackAlerts`. | None | Used for offline demonstration resilience when the backend is unreachable. |
+| `frontend/src/lib/demoData.js` | Production Code | Fallback demonstration data and seeded user constants. | `DEMO_USER_ID`, `fallbackDashboard`, `fallbackTrends`, `fallbackAlerts`. | None | Used for offline demonstration resilience when the backend is unreachable. |
 | `frontend/src/lib/pose.js` | Production Code | MediaPipe initialization and skeleton canvas drawing. | `createPoseLandmarker`, `drawSkeleton`, `LANDMARKS`, `angle`, `midpoint`, `visiblePoint`. | `@mediapipe/tasks-vision` | Loads local WASM and `.task` model. Draws 14 anatomical connections on canvas. |
 | `frontend/src/lib/scoring.js` | Production Code | Movement feature extraction and exercise scoring logic. | `armRaiseFrame`, `buildArmRaiseSession`, `sitToStandFrame`, `buildSitToStandSession`, `seatedReachFrame`, `buildSeatedReachSession`. | `pose.js` | Derives ROM, symmetry, extension, stability, path efficiency, and repetition counts. |
 
@@ -82,7 +82,6 @@ This document provides a comprehensive inventory of all source files, configurat
 | `frontend/src/pages/PatientDashboard.jsx` | Production Code | Primary patient home screen. | `<PatientDashboard />`. Renders score ring, metrics, assigned protocols, AI explanation, and alerts. | MetricCard, ScoreRing, TrendChart, AlertCard, `api.js` | Central patient interface. Requests AI explanation and displays clinician feedback. |
 | `frontend/src/pages/AssessmentPage.jsx` | Production Code | Assessment staging, protocol instructions, and camera coordinator. | `<AssessmentPage />`. Handles exercise selection, clinician banner, tracking validation. | `CameraAssessment.jsx`, Lucide | Bridges prescription instructions with live camera tracking. |
 | `frontend/src/pages/DoctorPage.jsx` | Production Code | Clinician oversight dashboard and assignment manager. | `<DoctorPage />`, `<PatientDetail />`. | TrendChart, AlertCard, `api.js`, Lucide | Clinician interface for patient triage, protocol creation, and session review. |
-| `frontend/src/pages/CaregiverPage.jsx` | Production Code | Simplified caregiver monitoring interface. | `<CaregiverPage />`, `<PatientRow />`. | TrendChart, Lucide | High-level status overview for family caregivers. |
 | `frontend/src/pages/ProgressPage.jsx` | Production Code | Longitudinal historical trend analysis. | `<ProgressPage />`. Renders 21-day timeline, stats strip, and session cards. | TrendChart, Lucide | Extended historical view for patient recovery trajectory. |
 | `frontend/src/pages/SettingsPage.jsx` | Production Code | Patient data privacy choices and non-diagnostic boundaries. | `<SettingsPage />`, `<SettingRow />`. | Lucide | Transparently communicates data minimization practices. |
 
@@ -119,5 +118,3 @@ This document provides a comprehensive inventory of all source files, configurat
    - Backend route and logic are fully operational (lines 619-643).
    - Client wrapper exists in `frontend/src/lib/api.js` line 78 (`speechAnalyze`).
    - **Never called by any React component.** Speech functionality in `PatientDashboard.jsx` is represented only as an optional checklist label.
-3. **`CaregiverPage.jsx` Hardcoded View (Partially Disconnected State):**  
-   - Although `api.caregiverPatients` fetches real patients for the caregiver, the right-hand detail card in `CaregiverPage.jsx` hardcodes the title `"Raj Kumar"` and `"Movement is up 10% versus the recent baseline"`. Clicking "View" on other patients does not switch the detail view.

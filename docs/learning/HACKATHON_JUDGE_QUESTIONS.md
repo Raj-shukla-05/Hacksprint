@@ -28,7 +28,6 @@ For every question, four mandatory elements are provided:
 11. [What does Gemini contribute?](#11-what-does-gemini-contribute)
 12. [Why is AI not directly diagnosing patients?](#12-why-is-ai-not-directly-diagnosing-patients)
 13. [How does the doctor appointment module work?](#13-how-does-the-doctor-appointment-module-work)
-14. [How does the caregiver system work?](#14-how-does-the-caregiver-system-work)
 15. [How do doctors review recovery reports?](#15-how-do-doctors-review-recovery-reports)
 16. [How is patient consent handled?](#16-how-is-patient-consent-handled)
 17. [What data is stored?](#17-what-data-is-stored)
@@ -89,19 +88,16 @@ For every question, four mandatory elements are provided:
 
 ### 4. Who are the target users?
 * **30-Second Answer:**
-  NeuroGuard AI serves three distinct stakeholders: patients recovering from stroke or motor trauma who perform daily guided exercises, clinicians and physical therapists who supervise cohorts and review anomalies, and family caregivers who assist dependent patients.
+  NeuroGuard AI serves two distinct stakeholders: patients recovering from stroke or motor trauma who perform daily guided exercises, clinicians and physical therapists who supervise cohorts and review anomalies.
 * **Detailed Technical Answer:**
-  The platform enforces three role-based personas via JWT authentication and database schemas:
+  The platform enforces two role-based personas via JWT authentication and database schemas:
   1. `patient`: Completes prescribed kinematic assessments, reviews personalized baseline recovery trajectories, and schedules in-person visits.
   2. `doctor`: Manages assigned patient panels, reviews longitudinal trends, receives persistent decline alerts, and manages clinic availability.
-  3. `caregiver`: Holds read-only proxy access to assist elderly or cognitive-impaired patients with exercise compliance and appointment scheduling.
 * **Supporting Implementation References:**
   - Role definitions: [User.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/User.js#L25-L35)
   - Authorization middleware: [auth.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/auth.js#L35-L60)
   - Authorization matrix: [AUTHORIZATION_MATRIX.md](file:///home/piyush/Team Matrix/Hacksprint/docs/security/AUTHORIZATION_MATRIX.md)
 * **Follow-up Questions & Defense:**
-  - *Judge:* "Can a caregiver alter a patient's medical records or assessment scores?"  
-    *Defense:* "No. As documented in our authorization matrix, caregiver accounts are strictly read-only. Mutation routes reject caregiver tokens with HTTP 403 Forbidden."
 
 ---
 
@@ -256,25 +252,6 @@ For every question, four mandatory elements are provided:
 
 ---
 
-### 14. How does the caregiver system work?
-* **30-Second Answer:**
-  The caregiver system allows authorized family members or nurses to link to a dependent patient's account via a secure code, giving them read-only visibility into exercise compliance, streaks, and trends to assist with recovery.
-* **Detailed Technical Answer:**
-  In [CaregiverDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/PatientDashboard.jsx) and backend routes:
-  1. Bidirectional relationships link `User` documents via `caregiverIds` and `patientIds` arrays.
-  2. Middleware verifies relational permissions: caregivers can only query data for patients explicitly linked to them.
-  3. Caregiver permissions are strictly read-only (`GET` endpoints only); mutation routes reject caregiver tokens.
-  4. Patients retain complete sovereignty and can revoke caregiver links at any time.
-* **Supporting Implementation References:**
-  - Caregiver view: [CaregiverDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/PatientDashboard.jsx)
-  - Relationship schema: [User.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/User.js#L35-L55)
-  - Feature guide: [CAREGIVER_SYSTEM.md](file:///home/piyush/Team Matrix/Hacksprint/docs/features/CAREGIVER_SYSTEM.md)
-* **Follow-up Questions & Defense:**
-  - *Judge:* "Can a single caregiver manage multiple patients?"  
-    *Defense:* "Yes. The schema stores `patientIds: [ObjectId]`, and `CaregiverDashboard.jsx` provides a patient-switching dropdown to manage multiple dependents seamlessly."
-
----
-
 ### 15. How do doctors review recovery reports?
 * **30-Second Answer:**
   Doctors access an exception-based clinical dashboard that highlights flagged patients requiring review, inspect detailed kinematic graphs and Gemini summaries, and review formal exportable recovery reports shared by patients.
@@ -299,7 +276,7 @@ For every question, four mandatory elements are provided:
 * **Detailed Technical Answer:**
   1. Optical Consent: Camera access requires standard W3C `navigator.mediaDevices.getUserMedia` prompt. If denied, the UI handles it gracefully with instructions to grant permission.
   2. Data Processing Notice: Before launching an assessment, the runner explains that only derived mathematical joint metrics are stored.
-  3. Sharing Consent: Caregiver linking and report sharing require explicit user-initiated authorization actions, and all access can be revoked on demand.
+  3. Sharing Consent: Report sharing requires explicit user-initiated authorization actions, and all access can be revoked on demand.
 * **Supporting Implementation References:**
   - Permission handler: [CameraFeed.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx#L35-L55)
   - Privacy policy & consent: [DATA_PRIVACY.md](file:///home/piyush/Team Matrix/Hacksprint/docs/security/DATA_PRIVACY.md)
@@ -377,7 +354,7 @@ For every question, four mandatory elements are provided:
   - Baseline algorithms: [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js)
 * **Follow-up Questions & Defense:**
   - *Judge:* "Why hasn't this been done by existing big tech platforms?"  
-    *Defense:* "Large tech companies provide general-purpose computer vision libraries (like MediaPipe) or general LLMs (like Gemini). NeuroGuard AI innovates by building the specialized clinical domain pipeline: kinematic angle extraction, personal baseline math, multi-session decline triage, and secure doctor-caregiver workflows."
+    *Defense:* "Large tech companies provide general-purpose computer vision libraries (like MediaPipe) or general LLMs (like Gemini). NeuroGuard AI innovates by building the specialized clinical domain pipeline: kinematic angle extraction, personal baseline math, multi-session decline triage, and secure patient-doctor workflows."
 
 ---
 
@@ -446,7 +423,6 @@ For every question, four mandatory elements are provided:
   | **Personal Baseline Engine** | **Fully Implemented** | 5-session moving average & decline detection in `trendEngine.js` |
   | **Appointment Booking & Mutex** | **Fully Implemented** | Mutex lock & compound partial unique index in `appointments.js` |
   | **Gemini AI & Fallback** | **Fully Implemented** | Prompt sanitization & local fallback in `geminiService.js` |
-  | **Caregiver Linking** | **Fully Implemented** | Relational user schemas & read-only routing |
   | **Multi-Camera 3D Capture** | *Planned Roadmap* | Requires stereoscopic camera hardware |
   | **FHIR / HL7 EHR Sync** | *Planned Roadmap* | Standardized hospital record export format |
   | **Clinical Trial Validation** | *Planned Roadmap* | Requires prospective IRB multi-center study |

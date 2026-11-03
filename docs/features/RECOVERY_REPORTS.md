@@ -8,7 +8,7 @@
 ---
 
 ## 2. What is this feature?
-This feature enables the automated compilation of a patient’s longitudinal assessment history into a standardized **Clinical Recovery Report** ([reportSharingService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js)). Patients and authorized caregivers can preview the compiled data and explicitly authorize sharing with a specific attending doctor for in-person consultation review. Access is revocable at any time and protected by an immutable access audit trail.
+This feature enables the automated compilation of a patient’s longitudinal assessment history into a standardized **Clinical Recovery Report** ([reportSharingService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js)). Patients can preview the compiled data and explicitly authorize sharing with a specific attending doctor for in-person consultation review. Access is revocable at any time and protected by an immutable access audit trail.
 
 ---
 
@@ -21,7 +21,6 @@ This feature enables the automated compilation of a patient’s longitudinal ass
 
 ## 4. Who uses this feature?
 - **Patient:** Previews their compiled recovery documentation, grants sharing authorization, views active shares, and revokes access.
-- **Caregiver:** Authorized caregivers can preview and share reports on the patient's behalf.
 - **Doctor:** Inspects shared recovery reports to review movement scores, baseline deltas, and protocol compliance.
 
 ---
@@ -90,7 +89,7 @@ This feature enables the automated compilation of a patient’s longitudinal ass
 1. **Dynamic Report Assembly Algorithm:**
    $$\text{Report} = \{ \text{PatientProfile}, \text{DashboardSummary}, \text{BaselineScore}, \text{Trends}_{1..N}, \text{Breakdown}, \text{Sessions}_{1..10}, \text{Disclaimer} \}$$
 2. **Access Control Verification Logic ([reportSharingService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js#L235-L257)):**
-   $$\text{Allowed} \iff (\text{IsPatientOwner}) \lor (\text{IsAuthorizedCaregiver}) \lor (\text{IsRecipientDoctor} \land \text{Status} \ne \text{'revoked'})$$
+   $$\text{Allowed} \iff (\text{IsPatientOwner}) \lor (\text{IsRecipientDoctor} \land \text{Status} \ne \text{'revoked'})$$
 
 ---
 
@@ -155,9 +154,6 @@ Patient Clicks "Share Report"
 
 #### Q4: What data is contained within the compiled recovery report?
 **Answer:** In [reportSharingService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js#L64-L95), it includes patient demographic summaries, clinical disclaimers, overall recovery score, moving-window baseline score, baseline delta percentage, total completed sessions, protocol breakdown counts, longitudinal trend arrays, recent alerts, and the 10 most recent assessment sessions with tracking quality indicators.
-
-#### Q5: Can an authorized caregiver share a report on the patient's behalf?
-**Answer:** Yes. In [reportRoutes.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/reportRoutes.js#L44-L49), if `req.user.role === 'caregiver'`, the backend verifies `isCaregiverAuthorized()` before sharing.
 
 #### Q6: How is the client IP and User-Agent captured for the audit trail?
 **Answer:** In [reportRoutes.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/reportRoutes.js#L51-L52), the route handler extracts `req.ip || req.headers['x-forwarded-for']` and `req.headers['user-agent']` and passes them to `shareRecoveryReport()` and `getSharedReport()`.

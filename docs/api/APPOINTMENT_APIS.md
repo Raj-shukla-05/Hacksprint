@@ -5,7 +5,7 @@
 Books a verified, in-person clinical consultation slot with an attending doctor. Features concurrency mutex locking and rate limiting (max 15 requests/min).
 
 - **Authentication:** Bearer JWT required.
-- **Allowed Roles:** `patient` (for self) or `caregiver` (for authorized patient).
+- **Allowed Roles:** `patient` (for self).
 - **Validation:** Date must not be in past; time must align with clinic availability.
 
 ### Patient Booking Request
@@ -19,21 +19,6 @@ Authorization: Bearer <TOKEN>
   "date": "2026-11-10",
   "startTime": "10:30",
   "reason": "Follow-up evaluation for left shoulder range of motion"
-}
-```
-
-### Caregiver Proxy Booking Request
-```http
-POST /api/appointments HTTP/1.1
-Content-Type: application/json
-Authorization: Bearer <TOKEN>
-
-{
-  "doctorId": "doc-priya",
-  "patientId": "user-raj",
-  "date": "2026-11-10",
-  "startTime": "10:30",
-  "reason": "Post-stroke mobility check booked by daughter"
 }
 ```
 
@@ -84,9 +69,9 @@ Authorization: Bearer <TOKEN>
 
 ## 2. GET /api/appointments/my
 
-Retrieves the authenticated patient's or caregiver's appointment history, sorted with upcoming visits first.
+Retrieves the authenticated patient's appointment history, sorted with upcoming visits first.
 
-- **Authentication:** Bearer JWT required (`patient`, `caregiver`).
+- **Authentication:** Bearer JWT required (`patient`).
 
 ### Response (200 OK)
 ```json
@@ -191,7 +176,7 @@ Authorization: Bearer <TOKEN>
 
 ## 6. PATCH /api/appointments/:id/cancel
 
-Cancels a pending or confirmed appointment. Permitted for the patient, authorized caregiver, or attending doctor.
+Cancels a pending or confirmed appointment. Permitted for the patient or attending doctor.
 
 ### Request
 ```http

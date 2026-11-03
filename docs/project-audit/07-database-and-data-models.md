@@ -21,10 +21,9 @@ erDiagram
         string name "required, trimmed"
         string email UK "required, lowercase, unique index"
         string passwordHash "required, bcrypt hash"
-        string role "enum: patient, doctor, caregiver"
+        string role "enum: patient, doctor"
         number age "optional"
         string preferredLanguage "default: English"
-        string caregiverId "optional FK to User"
         string doctorId "optional FK to User (indexed)"
         date createdAt "default: Date.now"
     }
@@ -83,10 +82,9 @@ erDiagram
   - `name`: `{ type: String, required: true, trim: true }`
   - `email`: `{ type: String, required: true, unique: true, lowercase: true, trim: true }`
   - `passwordHash`: `{ type: String, required: true }`
-  - `role`: `{ type: String, enum: ['patient', 'doctor', 'caregiver'], default: 'patient' }`
+  - `role`: `{ type: String, enum: ['patient', 'doctor'], default: 'patient' }`
   - `age`: `{ type: Number }`
   - `preferredLanguage`: `{ type: String, default: 'English' }`
-  - `caregiverId`: `{ type: String }` (Points to caregiver's `User.id`)
   - `doctorId`: `{ type: String, index: true, default: null }` (Points to doctor's `User.id`)
   - `createdAt`: `{ type: Date, default: Date.now }`
 - **Active Operations:**

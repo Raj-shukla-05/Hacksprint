@@ -23,7 +23,6 @@ NeuroGuard AI addresses these challenges by executing **real-time pose estimatio
 |---|---|---|---|
 | **Patient** | Stroke survivor recovering at home (e.g., *Raj Kumar*, age 58) | Uncertainty regarding recovery progress, difficulty remembering exercise instructions, anxiety about whether changes are normal. | Complete assigned or self-directed movement checks via camera; view personal baseline progress; receive plain-language summaries; view doctor notes. |
 | **Doctor / Clinician** | Neurologist or Physical Therapist (e.g., *Dr. Priya Nair*, Neurorehabilitation) | Lack of objective data between visits; inability to enforce customized exercise protocols remotely; time-consuming review processes. | View assigned patient roster prioritized by clinical need (Review Recommended → Monitor → Stable); assign specific exercise protocols with targets and custom instructions; review completed sessions and sign off with feedback. |
-| **Caregiver** | Family member or dedicated caregiver (e.g., *Anita Sharma*) | Needs high-level visibility into patient recovery trends without clinical complexity; requires alerts when persistent declines occur. | High-level status overview of patient recovery (Stable / Monitor / Review); trend visualization; persistent decline alert monitoring. |
 
 ---
 
@@ -64,7 +63,7 @@ flowchart TD
     subgraph Client["Patient / Clinician Browser (React 19 + Vite)"]
         Cam["Webcam Video Stream\n(navigator.mediaDevices)"] --> MP["MediaPipe Pose Landmarker\n(On-Device WASM / GPU)"]
         MP --> FE["Feature Extraction & Scoring\n(armRaise, sitToStand, reach)"]
-        FE --> UI["UI Components & Dashboards\n(Patient, Doctor, Caregiver)"]
+        FE --> UI["UI Components & Dashboards\n(Patient, Doctor)"]
         UI --> APIClient["API Client (lib/api.js)\nBearer Token Auth"]
     end
 

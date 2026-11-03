@@ -9,7 +9,7 @@ This document traces the complete lifecycle of an in-person clinical consultatio
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Patient as Patient / Caregiver
+    actor Patient as Patient
     participant UI as React AppointmentsPage / BookingModal
     participant Routes as appointmentRoutes.js
     participant Service as appointmentService.js

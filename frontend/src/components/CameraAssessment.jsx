@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Camera, CheckCircle2, CircleAlert, LoaderCircle, Pause, Play, RotateCcw, ShieldCheck, Square } from 'lucide-react';
 import { createPoseLandmarker, drawSkeleton } from '../lib/pose';
+import BodyFigure from './BodyFigure';
 import { armRaiseFrame, buildArmRaiseSession, buildSeatedReachSession, buildSitToStandSession, seatedReachFrame, sitToStandFrame } from '../lib/scoring';
 
 const EXERCISES = {
@@ -8,16 +9,22 @@ const EXERCISES = {
     title: 'Arm Raise',
     instruction: 'Raise both arms slowly until they are as high and comfortable as possible, then lower.',
     target: '5 controlled repetitions',
+    region: 'arms',
+    area: 'Shoulders and arms',
   },
   sit_to_stand: {
     title: 'Sit-to-Stand',
     instruction: 'From a stable chair, stand up tall and return to the seated position at a comfortable pace.',
     target: '5 controlled repetitions',
+    region: 'legs',
+    area: 'Hips, knees and legs',
   },
   seated_reach: {
     title: 'Seated Reach',
     instruction: 'Reach forward and slightly upward with both hands, then return to your starting position.',
     target: '5 controlled repetitions',
+    region: 'torso',
+    area: 'Trunk and reaching arm',
   },
 };
 
@@ -210,6 +217,10 @@ export default function CameraAssessment({ exercise = 'arm_raise', onComplete })
       </div>
 
       <aside className="assessment-side">
+        <div className="side-section body-detail">
+          <span className="section-kicker">Target area</span>
+          <BodyFigure highlight={exerciseInfo.region} caption={<div className="body-caption"><strong>{exerciseInfo.area}</strong><span>{exerciseInfo.title}</span></div>} />
+        </div>
         <div className="side-section">
           <span className="section-kicker">Session target</span>
           <div className="target-card"><span className="target-number">5</span><div><strong>controlled reps</strong><span>{exerciseInfo.title}</span></div></div>

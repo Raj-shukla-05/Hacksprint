@@ -10,7 +10,7 @@ This document details the compound indexes, unique constraints, partial filter e
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **`appointments`** | `{ doctorId: 1, date: 1, startTime: 1 }` | Compound | **YES** | `partialFilterExpression: { status: { $in: ['pending', 'confirmed'] } }` | **Double-Booking Prevention:** Guarantees no two active appointments exist for the same doctor at the same date and time. |
 | **`appointments`** | `{ id: 1 }` | Single Field | **YES** | Unique | Primary key lookups by appointment ID. |
-| **`appointments`** | `{ patientId: 1 }` | Single Field | No | Standard | Optimizes patient and caregiver appointment list retrieval (`/api/appointments/my`). |
+| **`appointments`** | `{ patientId: 1 }` | Single Field | No | Standard | Optimizes patient appointment list retrieval (`/api/appointments/my`). |
 | **`appointments`** | `{ doctorId: 1 }` | Single Field | No | Standard | Optimizes doctor appointment retrieval (`/api/appointments/doctor`). |
 | **`appointments`** | `{ date: 1 }` | Single Field | No | Standard | Date-range scheduling queries. |
 | **`users`** | `{ email: 1 }` | Single Field | **YES** | Unique, lowercase | Prevents duplicate user accounts and optimizes login credential lookups. |

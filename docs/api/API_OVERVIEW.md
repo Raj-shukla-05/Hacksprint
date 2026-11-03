@@ -81,12 +81,11 @@ The frontend configures this base URL via `VITE_API_BASE_URL` in [frontend/src/l
 │   ├── /availability/block/:blockId        [DELETE] Unblock slot (Doctor only)
 │   ├── /:doctorId                          [GET] Detailed doctor profile
 │   ├── /:doctorId/availability             [GET] Available discrete consultation slots
-│   ├── /:id/patients                       [GET] Doctor's patient roster (Doctor only)
 │   └── /:id/assignments                    [GET] Doctor's prescribed assignments (Doctor only)
 │
 ├── /appointments
 │   ├── /                                   [POST] Book in-person visit (Rate-limited)
-│   ├── /my                                 [GET] Patient/Caregiver appointment list
+│   ├── /my                                 [GET] Patient appointment list
 │   ├── /doctor                             [GET] Attending doctor appointment list
 │   ├── /:appointmentId                     [GET] Appointment details
 │   ├── /:appointmentId/confirm             [PATCH] Doctor confirms visit
@@ -109,6 +108,4 @@ The frontend configures this base URL via `VITE_API_BASE_URL` in [frontend/src/l
 │   ├── /:id/read                           [PATCH] Mark individual notification read
 │   └── /read-all                           [POST] Mark all notifications read
 │
-└── /caregivers
-    └── /:id/patients                       [GET] List authorized patients for caregiver
 ```

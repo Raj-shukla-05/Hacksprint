@@ -23,7 +23,7 @@ The Notification System provides in-app event notifications for clinical and app
 ---
 
 ## 4. Who uses this feature?
-- **All Roles (Patient, Doctor, Caregiver):** Each user receives notifications targeted to their `userId` in the topbar bell icon.
+- **All Roles (Patient, Doctor):** Each user receives notifications targeted to their `userId` in the topbar bell icon.
 
 ---
 

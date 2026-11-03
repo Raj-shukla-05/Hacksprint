@@ -10,8 +10,8 @@ flowchart TD
     Hlm --> CORS["2. Controlled CORS Filtering"]
     CORS --> RL["3. In-Memory Rate Limiting (Anti-Spam)"]
     RL --> JWT["4. Cryptographic JWT Verification (HS256)"]
-    JWT --> RBAC["5. Role-Based Access Control (Patient, Doctor, Caregiver)"]
-    RBAC --> IDOR["6. Resource Ownership & Caregiver Authorization Guard"]
+    JWT --> RBAC["5. Role-Based Access Control (Patient, Doctor)"]
+    RBAC --> IDOR["6. Resource Ownership Guard"]
     IDOR --> Val["7. Strict Allowlisted Input Validation"]
     Val --> Concur["8. Concurrency Lock & Unique Constraint Check"]
     Concur --> Audit["9. Structured Healthcare Audit Trail"]
@@ -29,20 +29,12 @@ flowchart TD
   - Every appointment lookup checks:
     ```javascript
     const isOwner = req.user.role === 'patient' && req.user.userId === appointment.patientId;
-    const isAuthorizedCaregiver = req.user.role === 'caregiver' && isCaregiverAuthorized(req.user.userId, appointment.patientId);
     const isAssignedDoctor = req.user.role === 'doctor' && (req.user.userId === doctor.userId || req.user.userId === appointment.doctorId);
-    if (!isOwner && !isAuthorizedCaregiver && !isAssignedDoctor) {
+    if (!isOwner && !isAssignedDoctor) {
       return res.status(403).json({ message: "Forbidden: You do not have access to this appointment." });
     }
     ```
-  - Tested and verified in `backend/test/appointmentSecurity.test.js` (Tests S4, S5, S6, S10).
-
-### 2.2. Caregiver Privilege Escalation
-- **Risk:** A user with role `caregiver` attempting to book or view appointments for arbitrary patient IDs without explicit authorization.
-- **Implemented Mitigation:**
-  - `isCaregiverAuthorized(caregiverUserId, patientId)` validates that the patient's record explicitly lists the caregiver in `authorizedCaregivers`, or the caregiver record contains the patient in `caregiverPatients`.
-  - Knowing a patient ID alone is insufficient; requests without a registered relationship return `403 Forbidden`.
-  - Tested and verified in Test S5.
+  - Tested and verified in `backend/test/appointmentSecurity.test.js` (Tests S4, S6, S10).
 
 ### 2.3. Double Booking & Race Condition Exploitation
 - **Risk:** Malicious scripts or simultaneous users submitting bookings for the exact same slot at the exact same millisecond.
@@ -88,7 +80,7 @@ flowchart TD
 
 ## 3. Healthcare Data Security & Compliance Considerations
 
-- **Least Privilege Access:** Patient recovery data is scoped strictly to the patient, explicitly authorized caregivers, and specifically authorized clinicians.
+- **Least Privilege Access:** Patient recovery data is scoped strictly to the patient and specifically authorized clinicians.
 - **Informed Patient Consent:** Report sharing requires an active affirmative checkbox consent before access credentials are generated.
 - **Auditability:** Complete audit trails exist for report generation, sharing, viewing, and revocation.
 - **Regulatory Frameworks:** While these technical controls implement foundational security best practices, formal legal compliance with HIPAA (US) or the Digital Personal Data Protection Act (DPDP Act, India) requires certified organizational policies, clinical review boards, and encrypted data-at-rest storage infrastructure.

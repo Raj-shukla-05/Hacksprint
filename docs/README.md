@@ -37,7 +37,6 @@ docs/
 │   ├── GEMINI_AI_INTEGRATION.md           <- Google Gemini API integration, prompt guardrails, fallback
 │   ├── DOCTOR_DASHBOARD.md                <- Clinician triage roster, protocol assignments, notes
 │   ├── DOCTOR_APPOINTMENTS.md             <- In-person clinic visit discovery, slots, mutex reservation
-│   ├── CAREGIVER_SYSTEM.md                <- Caregiver-patient authorization, proxy booking, isolation
 │   ├── NOTIFICATION_SYSTEM.md             <- In-app notification store, HTTP polling, unread counts
 │   └── RECOVERY_REPORTS.md                <- Recovery report compilation, sharing consent, audit logging
 │

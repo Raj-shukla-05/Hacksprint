@@ -31,7 +31,6 @@ const users = {
     role: 'patient',
     preferredLanguage: 'English',
     doctorId: 'doctor-priya',
-    authorizedCaregivers: ['caregiver-anita'],
   },
   'user-anita': {
     id: 'user-anita',
@@ -40,15 +39,6 @@ const users = {
     role: 'patient',
     preferredLanguage: 'English',
     doctorId: 'doctor-priya',
-    authorizedCaregivers: [],
-  },
-  'caregiver-anita': {
-    id: 'caregiver-anita',
-    name: 'Anita Sharma (Caregiver)',
-    age: 52,
-    role: 'caregiver',
-    preferredLanguage: 'English',
-    caregiverPatients: ['user-raj'],
   },
   'user-mohan': {
     id: 'user-mohan',
@@ -57,7 +47,6 @@ const users = {
     role: 'patient',
     preferredLanguage: 'English',
     doctorId: 'doctor-priya',
-    authorizedCaregivers: [],
   },
   'doctor-priya': {
     id: 'doctor-priya',
@@ -117,7 +106,6 @@ const assignments = [
 // Seed accounts with secure bcrypt-hashed passwords
 const credentials = [
   { email: 'raj@neuroguard.demo', passwordHash: bcrypt.hashSync('patient123', 10), userId: 'user-raj' },
-  { email: 'anita@neuroguard.demo', passwordHash: bcrypt.hashSync('caregiver123', 10), userId: 'caregiver-anita' },
   { email: 'priya@neuroguard.demo', passwordHash: bcrypt.hashSync('doctor123', 10), userId: 'doctor-priya' },
   { email: 'vikram@neuroguard.demo', passwordHash: bcrypt.hashSync('doctor123', 10), userId: 'doctor-vikram' },
   { email: 'sunita@neuroguard.demo', passwordHash: bcrypt.hashSync('doctor123', 10), userId: 'doctor-sunita' },

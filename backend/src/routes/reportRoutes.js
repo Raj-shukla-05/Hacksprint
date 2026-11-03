@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken, requireRole, isCaregiverAuthorized } = require('../middleware/auth');
+const { authenticateToken, requireRole } = require('../middleware/auth');
 const {
   compilePatientRecoveryReport,
   shareRecoveryReport,
@@ -11,17 +11,9 @@ const {
 } = require('../services/reportSharingService');
 
 // 1. GET /api/reports/preview - Preview recovery report generated from genuine assessment data
-router.get('/preview', authenticateToken, requireRole('patient', 'caregiver'), async (req, res) => {
+router.get('/preview', authenticateToken, requireRole('patient'), async (req, res) => {
   try {
-    let patientId = req.user.userId;
-
-    if (req.user.role === 'caregiver') {
-      const requestedPatientId = req.query.patientId;
-      if (!requestedPatientId || !isCaregiverAuthorized(req.user.userId, requestedPatientId)) {
-        return res.status(403).json({ message: 'Forbidden: You are not authorized for this patient.' });
-      }
-      patientId = requestedPatientId;
-    }
+    const patientId = req.user.userId;
 
     const report = await compilePatientRecoveryReport(patientId);
     res.json({ report });
@@ -31,22 +23,15 @@ router.get('/preview', authenticateToken, requireRole('patient', 'caregiver'), a
 });
 
 // 2. POST /api/reports/share - Explicitly authorize and share report with a doctor
-router.post('/share', authenticateToken, requireRole('patient', 'caregiver'), async (req, res) => {
+router.post('/share', authenticateToken, requireRole('patient'), async (req, res) => {
   try {
-    const { doctorId, appointmentId = null, patientId: requestedPatientId } = req.body || {};
+    const { doctorId, appointmentId = null } = req.body || {};
 
     if (!doctorId) {
       return res.status(400).json({ message: 'doctorId is required to share a report.' });
     }
 
-    let targetPatientId = req.user.userId;
-
-    if (req.user.role === 'caregiver') {
-      if (!requestedPatientId || !isCaregiverAuthorized(req.user.userId, requestedPatientId)) {
-        return res.status(403).json({ message: 'Forbidden: You are not authorized for this patient.' });
-      }
-      targetPatientId = requestedPatientId;
-    }
+    const targetPatientId = req.user.userId;
 
     const clientIp = req.ip || req.headers['x-forwarded-for'] || null;
     const userAgent = req.headers['user-agent'] || null;
@@ -77,7 +62,7 @@ router.get('/shared-with-me', authenticateToken, requireRole('doctor'), async (r
 });
 
 // 4. GET /api/reports/my-shares - Patient view of all shared reports they granted
-router.get('/my-shares', authenticateToken, requireRole('patient', 'caregiver'), async (req, res) => {
+router.get('/my-shares', authenticateToken, requireRole('patient'), async (req, res) => {
   try {
     const patientId = req.user.userId;
     const list = await getReportsSharedByPatient(patientId);
@@ -107,7 +92,7 @@ router.get('/shared/:shareId', authenticateToken, async (req, res) => {
 });
 
 // 6. DELETE /api/reports/shares/:shareId - Revoke doctor access to the report
-router.delete('/shares/:shareId', authenticateToken, requireRole('patient', 'caregiver'), async (req, res) => {
+router.delete('/shares/:shareId', authenticateToken, requireRole('patient'), async (req, res) => {
   try {
     const clientIp = req.ip || req.headers['x-forwarded-for'] || null;
     const userAgent = req.headers['user-agent'] || null;

@@ -1,14 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import {
   Activity, ClipboardCheck, Hand, Mic2, MoveUp, Scale, Sparkles,
-  ShieldCheck, LoaderCircle, FileText, Calendar, Clock, ArrowRight,
-  CheckCircle2, AlertCircle
+  ShieldCheck, LoaderCircle, Calendar, Clock, ArrowRight, MapPin,
+  CheckCircle2, ArrowUpRight, ArrowDownRight, Minus,
 } from 'lucide-react';
-import MetricCard from '../components/MetricCard';
 import ScoreRing from '../components/ScoreRing';
 import TrendChart from '../components/TrendChart';
+import BodyFigure from '../components/BodyFigure';
 import AlertCard, { StableCard } from '../components/AlertCard';
 import { api } from '../lib/api';
+
+const exerciseName = (type) => (
+  type === 'arm_raise' ? 'Arm Raise' : type === 'sit_to_stand' ? 'Sit-to-Stand' : 'Seated Reach'
+);
+
+function TrendPill({ value }) {
+  const n = Number(value || 0);
+  if (n > 0.5) return <span className="mini-trend up"><ArrowUpRight size={13} /> {Math.abs(n).toFixed(0)}%</span>;
+  if (n < -0.5) return <span className="mini-trend down"><ArrowDownRight size={13} /> {Math.abs(n).toFixed(0)}%</span>;
+  return <span className="mini-trend flat"><Minus size={13} /> Stable</span>;
+}
+
+const formatDate = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
 
 export default function PatientDashboard({ dashboard, trends, alerts, setView, onReview, onStartAssignment }) {
   const metrics = dashboard.metrics || {};
@@ -16,6 +29,8 @@ export default function PatientDashboard({ dashboard, trends, alerts, setView, o
   const [explaining, setExplaining] = useState(false);
   const [assignments, setAssignments] = useState([]);
   const [loadingAssignments, setLoadingAssignments] = useState(false);
+  const [nextAppointment, setNextAppointment] = useState(null);
+  const [activeMarker, setActiveMarker] = useState('movement');
 
   const userId = dashboard.user?.id;
 
@@ -31,6 +46,21 @@ export default function PatientDashboard({ dashboard, trends, alerts, setView, o
   useEffect(() => {
     loadAssignments();
   }, [userId, trends.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.myAppointments()
+      .then((res) => {
+        if (cancelled) return;
+        const today = new Date().toISOString().slice(0, 10);
+        const upcoming = (res.appointments || [])
+          .filter((a) => ['pending', 'confirmed'].includes(a.status) && a.date >= today)
+          .sort((a, b) => `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`));
+        setNextAppointment(upcoming[0] || null);
+      })
+      .catch(() => { if (!cancelled) setNextAppointment(null); });
+    return () => { cancelled = true; };
+  }, [userId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,225 +110,206 @@ export default function PatientDashboard({ dashboard, trends, alerts, setView, o
   const activeAssignments = assignments.filter((a) => ['assigned', 'in_progress'].includes(a.status));
   const completedAssignments = assignments.filter((a) => ['completed', 'reviewed'].includes(a.status));
 
+  const firstName = (dashboard.user?.name || 'Patient').split(' ')[0];
+
+  const measures = [
+    { id: 'movement', label: 'Movement', icon: MoveUp, value: metrics.Movement?.value ?? 82, change: metrics.Movement?.change ?? 10, tone: 'blue', x: 36, y: 25, region: 'torso' },
+    { id: 'coordination', label: 'Coordination', icon: Hand, value: metrics.Coordination?.value ?? 76, change: metrics.Coordination?.change ?? 6, tone: 'teal', x: 18, y: 54, region: 'arms' },
+    { id: 'balance', label: 'Balance', icon: Scale, value: metrics.Balance?.value ?? 71, change: metrics.Balance?.change ?? 4, tone: 'orange', x: 44, y: 76, region: 'legs' },
+    { id: 'speech', label: 'Speech', icon: Mic2, value: metrics.Speech?.value ?? 84, change: metrics.Speech?.change ?? 0, tone: 'blue', x: 50, y: 10, region: null },
+  ];
+  const active = measures.find((m) => m.id === activeMarker) || measures[0];
+  const ActiveIcon = active.icon;
+
   return (
-    <div className="page">
-      <div className="hero-row">
+    <div className="page dash">
+      <div className="greeting-row">
         <div>
-          <span className="eyebrow">Recovery Monitoring</span>
-          <h1>Good day, {dashboard.user?.name || 'Patient'} <span className="wave">👋</span></h1>
-          <p>Let’s keep your recovery visible. Your functional progress is compared against your personal baseline.</p>
+          <h1>Hello, {firstName} <span className="wave">👋</span></h1>
+          <p>Here’s your recovery update for today.</p>
         </div>
-        <button className="primary large" onClick={() => setView('assessment')}><ClipboardCheck size={18} /> Start today’s check</button>
+        <button className="primary pill-btn" onClick={() => setView('assessment')}><ClipboardCheck size={17} /> Start today’s check</button>
       </div>
 
-      <div className="dashboard-grid top-grid">
-        <section className="card score-card">
-          <div className="card-head">
-            <div><span className="eyebrow">Today’s snapshot</span><h3>Functional performance</h3></div>
-            <span className="soft-badge green"><Sparkles size={13} /> {dashboard.summary?.trend || 'Stable'}</span>
+      <div className="dash-grid">
+        {/* Body figure */}
+        <section className="panel body-panel">
+          <BodyFigure
+            highlight={active.region}
+            markers={measures.map((m) => ({ id: m.id, x: m.x, y: m.y, tone: m.tone, label: m.label }))}
+            activeId={active.id}
+            onSelect={setActiveMarker}
+          />
+          <div className="body-callout">
+            <span className={`callout-icon ${active.tone}`}><ActiveIcon size={16} /></span>
+            <div>
+              <small>{active.label}</small>
+              <strong>{active.value}<em>/100</em></strong>
+            </div>
+            <TrendPill value={active.change} />
           </div>
-          <ScoreRing score={dashboard.summary?.functionalScore ?? 0} change={dashboard.summary?.change ?? 0} />
-          <div className="score-note">
-            <strong>Personal baseline comparison</strong>
-            <span>NeuroGuard compares you with your own previous sessions — not a generic population average.</span>
-          </div>
-        </section>
-
-        <section className="metric-grid">
-          <MetricCard label="Movement" value={metrics.Movement?.value ?? 82} change={metrics.Movement?.change ?? 10} icon={MoveUp} tone="teal" />
-          <MetricCard label="Balance" value={metrics.Balance?.value ?? 71} change={metrics.Balance?.change ?? 4} icon={Scale} />
-          <MetricCard label="Coordination" value={metrics.Coordination?.value ?? 76} change={metrics.Coordination?.change ?? 6} icon={Hand} />
-          <MetricCard label="Speech" value={metrics.Speech?.value ?? 84} change={metrics.Speech?.change ?? 0} icon={Mic2} />
-        </section>
-      </div>
-
-      {/* Clinician Assigned Protocols Section */}
-      <section className="card" style={{ marginTop: '1.25rem' }}>
-        <div className="card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <span className="eyebrow">Clinician Care Plan</span>
-            <h3>Prescribed Functional Protocols</h3>
-          </div>
-          {loadingAssignments && <LoaderCircle size={15} className="spin" />}
-        </div>
-
-        {activeAssignments.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: activeAssignments.length > 1 ? '1fr 1fr' : '1fr', gap: '1rem', marginTop: '0.5rem' }}>
-            {activeAssignments.map((asgn) => {
-              const exerciseTitle = asgn.exerciseType === 'arm_raise'
-                ? 'Arm Raise'
-                : asgn.exerciseType === 'sit_to_stand' ? 'Sit-to-Stand' : 'Seated Reach';
-              const daysLeft = Math.ceil((new Date(asgn.dueDate) - new Date()) / 86400000);
-
+          <div className="body-tabs">
+            {measures.map((m) => {
+              const Icon = m.icon;
               return (
-                <div
-                  key={asgn.id}
-                  style={{
-                    background: 'rgba(59, 130, 246, 0.05)',
-                    border: '1px solid rgba(59, 130, 246, 0.3)',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                      <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{exerciseTitle}</strong>
-                      <span className="soft-badge" style={{ fontSize: '0.725rem' }}>
-                        <Clock size={12} /> {daysLeft > 0 ? `Due in ${daysLeft} days` : 'Due today'}
-                      </span>
-                    </div>
-
-                    <p style={{ margin: '0.4rem 0 0.8rem 0', fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                      <strong>Instruction: </strong>{asgn.instructions}
-                    </p>
-
-                    <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>
-                      Target: <strong>{asgn.targetReps} controlled reps</strong> • Due: {new Date(asgn.dueDate).toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  <button
-                    className="primary"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                    onClick={() => {
-                      if (onStartAssignment) onStartAssignment(asgn);
-                      else setView('assessment');
-                    }}
-                  >
-                    Start Assigned Protocol <ArrowRight size={15} />
-                  </button>
-                </div>
+                <button key={m.id} className={m.id === active.id ? 'on' : ''} onClick={() => setActiveMarker(m.id)}>
+                  <Icon size={14} /> {m.label}
+                </button>
               );
             })}
           </div>
-        ) : (
-          <p className="empty-note" style={{ margin: '0.5rem 0' }}>
-            No pending clinician assignments right now. You can still perform ad-hoc recovery checks anytime.
-          </p>
-        )}
+        </section>
 
-        {/* Completed / Reviewed History */}
-        {completedAssignments.length > 0 && (
-          <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', marginBottom: '0.6rem' }}>
-              Recently Completed Protocols
-            </span>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {completedAssignments.slice(0, 3).map((asgn) => {
-                const exerciseTitle = asgn.exerciseType === 'arm_raise' ? 'Arm Raise' : asgn.exerciseType;
-                return (
-                  <div
-                    key={asgn.id}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      padding: '0.6rem 0.8rem',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <CheckCircle2 size={15} style={{ color: '#10b981' }} />
-                        <strong style={{ fontSize: '0.85rem' }}>{exerciseTitle}</strong>
-                        <span className={`status-badge ${asgn.status}`} style={{ fontSize: '0.675rem' }}>
-                          {asgn.status === 'reviewed' ? 'Reviewed by Clinician' : 'Completed (Pending Doctor Review)'}
-                        </span>
-                      </div>
-                      {asgn.doctorNotes && (
-                        <p style={{ margin: '0.3rem 0 0 1.3rem', fontSize: '0.8rem', color: '#10b981' }}>
-                          💬 Doctor Feedback: "{asgn.doctorNotes}"
-                        </p>
-                      )}
-                    </div>
-                    {asgn.completedSession && (
-                      <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                        {asgn.completedSession.score}/100
-                      </strong>
-                    )}
-                  </div>
-                );
-              })}
+        {/* Middle column */}
+        <div className="dash-col">
+          <section className="panel">
+            <div className="panel-head">
+              <h3>Recovery overview</h3>
+              <span className="soft-badge green"><Sparkles size={13} /> {dashboard.summary?.trend || 'Stable'}</span>
             </div>
-          </div>
-        )}
-      </section>
+            <div className="overview-score">
+              <ScoreRing score={dashboard.summary?.functionalScore ?? 0} change={dashboard.summary?.change ?? 0} />
+              <div className="score-note">
+                <strong>Personal baseline comparison</strong>
+                <span>You are compared with your own previous sessions, not a population average.</span>
+                <button className="link-button" onClick={() => setView('progress')}>View full history</button>
+              </div>
+            </div>
+            <div className="chart-caption">
+              <span><i className="legend-dot" /> Functional performance</span>
+              <span>{
+                dashboard.baseline?.window > 0
+                  ? `Baseline: last ${dashboard.baseline.window} comparable session${dashboard.baseline.window === 1 ? '' : 's'}`
+                  : 'Initial reference session'
+              }</span>
+            </div>
+            <TrendChart data={trends} compact />
+          </section>
 
-      {/* AI Recovery Insight Card */}
-      <section className="card" style={{ marginTop: '1.25rem' }}>
-        <div className="card-head">
-          <div>
-            <span className="eyebrow">AI Rehabilitation Insights</span>
-            <h3>Functional Analysis</h3>
-          </div>
-          <span className="soft-badge">
-            <Sparkles size={13} /> {
-              explanation?.source === 'gemini'
-                ? 'Gemini AI'
-                : explanation?.source === 'local-fallback'
-                  ? 'Local Fallback'
-                  : (explanation?.source === 'failed' ? 'Unavailable' : 'Personal Baseline Engine')
-            }
-          </span>
+          <section className="panel">
+            <div className="panel-head">
+              <h3>Prescribed protocols</h3>
+              {loadingAssignments
+                ? <LoaderCircle size={15} className="spin" />
+                : <span className="soft-badge">{activeAssignments.length} active</span>}
+            </div>
+            {activeAssignments.length > 0 ? (
+              <div className="protocol-list">
+                {activeAssignments.map((asgn) => {
+                  const daysLeft = Math.ceil((new Date(asgn.dueDate) - new Date()) / 86400000);
+                  return (
+                    <div className="protocol-item" key={asgn.id}>
+                      <span className="protocol-icon"><Activity size={17} /></span>
+                      <div className="protocol-body">
+                        <strong>{exerciseName(asgn.exerciseType)}</strong>
+                        <small>{asgn.targetReps} controlled reps · {daysLeft > 0 ? `due in ${daysLeft} day${daysLeft === 1 ? '' : 's'}` : 'due today'}</small>
+                        {asgn.instructions && <p>{asgn.instructions}</p>}
+                      </div>
+                      <button
+                        className="primary small-btn"
+                        onClick={() => { if (onStartAssignment) onStartAssignment(asgn); else setView('assessment'); }}
+                      >
+                        Start <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="empty-note">No pending clinician assignments. You can still do a free recovery check anytime.</p>
+            )}
+
+            {completedAssignments.length > 0 && (
+              <div className="recent-done">
+                <span className="section-kicker">Recently completed</span>
+                {completedAssignments.slice(0, 3).map((asgn) => (
+                  <div className="done-item" key={asgn.id}>
+                    <CheckCircle2 size={16} className="ok" />
+                    <div>
+                      <strong>{exerciseName(asgn.exerciseType)}</strong>
+                      <small>{asgn.status === 'reviewed' ? 'Reviewed by clinician' : 'Awaiting doctor review'}</small>
+                      {asgn.doctorNotes && <p>💬 “{asgn.doctorNotes}”</p>}
+                    </div>
+                    {asgn.completedSession && <b>{asgn.completedSession.score}/100</b>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
-        {explaining ? (
-          <div className="loading-bar"><LoaderCircle size={15} className="spin" /> Generating functional explanation…</div>
-        ) : explanation?.text ? (
-          <p style={{ margin: '0.75rem 0', color: 'var(--text-primary)', lineHeight: 1.6 }}>{explanation.text}</p>
-        ) : (
-          <p className="empty-note">
-            {explanation?.source === 'failed'
-              ? 'AI explanation is temporarily unavailable. Local baseline tracking continues normally.'
-              : 'Recovery measurements will be analyzed across your repeated sessions.'}
-          </p>
-        )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-          <ShieldCheck size={14} />
-          <span>Non-diagnostic rehabilitation observation. Consult your doctor for medical evaluations.</span>
+
+        {/* Right column */}
+        <div className="dash-col">
+          <section className="panel appointment-panel">
+            <div className="panel-head"><h3>Upcoming appointment</h3></div>
+            {nextAppointment ? (
+              <>
+                <div className="appt-doctor">
+                  <span className="avatar">{(nextAppointment.doctorName || 'D').replace(/^Dr\.?\s*/, '').charAt(0)}</span>
+                  <div>
+                    <strong>{nextAppointment.doctorName}</strong>
+                    <small>{nextAppointment.doctorSpecialty || 'Clinician'}</small>
+                  </div>
+                  <span className={`soft-badge ${nextAppointment.status === 'confirmed' ? 'green' : ''}`}>{nextAppointment.status}</span>
+                </div>
+                <div className="appt-meta">
+                  <span><Calendar size={14} /> {formatDate(nextAppointment.date)}</span>
+                  <span><Clock size={14} /> {nextAppointment.startTime}</span>
+                  {nextAppointment.clinic?.name && <span><MapPin size={14} /> {nextAppointment.clinic.name}</span>}
+                </div>
+                <button className="secondary wide-btn" onClick={() => setView('appointments')}>Manage appointment</button>
+              </>
+            ) : (
+              <>
+                <p className="empty-note">No upcoming clinic visit. Book one with your doctor.</p>
+                <button className="primary wide-btn" onClick={() => setView('appointments')}><Calendar size={15} /> Book appointment</button>
+              </>
+            )}
+          </section>
+
+          <section className="panel">
+            <div className="panel-head"><h3>Today’s check-in</h3><Activity size={17} className="muted" /></div>
+            <div className="checklist">
+              <div className="check-row done"><span>1</span><div><strong>Camera check</strong><small>Head, shoulders, hands, feet visible</small></div><b>Done</b></div>
+              <div className="check-row pending"><span>2</span><div><strong>Movement assessment</strong><small>Arm raise · ~2 min</small></div><button onClick={() => setView('assessment')}>Start</button></div>
+              <div className="check-row optional"><span>3</span><div><strong>Speech assessment</strong><small>Optional · ~30 sec</small></div><b>Optional</b></div>
+            </div>
+            <div className="mini-note"><span className="shield-note">✓</span><span>Raw camera frames are processed locally and never stored.</span></div>
+          </section>
+
+          <section className="panel">
+            <div className="panel-head">
+              <h3>AI insight</h3>
+              <span className="soft-badge">
+                <Sparkles size={13} /> {
+                  explanation?.source === 'gemini'
+                    ? 'Gemini AI'
+                    : explanation?.source === 'local-fallback'
+                      ? 'Local'
+                      : (explanation?.source === 'failed' ? 'Unavailable' : 'Baseline engine')
+                }
+              </span>
+            </div>
+            {explaining ? (
+              <div className="loading-bar"><LoaderCircle size={15} className="spin" /> Generating explanation…</div>
+            ) : explanation?.text ? (
+              <p className="insight-text">{explanation.text}</p>
+            ) : (
+              <p className="empty-note">
+                {explanation?.source === 'failed'
+                  ? 'AI explanation is temporarily unavailable. Local baseline tracking continues.'
+                  : 'Insights appear once you have repeated sessions.'}
+              </p>
+            )}
+            <div className="mini-note"><ShieldCheck size={14} /><span>Non-diagnostic observation. Consult your doctor for medical advice.</span></div>
+          </section>
         </div>
-      </section>
-
-      <div className="dashboard-grid main-grid" style={{ marginTop: '1.25rem' }}>
-        <section className="card wide">
-          <div className="card-head">
-            <div><span className="eyebrow">Personal baseline</span><h3>Recovery trend</h3></div>
-            <button className="link-button" onClick={() => setView('progress')}>View full history</button>
-          </div>
-          <div className="chart-caption">
-            <span><i className="legend-dot" /> Functional performance</span>
-            <span>{
-              dashboard.baseline?.window > 0
-                ? `Baseline window: last ${dashboard.baseline.window} comparable prior session${dashboard.baseline.window === 1 ? '' : 's'}`
-                : 'Initial reference session (establishing baseline)'
-            }</span>
-          </div>
-          <TrendChart data={trends} />
-        </section>
-
-        <section className="card">
-          <div className="card-head"><div><span className="eyebrow">Today</span><h3>Check-in status</h3></div><Activity size={18} className="muted" /></div>
-          <div className="checklist">
-            <div className="check-row done"><span>1</span><div><strong>Camera check</strong><small>Head, shoulders, hands, feet visible</small></div><b>Done</b></div>
-            <div className="check-row pending"><span>2</span><div><strong>Movement assessment</strong><small>Arm raise · ~2 min</small></div><button onClick={() => setView('assessment')}>Start</button></div>
-            <div className="check-row optional"><span>3</span><div><strong>Speech assessment</strong><small>Optional · ~30 sec</small></div><b>Optional</b></div>
-          </div>
-          <div className="mini-note"><ShieldNote /> <span>Raw camera frames are processed locally and never stored.</span></div>
-        </section>
       </div>
 
-      <section className="card alert-section" style={{ marginTop: '1.25rem' }}>
-        <div className="card-head"><div><span className="eyebrow">Attention</span><h3>What NeuroGuard noticed</h3></div><span className="soft-badge">Explainable alerts</span></div>
+      <section className="panel alert-section">
+        <div className="panel-head"><h3>What NeuroGuard noticed</h3><span className="soft-badge">Explainable alerts</span></div>
         {alerts.length ? alerts.map((alert) => <AlertCard key={alert.id} alert={alert} onReview={onReview} />) : <StableCard />}
       </section>
     </div>
   );
-}
-
-function ShieldNote() {
-  return <span className="shield-note">✓</span>;
 }

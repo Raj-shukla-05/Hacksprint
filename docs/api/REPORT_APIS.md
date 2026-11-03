@@ -5,7 +5,7 @@
 Generates an on-the-fly preview of the patient's compiled recovery report directly from genuine historical assessment sessions.
 
 - **Authentication:** Bearer JWT required.
-- **Allowed Roles:** `patient` (for self) or `caregiver` (query parameter `?patientId=:id` must match an authorized patient).
+- **Allowed Roles:** `patient` (for self).
 
 ### Request
 ```http
@@ -63,7 +63,7 @@ Authorization: Bearer <TOKEN>
 
 Explicitly authorizes and shares the patient's recovery report with an attending doctor. Links the share record to an optional appointment ID, records client IP/User-Agent, and dispatches a notification to the doctor.
 
-- **Authentication:** Bearer JWT required (`patient`, `caregiver`).
+- **Authentication:** Bearer JWT required (`patient`).
 
 ### Request
 ```http
@@ -131,7 +131,7 @@ Retrieves all active shared recovery reports authorized for the authenticated do
 
 Retrieves all reports shared by the authenticated patient.
 
-- **Authentication:** Bearer JWT required (`patient`, `caregiver`).
+- **Authentication:** Bearer JWT required (`patient`).
 
 ### Response (200 OK)
 ```json
@@ -156,7 +156,7 @@ Retrieves all reports shared by the authenticated patient.
 
 Retrieves the complete data of a specific shared report. If a doctor queries the report, access is verified, revoked status is blocked (HTTP 403), and a new `'viewed'` entry is appended to the audit log.
 
-- **Authentication:** Bearer JWT required (Patient owner, authorized caregiver, or authorized doctor).
+- **Authentication:** Bearer JWT required (Patient owner or authorized doctor).
 
 ### Response (200 OK)
 ```json
@@ -191,7 +191,7 @@ Retrieves the complete data of a specific shared report. If a doctor queries the
 
 Revokes doctor access to a previously shared report.
 
-- **Authentication:** Bearer JWT required (`patient` or `caregiver` only).
+- **Authentication:** Bearer JWT required (`patient` only).
 
 ### Response (200 OK)
 ```json

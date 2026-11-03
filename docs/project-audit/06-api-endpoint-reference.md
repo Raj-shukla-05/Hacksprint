@@ -11,18 +11,17 @@ This document provides a comprehensive reference for all 18 registered HTTP endp
 | `GET` | `/api/health` | No | Public | None | None |
 | `POST` | `/api/auth/login` | No | Public | None | None |
 | `POST` | `/api/auth/signup` | No | Public | None | Appends User in Memory & Mongo |
-| `GET` | `/api/users/:id/dashboard` | **Yes (JWT)** | `patient`, `doctor`, `caregiver` | Patient: self only; Doctor: assigned patients | Reads in-memory store |
-| `GET` | `/api/users/:id/assessments` | **Yes (JWT)** | `patient`, `doctor`, `caregiver` | Patient: self only; Doctor: assigned patients | Reads in-memory store |
-| `GET` | `/api/users/:id/trends` | **Yes (JWT)** | `patient`, `doctor`, `caregiver` | Patient: self only; Doctor: assigned patients | Reads in-memory store |
-| `GET` | `/api/alerts/:id` | **Yes (JWT)** | `patient`, `doctor`, `caregiver` | Patient: self only; Doctor: assigned patients | Reads in-memory store |
-| `GET` | `/api/caregivers/:id/patients` | **Yes (JWT)** | `caregiver`, `doctor` | Caregiver ID must exist | Reads in-memory store |
+| `GET` | `/api/users/:id/dashboard` | **Yes (JWT)** | `patient`, `doctor` | Patient: self only; Doctor: assigned patients | Reads in-memory store |
+| `GET` | `/api/users/:id/assessments` | **Yes (JWT)** | `patient`, `doctor` | Patient: self only; Doctor: assigned patients | Reads in-memory store |
+| `GET` | `/api/users/:id/trends` | **Yes (JWT)** | `patient`, `doctor` | Patient: self only; Doctor: assigned patients | Reads in-memory store |
+| `GET` | `/api/alerts/:id` | **Yes (JWT)** | `patient`, `doctor` | Patient: self only; Doctor: assigned patients | Reads in-memory store |
 | `GET` | `/api/doctors/:id/patients` | **Yes (JWT)** | `doctor` | Doctor ID must match authenticated user | Reads in-memory store |
 | `POST` | `/api/assignments` | **Yes (JWT)** | `doctor` | Doctor can only assign to own/unassigned patients | Writes Assignment in Memory & Mongo |
 | `GET` | `/api/patients/:patientId/assignments` | **Yes (JWT)** | `patient`, `doctor` | Patient: self only; Doctor: assigned patient | Reads in-memory store |
 | `GET` | `/api/assignments/:id` | **Yes (JWT)** | `patient`, `doctor` | Patient: self; Doctor: assigned patient | Reads in-memory store |
 | `PATCH` | `/api/assignments/:id/status` | **Yes (JWT)** | `patient`, `doctor` | Patient: self (in_progress); Doctor: creator (review/cancel) | Updates Assignment in Memory & Mongo |
 | `GET` | `/api/doctors/:id/assignments` | **Yes (JWT)** | `doctor` | Doctor ID must match authenticated user | Reads in-memory store |
-| `POST` | `/api/assessments` | **Yes (JWT)** | `patient` | Patient: self only; Rejects doctors/caregivers | Writes Assessment & updates Assignment |
+| `POST` | `/api/assessments` | **Yes (JWT)** | `patient` | Patient: self only; Rejects doctors | Writes Assessment & updates Assignment |
 | `POST` | `/api/users/:id/demo-decline` | **No (GAP)** | Public (Unauthenticated) | None (Mutates targeted user ID) | Injects 5 assessments in Memory |
 | `POST` | `/api/speech/analyze` | No | Public | None (Stateless math utility) | None |
 | `POST` | `/api/explanation` | **No (GAP)** | Public (Unauthenticated) | None | Calls Google Gemini API / Fallback |
@@ -66,7 +65,6 @@ This document provides a comprehensive reference for all 18 registered HTTP endp
       "name": "Raj Kumar",
       "role": "patient",
       "preferredLanguage": "English",
-      "caregiverId": "caregiver-anita",
       "doctorId": "doctor-priya"
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -80,7 +78,7 @@ This document provides a comprehensive reference for all 18 registered HTTP endp
 ---
 
 ### 3. `POST /api/auth/signup`
-- **Purpose:** Registers a new patient, doctor, or caregiver account.
+- **Purpose:** Registers a new patient or doctor account.
 - **Request Body:**
   ```json
   {
@@ -90,7 +88,7 @@ This document provides a comprehensive reference for all 18 registered HTTP endp
     "role": "patient"
   }
   ```
-- **Validation:** Name required; email format regex check; password minimum length 8; role must be `patient`, `doctor`, or `caregiver`; email uniqueness check.
+- **Validation:** Name required; email format regex check; password minimum length 8; role must be `patient` or `doctor`; email uniqueness check.
 - **Database Effects:** Appends user to `users` and `credentials` in memory. If `isMongoConnected()`, executes `User.create()`.
 - **Response (201 Created):** `{ "user": { ... }, "token": "..." }`.
 - **Failure Responses:** `400 Bad Request` (validation failed), `409 Conflict` (email already exists).
@@ -204,7 +202,7 @@ This document provides a comprehensive reference for all 18 registered HTTP endp
 ### 8. `POST /api/assessments`
 - **Purpose:** Submits a completed movement assessment session and optionally links it to an assignment.
 - **Authentication:** Bearer JWT required.
-- **Authorization:** Permitted ONLY for `role === 'patient'` where `req.user.userId === req.body.userId`. Doctors and caregivers cannot submit assessments.
+- **Authorization:** Permitted ONLY for `role === 'patient'` where `req.user.userId === req.body.userId`. Doctors cannot submit assessments.
 - **Safety Gate (Tracking Quality):**
   ```javascript
   if (quality.isValid === false || quality.validFrames < 5) {

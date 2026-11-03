@@ -62,8 +62,3 @@ Many wellness apps exist as isolated silos: their scores cannot be reviewed by a
 - **Profile:** Highly busy outpatient clinician managing dozens of stroke and neurorehab patients.
 - **Needs:** Quick-glance triage list highlighting patients who are deteriorating; ability to prescribe structured functional exercises; objective longitudinal progress charts for physical OPD visits.
 - **Pain Point:** Lack of objective data to titrate therapies or detect subacute functional decline early.
-
-### Persona 3: The Family Caregiver (Caregiver)
-- **Profile:** Adult child or spouse assisting the patient with daily care and medical navigation.
-- **Needs:** Ability to book in-person appointments on behalf of the patient; access to progress summaries; assurance that the patient is completing prescribed exercises safely.
-- **Pain Point:** Burden of coordinating schedules and lack of visibility into therapy compliance.
