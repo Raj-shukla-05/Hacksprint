@@ -10,7 +10,7 @@ NeuroGuard AI is designed as a privacy-centric, distributed web platform consist
 
 ```mermaid
 graph TD
-    subgraph ClientEdge["Client Edge Tier (Patient / Doctor / Caregiver Browser)"]
+    subgraph ClientEdge["Client Edge Tier (Patient / Doctor Browser)"]
         UI["React 19 Presentation Layer\n(Vite 6 SPA)"]
         Camera["Browser MediaDevices API\n(Webcam 1280x720)"]
         WASM["MediaPipe Tasks Vision WASM\n(pose_landmarker_lite.task)"]
@@ -67,7 +67,7 @@ graph TD
 ### C. Application Middleware & Gateways
 - **Header Hardening:** Configured in [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L28-L33) using `helmet` with custom cross-origin resource policies and disabled CSP for WASM binary execution.
 - **JWT Authentication:** Cryptographically validates tokens using `jsonwebtoken` with 7-day lifespans and extracts `{ userId, role, name, email }` into `req.user`.
-- **Role-Based Authorization:** `requireRole('patient', 'caregiver', 'doctor')` and `requireSelfOrDoctor` protect endpoints from vertical and horizontal privilege escalation (IDOR).
+- **Role-Based Authorization:** `requireRole('patient', 'doctor')` and `requireSelfOrDoctor` protect endpoints from vertical and horizontal privilege escalation (IDOR).
 - **Rate Limiting:** Sliding-window rate limiters in [rateLimiter.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/rateLimiter.js) protect sensitive endpoints (e.g., appointment booking is capped at 15 requests per minute per IP/user).
 
 ### D. Core Business & Domain Services

@@ -10,16 +10,14 @@ Stores core authentication, identity, and relational linkage data.
 
 | Field | Type | Required | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
-| `id` | String | **Yes** | — | Unique identifier (`user-raj`, `doctor-priya`, `caregiver-anita`). Indexed, Unique. |
+| `id` | String | **Yes** | — | Unique identifier (`user-raj`, `doctor-priya`). Indexed, Unique. |
 | `name` | String | **Yes** | — | User's full display name (trimmed). |
 | `email` | String | **Yes** | — | Login email address (lowercase, trimmed). Indexed, Unique. |
 | `passwordHash` | String | **Yes** | — | Bcrypt hash with work factor of 10. |
-| `role` | String | **Yes** | `'patient'` | Enum: `['patient', 'doctor', 'caregiver']`. |
+| `role` | String | **Yes** | `'patient'` | Enum: `['patient', 'doctor']`. |
 | `age` | Number | No | `null` | Patient age in years. |
 | `preferredLanguage`| String | No | `'English'` | Preferred communication language. |
 | `doctorId` | String | No | `null` | Primary attending doctor user ID (indexed). |
-| `authorizedCaregivers` | [String] | No | `[]` | Array of caregiver user IDs permitted to access this patient's records. |
-| `caregiverPatients` | [String] | No | `[]` | Array of patient user IDs this caregiver is authorized to manage. |
 | `createdAt` | Date | No | `Date.now` | Account creation timestamp. |
 
 ---

@@ -21,7 +21,6 @@ This feature implements real-time, browser-side computer vision tracking using G
 
 ## 4. Who uses this feature?
 - **Patient:** Interacts directly with the camera during assessment sessions.
-- **Caregiver:** Positions the camera to ensure the patient's upper body and limbs are within the frame.
 
 ---
 

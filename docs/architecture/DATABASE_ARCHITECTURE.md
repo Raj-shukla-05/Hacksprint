@@ -37,7 +37,7 @@ When MongoDB connects successfully, `seedDatabaseIfEmpty()` runs automatically t
 
 1. **Doctor Seeding:** Checks the `Doctor` collection and provisions default clinical profiles (Dr. Priya Nair, Dr. Vikram Rao, Dr. Sunita Menon, Dr. Arvind Patel) if they are missing.
 2. **Availability Seeding:** Checks the `DoctorAvailability` collection and sets default schedules (Monday–Friday, 09:00–17:00, 30-minute slots, 13:00–14:00 lunch break).
-3. **User & Credential Sync:** Seeds initial accounts (patient Raj Kumar, caregiver Anita Sharma, doctor Dr. Priya Nair) with bcrypt password hashes.
+3. **User & Credential Sync:** Seeds initial accounts (patient Raj Kumar, doctor Dr. Priya Nair) with bcrypt password hashes.
 4. **Auto-Provisioning for New Doctors:** Scans all users with `role: 'doctor'`. If any doctor registered without an explicit clinical profile, the service automatically generates their `Doctor` and `DoctorAvailability` records.
 5. **Memory Synchronization:** Rehydrates in-memory arrays in `store.js` with active records from MongoDB so queries return consistent data regardless of access path.
 
@@ -53,12 +53,10 @@ Stores authentication credentials, profile data, and relational links across rol
 - `name` (String, required): Full display name.
 - `email` (String, required, unique, lowercase): Login email.
 - `passwordHash` (String, required): Bcrypt hash.
-- `role` (String, enum: `['patient', 'doctor', 'caregiver']`, default: `'patient'`).
+- `role` (String, enum: `['patient', 'doctor']`, default: `'patient'`).
 - `age` (Number): Optional patient age.
 - `preferredLanguage` (String, default: `'English'`).
 - `doctorId` (String, indexed): Assigned doctor ID for patients.
-- `authorizedCaregivers` ([String]): Array of caregiver user IDs permitted to access this patient's records.
-- `caregiverPatients` ([String]): Array of patient IDs this caregiver is authorized to manage.
 
 ### 2. Doctor (`doctors` collection) — [Doctor.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Doctor.js)
 Stores professional credentials and physical clinic information.

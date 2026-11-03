@@ -24,7 +24,7 @@ Public health check endpoint returning service status, active database mode, and
 Retrieves the patient's recovery dashboard summary, current score, moving-window baseline, percentage delta, and domain metric status.
 
 - **Authentication:** Bearer JWT required.
-- **Allowed Roles:** Patient (self only), Authorized Doctor, Authorized Caregiver (`requireSelfOrDoctor` middleware).
+- **Allowed Roles:** Patient (self only), Authorized Doctor (`requireSelfOrDoctor` middleware).
 
 ### Request
 ```http

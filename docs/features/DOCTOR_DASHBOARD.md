@@ -21,7 +21,7 @@ The Doctor Dashboard is a clinical oversight interface ([DoctorPage.jsx](file://
 
 ## 4. Who uses this feature?
 - **Doctor:** Manages authorized patient roster, prescribes exercises, inspects kinematic trends, and records clinical feedback notes.
-- **Patients & Caregivers:** Cannot access this portal; protected by `requireRole('doctor')` middleware.
+- **Patients:** Cannot access this portal; protected by `requireRole('doctor')` middleware.
 
 ---
 

@@ -29,12 +29,10 @@ erDiagram
         string name "Full display name"
         string email UK "Login email"
         string passwordHash "Bcrypt hash"
-        string role "patient | doctor | caregiver"
+        string role "patient | doctor"
         int age "Patient age"
         string preferredLanguage "Language preference"
         string doctorId FK "Assigned primary clinician"
-        string_array authorizedCaregivers "Array of authorized caregiver User IDs"
-        string_array caregiverPatients "Array of patient User IDs"
         date createdAt
     }
 
@@ -171,7 +169,6 @@ erDiagram
 | **Doctor $\rightarrow$ Appointment** | $1 : N$ | Doctors cannot be deleted if active pending or confirmed appointments exist. | Application middleware checks before profile deactivation. |
 | **Patient $\rightarrow$ Assignment** | $1 : N$ | Deleting an assignment preserves completed session records in `Assessment`. | `completedSessionId` remains linked to `Assessment.id`. |
 | **Appointment $\leftrightarrow$ SharedRecoveryReport** | $1 : 0..1$ | Cancelling or completing an appointment does **not** revoke the shared report. | Reports are independently revocable via `DELETE /api/reports/shares/:id`. |
-| **Caregiver $\leftrightarrow$ Patient** | $N : M$ | Bi-directional reference arrays (`authorizedCaregivers` on Patient, `caregiverPatients` on Caregiver). | Checked via `isCaregiverAuthorized()` in middleware. |
 
 ---
 

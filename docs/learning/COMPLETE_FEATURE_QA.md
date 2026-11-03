@@ -20,7 +20,6 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 7. [Google Gemini AI Integration & Local Fallback Engine](#7-google-gemini-ai-integration--local-fallback-engine)
 8. [Doctor Clinical Dashboard & Patient Surveillance](#8-doctor-clinical-dashboard--patient-surveillance)
 9. [In-Person Doctor Appointment Scheduling & Concurrency Mutex](#9-in-person-doctor-appointment-scheduling--concurrency-mutex)
-10. [Caregiver Linking & Authorization Subsystem](#10-caregiver-linking--authorization-subsystem)
 11. [In-App Notification Dispatch & Escalation Engine](#11-in-app-notification-dispatch--escalation-engine)
 12. [Clinical Recovery Reports & Secure Doctor Sharing](#12-clinical-recovery-reports--secure-doctor-sharing)
 
@@ -30,13 +29,13 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Basic Understanding
 * **What is this feature?**
-  A stateless, token-based authentication and role-based authorization system that verifies identities (passwords hashed via bcrypt) and issues cryptographically signed JSON Web Tokens (JWT) enforcing clinical role boundaries (`patient`, `doctor`, `caregiver`, `admin`).
+  A stateless, token-based authentication and role-based authorization system that verifies identities (passwords hashed via bcrypt) and issues cryptographically signed JSON Web Tokens (JWT) enforcing clinical role boundaries (`patient`, `doctor`, `admin`).
 * **Why did we develop it?**
-  Rehabilitation recovery data is sensitive protected health information (PHI). Distinct roles have strictly segregated access boundaries: patients record personal assessments, doctors monitor clinical cohorts, and caregivers assist dependent patients.
+  Rehabilitation recovery data is sensitive protected health information (PHI). Distinct roles have strictly segregated access boundaries: patients record personal assessments, doctors monitor clinical cohorts.
 * **What problem does it solve?**
   Prevents unauthenticated public access, prevents cross-tenant data leakage (IDOR), and ensures that users only access resources permitted by their verified clinical persona.
 * **Who uses it?**
-  All actors: patients, clinicians/doctors, caregivers, and administrative staff.
+  All actors: patients, clinicians/doctors, and administrative staff.
 * **What happens when a user interacts with it?**
   The user enters email and password into the login form. Upon submission, credentials are sent over TLS to the backend. If verified, the server returns an HMAC-SHA256 JWT containing user metadata and role, which the client persists in `localStorage` and transmits via HTTP `Authorization: Bearer <token>` on all subsequent requests.
 
@@ -83,7 +82,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **How is sensitive data protected?**
   Passwords are never stored in plaintext and never returned in API payloads (`select: false` on Mongoose schema). JWT secret is injected via environment variables (`JWT_SECRET`).
 * **What validation is performed?**
-  Email format regex, password minimum length verification, and role enumeration validation against `['patient', 'doctor', 'caregiver', 'admin']`.
+  Email format regex, password minimum length verification, and role enumeration validation against `['patient', 'doctor', 'admin']`.
 
 ### Critical Technical Understanding
 * **What are the biggest technical challenges?**
@@ -109,7 +108,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **What problem does it solve?**
   Consolidates longitudinal biomechanical metrics, session compliance, streak counters, upcoming appointments, and AI-generated clinical explanations into an accessible visual interface.
 * **Who uses it?**
-  Patients and their designated caregivers.
+  Patients.
 * **What happens when a user interacts with it?**
   The user views recovery score trends over 30 days, launches new assessments, views personal baseline comparisons, reads plain-language summaries of recent sessions, and books clinical consultations.
 
@@ -691,76 +690,6 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
   First request succeeds; second request receives immediate HTTP 409 and prompts patient to select an alternative slot.
 * **How would we scale this feature?**
   In a multi-pod Kubernetes cluster, transition `activeBookingLocks` from local Node.js `Set` to a Redis distributed key with 10-second TTL (`SET lockKey token NX EX 10`).
-
----
-
-## 10. Caregiver Linking & Authorization Subsystem
-
-### Basic Understanding
-* **What is this feature?**
-  A secure proxy relationship management system that enables designated family members and caregivers to assist elderly or disabled patients, view their progress, and facilitate appointments.
-* **Why did we develop it?**
-  Many stroke survivors and neurological patients experience cognitive or fine-motor deficits that impair their ability to operate digital interfaces independently.
-* **What problem does it solve?**
-  Allows authorized caregivers to supervise care without sharing patient passwords or compromising security credentials.
-* **Who uses it?**
-  Caregivers (family members, home nurses) and dependent patients.
-* **What happens when a user interacts with it?**
-  A patient invites a caregiver via email/code. Once accepted, the caregiver logs into their dashboard, selects their dependent patient, and reviews assessment logs and recovery trends with read-only permissions.
-
-### Implementation Understanding
-* **How is it implemented?**
-  Frontend in [CaregiverDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/PatientDashboard.jsx#L1-L220). Backend in [patients.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/caregiverRoutes.js#L1-L90) and `auth.js`.
-* **Which frontend component handles it?**
-  `CaregiverDashboard.jsx` renders patient selection cards, recent activity streams, adherence summaries, and quick-call emergency contacts.
-* **Which API is called?**
-  - `GET /api/patients/caregiver/assigned`
-  - `POST /api/patients/caregiver/link`
-  - `DELETE /api/patients/caregiver/unlink/:id`
-* **Which backend function processes it?**
-  Controllers verifying patient consent and creating bidirectional relationship references in `User` documents.
-* **Which database model stores its data?**
-  `User` model (`role: 'caregiver'`, `patientIds: [ObjectId]`, `relationshipType`).
-* **What algorithms are involved?**
-  Cryptographic invite token generation (`crypto.randomBytes(16).toString('hex')`) with 48-hour expiration.
-* **How is the result calculated?**
-  When token is verified, caregiver's `patientIds` array appends `patient._id`, and patient's `caregiverIds` array appends `caregiver._id`.
-* **What happens if something fails?**
-  Invalid or expired invite codes return `400 Bad Request` (`{ message: 'Invalid or expired invitation token' }`).
-
-### Architecture Understanding
-* **Why did we choose this technology?**
-  Explicit relational links between `User` documents allow fine-grained access checks in Express middleware without complex third-party identity management overhead.
-* **Why is this architecture suitable?**
-  Maintains clean separation between primary patient accounts and secondary caregiver proxy accounts.
-* **What alternatives could have been used?**
-  Shared master/sub-account hierarchies or OAuth2 delegation. Relational user links provide the simplest and most transparent security model for prototype deployment.
-* **How does the feature communicate with other modules?**
-  Authorizes caregivers in `authenticateToken` middleware to query assessments for patients in their `patientIds` array.
-* **What dependencies does it have?**
-  `mongoose`, Node.js native `crypto`.
-
-### Security Understanding
-* **How is this feature protected?**
-  Caregivers have **strictly read-only access** to clinical records. They cannot alter assessment scores, cancel doctor appointments without notice, or modify physician clinical notes.
-* **What happens when an unauthorized user attempts access?**
-  Caregiver attempting to access an unlinked patient's records receives `403 Forbidden` (`{ message: 'Access denied: Patient not linked to this caregiver' }`).
-* **How is sensitive data protected?**
-  Patient can revoke caregiver access instantly from their profile settings, which immediately deletes the relationship link.
-* **What validation is performed?**
-  Checks that patient explicitly consented and that caregiver email belongs to an active, verified account.
-
-### Critical Technical Understanding
-* **What are the biggest technical challenges?**
-  Handling multi-patient caregivers (e.g. professional nurse managing 5 patients) and ensuring clean context-switching in UI state.
-* **What are the possible failure scenarios?**
-  Patient revokes access while caregiver is viewing dashboard. Handled by checking link validity on every subsequent API call, returning 403 and redirecting to patient selector.
-* **What are the performance bottlenecks?**
-  Querying aggregate statistics across multiple linked patients; solved by caching per-patient summaries.
-* **What happens with concurrent requests?**
-  Standard read-only queries scale across MongoDB read replicas.
-* **How would we scale this feature?**
-  Implement granular permission scopes (e.g., `can_view_assessments`, `can_book_appointments`, `can_receive_alerts`) allowing patients to customize caregiver access levels.
 
 ---
 

@@ -27,8 +27,8 @@ NeuroGuard processes 100% of raw video streams inside the browser's volatile gra
 | Data Domain | What is Collected | Where it is Stored | Who Can Access |
 | :--- | :--- | :--- | :--- |
 | **Video Streams** | Temporary RAM video frames (1280x720) | Client-side memory only (Discarded instantly) | Nobody (Never leaves device RAM) |
-| **Kinematic Metrics** | Joint elevation, symmetry, repetition counts, durations | MongoDB `Assessment` collection / store.js | Authenticated Patient, Authorized Doctor, Authorized Caregiver |
-| **Patient Profile** | Name, Email, Age, Preferred Language | MongoDB `User` collection / store.js | Authenticated Patient, Assigned Doctor, Authorized Caregiver |
+| **Kinematic Metrics** | Joint elevation, symmetry, repetition counts, durations | MongoDB `Assessment` collection / store.js | Authenticated Patient, Authorized Doctor |
+| **Patient Profile** | Name, Email, Age, Preferred Language | MongoDB `User` collection / store.js | Authenticated Patient, Assigned Doctor |
 | **Doctor Profile** | Name, Specialization, Clinic Address, Fee, Rating | MongoDB `Doctor` collection / store.js | Publicly searchable in clinic directory |
 | **Shared Reports** | Historical assessment snapshot, trends, breakdown | MongoDB `SharedRecoveryReport` collection | Recipient Doctor (while consent is active) |
 | **Audit Logs** | Doctor ID, Action, Timestamp, IP Address, User-Agent | Embedded in `SharedRecoveryReport` | Owning Patient, Viewing Doctor |

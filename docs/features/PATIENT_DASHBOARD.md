@@ -21,7 +21,6 @@ The Patient Recovery Dashboard is the central graphical interface for stroke sur
 
 ## 4. Who uses this feature?
 - **Patient:** Reviews daily functional progress, checks active clinician protocols, inspects AI recovery observations, and initiates new assessment sessions.
-- **Caregiver:** Observes functional trajectories of their assigned patient and tracks therapy compliance.
 - **Doctor:** Has oversight access to the identical dashboard data structure when reviewing a patient's progress.
 
 ---

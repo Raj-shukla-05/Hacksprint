@@ -506,17 +506,6 @@ In [database/INDEXES_AND_VALIDATION.md](file:///home/piyush/Team Matrix/Hackspri
 
 ---
 
-### Q25: How does the Caregiver subsystem enforce read-only authorization?
-**Deep-Dive Answer:**
-In Express middleware [auth.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/auth.js#L35-L60):
-When a caregiver makes a request to `/api/assessments/history?patientId=XYZ`:
-1. Middleware decodes JWT; `req.user.role === 'caregiver'`.
-2. Middleware verifies that `XYZ` exists inside `req.user.patientIds` array.
-3. If valid, request proceeds to read handler.
-4. Mutation routes (`POST /api/assessments`, `PATCH /api/patients/:id/medical-notes`) explicitly guard `requireRole(['patient'])` or `requireRole(['doctor'])`. Caregivers are rejected with HTTP 403, guaranteeing read-only safety.
-
----
-
 ### Q26: Explain the structure of the JWT payload and token expiration strategy.
 **Deep-Dive Answer:**
 Token creation in [auth.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L55-L70):

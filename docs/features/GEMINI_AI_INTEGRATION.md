@@ -8,7 +8,7 @@
 ---
 
 ## 2. What is this feature?
-This feature integrates Google's **Gemini API** (`gemini-3.5-flash-lite`) via backend service [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js). It takes pre-computed, deterministic functional observations and baseline deltas and translates them into 2–3 concise, empathetic, plain-language sentences for patients and caregivers. The integration enforces strict guardrails, prompt sanitization, timeout management, and a deterministic local fallback engine.
+This feature integrates Google's **Gemini API** (`gemini-3.5-flash-lite`) via backend service [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js). It takes pre-computed, deterministic functional observations and baseline deltas and translates them into 2–3 concise, empathetic, plain-language sentences for patients. The integration enforces strict guardrails, prompt sanitization, timeout management, and a deterministic local fallback engine.
 
 ---
 

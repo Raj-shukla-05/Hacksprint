@@ -164,7 +164,7 @@ This glossary provides comprehensive, developer-oriented definitions of technica
 - **Context in NeuroGuard:** Handled by stripping identifying metadata from AI prompts and discarding raw video frames in memory.
 
 ### Role-Based Access Control (RBAC)
-- **Definition:** A security mechanism that restricts system access to authorized users based on their assigned organizational role (`patient`, `doctor`, `caregiver`, `admin`).
+- **Definition:** A security mechanism that restricts system access to authorized users based on their assigned organizational role (`patient`, `doctor`, `admin`).
 - **Context in NeuroGuard:** Enforced in backend middleware (`requireRole`) and frontend conditional route guards.
 
 ### Software as a Medical Device (SaMD)

@@ -27,8 +27,7 @@ Content-Type: application/json
     "age": 58,
     "role": "patient",
     "preferredLanguage": "English",
-    "doctorId": "doctor-priya",
-    "authorizedCaregivers": ["caregiver-anita"]
+    "doctorId": "doctor-priya"
   },
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
@@ -48,14 +47,14 @@ Content-Type: application/json
 
 ## 2. POST /api/auth/signup
 
-Registers a new user account across any of the supported roles (`patient`, `doctor`, or `caregiver`). For doctors, it automatically creates associated `Doctor` and `DoctorAvailability` records.
+Registers a new user account across any of the supported roles (`patient` or `doctor`). For doctors, it automatically creates associated `Doctor` and `DoctorAvailability` records.
 
 - **Authentication:** Public (No token required).
 - **Validation Rules:**
   - `name`: Required non-empty string.
   - `email`: Required valid email syntax matching `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`.
   - `password`: Minimum 8 characters.
-  - `role`: Must be one of `'patient'`, `'doctor'`, or `'caregiver'`.
+  - `role`: Must be one of `'patient'` or `'doctor'`.
 
 ### Patient Request Example
 ```http

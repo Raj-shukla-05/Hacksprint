@@ -55,9 +55,3 @@ This document details the relational architecture, cross-collection references, 
 - **Primary Link:** `Appointment.sharedReportId` references `SharedRecoveryReport.id` ($1:1$ optional).
 - **Secondary Link:** `SharedRecoveryReport.appointmentId` references `Appointment.id` ($1:1$ optional).
 - **Relationship:** When a patient authorizes sharing their recovery profile for an upcoming clinic visit, both records are linked. However, the report is an independent consent document; cancelling the appointment does **not** delete or invalidate the shared report.
-
-### 7. Patient $\leftrightarrow$ Caregiver
-- **Bi-Directional References:**
-  - `User.authorizedCaregivers` on the Patient references `[User.id]` of Caregivers.
-  - `User.caregiverPatients` on the Caregiver references `[User.id]` of Patients.
-- **Relationship:** Many-to-Many ($N:M$). A caregiver can assist multiple family members, and a patient can designate multiple trusted caregivers.

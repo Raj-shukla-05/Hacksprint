@@ -19,13 +19,11 @@ This feature provides an end-to-end appointment discovery, availability generati
 - **Anchoring Digital Health to Real-World Care:** Functional home monitoring is most impactful when connected to physical medical consultations.
 - **Eliminating Double-Booking Conflicts:** High-demand specialists cannot afford double-booked consultation slots. The booking engine guarantees race-condition immunity.
 - **Clinician Schedule Autonomy:** Doctors must have direct control over their clinic working hours, lunch breaks, vacation days, and ad-hoc blocked slots (e.g., attending clinical conferences).
-- **Caregiver Proxy Access:** Stroke patients frequently rely on family members to manage medical logistics.
 
 ---
 
 ## 4. Who uses this feature?
 - **Patient:** Discovers doctors, selects consultation dates/slots, books in-person visits, reschedules, or cancels.
-- **Caregiver:** Books and manages appointments on behalf of an authorized patient.
 - **Doctor:** Manages clinic working hours and breaks, blocks slots, confirms pending appointments, rejects with reasons, marks completed visits, and logs no-shows.
 
 ---
@@ -69,7 +67,7 @@ This feature provides an end-to-end appointment discovery, availability generati
     - `DELETE /api/doctors/availability/block/:id`: Doctor removes blocked slot.
   - [routes/appointmentRoutes.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/appointmentRoutes.js):
     - `POST /api/appointments`: Books appointment (rate limited).
-    - `GET /api/appointments/my`: Patient/Caregiver appointment list.
+    - `GET /api/appointments/my`: Patient appointment list.
     - `GET /api/appointments/doctor`: Doctor appointment list.
     - `PATCH /api/appointments/:id/confirm`: Doctor confirms.
     - `PATCH /api/appointments/:id/reject`: Doctor declines with reason.
@@ -162,7 +160,6 @@ Patient selects slot
 ---
 
 ## 14. Example execution
-1. Anita Sharma (caregiver) books an appointment for Raj Kumar with Dr. Priya Nair for November 10 at 10:30 AM.
 2. The slot is verified as a working day (Monday), outside lunch break (13:00–14:00), and currently unreserved.
 3. Mutex is acquired; appointment is inserted with status `'pending'`.
 4. Dr. Priya Nair receives an in-app notification: *"Raj Kumar has booked an in-person clinical visit on 2026-11-10 at 10:30."*
