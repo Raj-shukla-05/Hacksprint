@@ -143,6 +143,8 @@ export default function App() {
         <AssessmentPage
           assignment={selectedAssignment}
           userId={authUser?.role === 'patient' ? authUser.id : null}
+          dashboard={dashboard}
+          trends={trends}
           onSelectAssignment={setSelectedAssignment}
           onClearAssignment={() => setSelectedAssignment(null)}
           onSave={handleSave}
