@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Activity, AlertCircle, ArrowDownRight, ArrowUpRight, CheckCircle2, LoaderCircle,
-  Search, UsersRound, Sparkles, ShieldCheck, PlusCircle, Calendar,
-  Clock, Check, X, FileText, Send, Ban
+  Activity, AlertCircle, ArrowDownRight, ArrowUpRight, Ban, Check, CheckCircle2, ChevronRight, FileText, LoaderCircle,
+  PlusCircle, Search, Send, ShieldCheck, Sparkles, UsersRound, X,
 } from 'lucide-react';
 import TrendChart from '../components/TrendChart';
 import AlertCard, { StableCard } from '../components/AlertCard';
@@ -16,14 +15,16 @@ const DEFAULT_INSTRUCTIONS = {
   seated_reach: 'Perform 5 controlled forward reaches from an upright seated posture. Maintain core stability throughout.',
 };
 
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'review', label: 'Review recommended' },
-  { id: 'monitor', label: 'Monitor' },
-  { id: 'stable', label: 'Stable' },
+const TILES = [
+  { id: 'all', label: 'All patients', icon: UsersRound },
+  { id: 'review', label: 'Review recommended', icon: AlertCircle },
+  { id: 'monitor', label: 'Monitor', icon: Activity },
+  { id: 'stable', label: 'Stable', icon: CheckCircle2 },
 ];
 const STATUS_LABEL = { review: 'Review recommended', monitor: 'Monitor', stable: 'Stable' };
 const STATUS_ORDER = { review: 0, monitor: 1, stable: 2 };
+const initials = (name = '') => name.replace(/^Dr\.?\s*/, '').split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+const partOfDay = () => { const h = new Date().getHours(); return h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'; };
 
 export default function DoctorPage({ doctor }) {
   const [patients, setPatients] = useState([]);
@@ -34,7 +35,11 @@ export default function DoctorPage({ doctor }) {
   const [selectedId, setSelectedId] = useState(null);
 
   const loadPatients = () => api.doctorPatients(doctor.id)
-    .then(setPatients)
+    .then((list) => {
+      setPatients(list);
+      // Open the most urgent patient by default so the panel is never empty.
+      setSelectedId((cur) => cur || list.slice().sort((a, b) => (STATUS_ORDER[a.status] ?? 3) - (STATUS_ORDER[b.status] ?? 3))[0]?.id || null);
+    })
     .catch(() => setError('Could not load patients. Make sure the backend is running.'))
     .finally(() => setLoading(false));
 
@@ -55,51 +60,84 @@ export default function DoctorPage({ doctor }) {
   }, [patients, query, filter]);
 
   const selected = patients.find((p) => p.id === selectedId);
+  const firstName = (doctor.name || '').replace(/^Dr\.?\s*/, '').split(' ')[0];
 
   return (
-    <div className="page">
+    <div className="page doc">
       <div className="hero-row">
         <div>
-          <span className="eyebrow">Doctor panel</span>
-          <h1>{doctor.name}</h1>
-          <p>All patients under your care, ordered by who most needs attention first. Findings are functional-monitoring signals, not diagnoses.</p>
+          <span className="eyebrow">Clinic triage · {new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+          <h1>Good {partOfDay()}, Dr. <em>{firstName}</em>.</h1>
+          <p>
+            {loading ? 'Loading your patients…'
+              : counts.review > 0
+                ? `${counts.review} patient${counts.review === 1 ? '' : 's'} recommended for review. The list is ordered by who needs attention first.`
+                : 'No patient currently needs a review. The list is ordered by who needs attention first.'}
+          </p>
         </div>
       </div>
-      <section className="patient-summary-row doctor-summary">
-        <div className="summary-tile"><UsersRound size={18} /><div><strong>{counts.all}</strong><span>Total patients</span></div></div>
-        <div className="summary-tile review"><AlertCircle size={18} /><div><strong>{counts.review}</strong><span>Review recommended</span></div></div>
-        <div className="summary-tile monitor"><AlertCircle size={18} /><div><strong>{counts.monitor}</strong><span>Monitor</span></div></div>
-        <div className="summary-tile stable"><CheckCircle2 size={18} /><div><strong>{counts.stable}</strong><span>Stable</span></div></div>
+
+      <section className="triage-tiles" aria-label="Filter by status">
+        {TILES.map(({ id, label, icon: Icon }) => (
+          <button key={id} type="button" className={`triage-tile ${id} ${filter === id ? 'on' : ''}`} onClick={() => setFilter(id)} aria-pressed={filter === id}>
+            <span className="triage-icon"><Icon size={16} /></span>
+            <strong>{counts[id]}</strong>
+            <span>{label}</span>
+          </button>
+        ))}
       </section>
-      <div className="detail-layout">
-        <section className="card wide">
-          <div className="card-head"><div><span className="eyebrow">Patient list</span><h3>All patients</h3></div></div>
-          <div className="doctor-toolbar">
-            <div className="search-box"><Search size={17} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search patients by name…" aria-label="Search patients" /></div>
-            <div className="filter-chips">
-              {FILTERS.map((f) => (
-                <button key={f.id} type="button" className={filter === f.id ? 'active' : ''} onClick={() => setFilter(f.id)}>{f.label} <b>{counts[f.id]}</b></button>
-              ))}
+
+      <div className="doc-layout">
+        <section className="card patients-card">
+          <div className="card-head">
+            <div>
+              <span className="eyebrow">{filter === 'all' ? 'Everyone in your care' : `Filtered · ${STATUS_LABEL[filter]}`}</span>
+              <h3>Patients <span className="count">{visible.length}</span></h3>
+            </div>
+            <div className="search-box">
+              <Search size={16} />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name…" aria-label="Search patients" />
             </div>
           </div>
+
           {loading && <div className="loading-bar"><LoaderCircle size={15} className="spin" /> Loading patients…</div>}
           {error && <div className="login-error" role="alert">{error}</div>}
           {!loading && !error && !visible.length && <p className="empty-note">No patients match your search.</p>}
-          <div className="patient-table">
-            {visible.map((p) => {
-              const change = Number(p.change) || 0;
-              return (
-                <div key={p.id} className={`patient-row ${p.id === selectedId ? 'selected' : ''}`}>
-                  <div className="patient-person"><div className="avatar">{p.name[0]}</div><div><strong>{p.name}</strong><span>{p.age ? `Age ${p.age} · ` : ''}{p.sessions} session{p.sessions === 1 ? '' : 's'} · {p.lastCheck}</span></div></div>
-                  <div className="patient-score"><strong>{p.score}</strong><span>/100</span></div>
-                  <div className={`status-badge ${p.status}`}><span /> {STATUS_LABEL[p.status] || p.status}</div>
-                  <span className={change >= 0 ? 'positive' : 'negative'}>{change >= 0 ? <ArrowUpRight size={15} /> : <ArrowDownRight size={15} />} {Math.abs(change)}%</span>
-                  <button className="table-button" onClick={() => setSelectedId(p.id)}>View</button>
-                </div>
-              );
-            })}
-          </div>
+
+          {visible.length > 0 && (
+            <div className="ptable" role="list">
+              <div className="ptable-head" aria-hidden="true">
+                <span>Patient</span><span>Score</span><span>vs baseline</span><span>Status</span><span />
+              </div>
+              {visible.map((p) => {
+                const change = Number(p.change) || 0;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    role="listitem"
+                    className={`prow ${p.status} ${p.id === selectedId ? 'selected' : ''}`}
+                    onClick={() => setSelectedId(p.id)}
+                    aria-current={p.id === selectedId}
+                  >
+                    <span className="prow-person">
+                      <span className="pavatar">{initials(p.name)}</span>
+                      <span><strong>{p.name}</strong><small>{p.age ? `${p.age} yrs · ` : ''}{p.sessions} session{p.sessions === 1 ? '' : 's'} · {p.lastCheck}</small></span>
+                    </span>
+                    <span className="prow-score">
+                      <b>{p.score}</b>
+                      <i><u style={{ width: `${Math.max(0, Math.min(100, p.score))}%` }} /></i>
+                    </span>
+                    <span className={`prow-delta ${change >= 0 ? 'up' : 'down'}`}>{change >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}{Math.abs(change)}%</span>
+                    <span className={`status-badge ${p.status}`}><span /> {STATUS_LABEL[p.status] || p.status}</span>
+                    <ChevronRight size={16} className="prow-go" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
+
         <PatientDetail patient={selected} onDemoLoaded={loadPatients} />
       </div>
     </div>
@@ -113,7 +151,7 @@ function PatientDetail({ patient, onDemoLoaded }) {
   const [explanation, setExplanation] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  // Assignment Creation Form State
+  // Assignment form
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [exerciseType, setExerciseType] = useState('arm_raise');
   const [instructions, setInstructions] = useState(DEFAULT_INSTRUCTIONS.arm_raise);
@@ -127,7 +165,7 @@ function PatientDetail({ patient, onDemoLoaded }) {
   const [formSuccess, setFormSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Review Form State
+  // Review form
   const [reviewingId, setReviewingId] = useState(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -136,7 +174,7 @@ function PatientDetail({ patient, onDemoLoaded }) {
     if (!patient) return;
     setBusy(true);
 
-    // Fetch actual patient dashboard to get grounded metric data before requesting explanation.
+    // Fetch the patient dashboard so the explanation is grounded in measured metrics.
     const dashboardPromise = api.dashboard(patient.id).catch(() => null);
 
     Promise.all([
@@ -150,7 +188,6 @@ function PatientDetail({ patient, onDemoLoaded }) {
         setAlerts(a || []);
         setAssignments(asgns || []);
 
-        // Build explanation findings from actual dashboard metrics, not the patient-list summary.
         const dm = dashData?.metrics || {};
         const measured_metrics = [];
         const findings = {
@@ -159,7 +196,6 @@ function PatientDetail({ patient, onDemoLoaded }) {
           exercise_type: dashData?.summary?.exerciseType || null,
           details: `Clinical review for ${patient.name}. Status: ${patient.status}.`,
         };
-
         if (dm.Movement?.measured && dm.Movement.change !== null) {
           findings.movement_change = dm.Movement.change;
           measured_metrics.push('movement');
@@ -177,9 +213,7 @@ function PatientDetail({ patient, onDemoLoaded }) {
         return api.explanation(findings)
           .catch(() => ({ source: 'failed', text: 'AI summary is temporarily unavailable. Baseline metrics remain active.' }));
       })
-      .then((exp) => {
-        setExplanation(exp);
-      })
+      .then((exp) => setExplanation(exp))
       .catch(() => {
         setTrends([]);
         setAlerts([]);
@@ -220,19 +254,9 @@ function PatientDetail({ patient, onDemoLoaded }) {
     e.preventDefault();
     setFormError('');
     setFormSuccess('');
-
-    if (!instructions.trim()) {
-      setFormError('Please enter clinical instructions for the patient.');
-      return;
-    }
-    if (!dueDate) {
-      setFormError('Please specify a valid due date.');
-      return;
-    }
-    if (new Date(dueDate) < new Date(new Date().setHours(0, 0, 0, 0))) {
-      setFormError('Due date cannot be in the past.');
-      return;
-    }
+    if (!instructions.trim()) { setFormError('Please enter clinical instructions for the patient.'); return; }
+    if (!dueDate) { setFormError('Please specify a valid due date.'); return; }
+    if (new Date(dueDate) < new Date(new Date().setHours(0, 0, 0, 0))) { setFormError('Due date cannot be in the past.'); return; }
 
     setSubmitting(true);
     try {
@@ -243,7 +267,7 @@ function PatientDetail({ patient, onDemoLoaded }) {
         targetReps: Number(targetReps) || 5,
         dueDate: new Date(dueDate).toISOString(),
       });
-      setFormSuccess('Assessment successfully assigned to patient.');
+      setFormSuccess('Assessment assigned to patient.');
       setShowAssignForm(false);
       loadPatientData();
     } catch (err) {
@@ -264,16 +288,10 @@ function PatientDetail({ patient, onDemoLoaded }) {
   };
 
   const handleReviewSession = async (assignmentId) => {
-    if (!reviewNotes.trim()) {
-      alert('Please provide clinical feedback or impression before approving.');
-      return;
-    }
+    if (!reviewNotes.trim()) { alert('Please provide clinical feedback or impression before approving.'); return; }
     setReviewSubmitting(true);
     try {
-      await api.updateAssignmentStatus(assignmentId, {
-        status: 'reviewed',
-        doctorNotes: reviewNotes.trim(),
-      });
+      await api.updateAssignmentStatus(assignmentId, { status: 'reviewed', doctorNotes: reviewNotes.trim() });
       setReviewingId(null);
       setReviewNotes('');
       loadPatientData();
@@ -286,58 +304,61 @@ function PatientDetail({ patient, onDemoLoaded }) {
 
   if (!patient) {
     return (
-      <section className="card">
-        <div className="card-head"><div><span className="eyebrow">Patient detail</span><h3>Select a patient</h3></div></div>
-        <p className="empty-note">Choose “View” on a patient to see their trend and alerts.</p>
+      <section className="card detail-card detail-empty">
+        <UsersRound size={28} />
+        <h3>Select a patient</h3>
+        <p className="empty-note">Pick anyone from the list to see their trend, alerts and protocols.</p>
       </section>
     );
   }
 
+  const change = Number(patient.change) || 0;
+  const pendingReview = assignments.filter((a) => a.status === 'completed').length;
+
   return (
-    <section className="card">
-      <div className="card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <span className="eyebrow">{patient.name}</span>
-          <h3>Clinical Management</h3>
+    <section className={`card detail-card ${patient.status}`}>
+      <div className="detail-top">
+        <span className="pavatar large">{initials(patient.name)}</span>
+        <div className="detail-id">
+          <span className={`status-badge ${patient.status}`}><span /> {STATUS_LABEL[patient.status] || patient.status}</span>
+          <h2>{patient.name}</h2>
+          <small>{patient.age ? `${patient.age} yrs · ` : ''}{patient.sessions} sessions · last check {patient.lastCheck}</small>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {busy && <LoaderCircle size={16} className="spin" />}
-          <button className="secondary" style={{ fontSize: '0.825rem', padding: '0.4rem 0.75rem' }} onClick={handleDemoDecline} disabled={busy}>
-            <Activity size={15} /> Load decline demo
-          </button>
-          <button
-            className="primary"
-            style={{ fontSize: '0.825rem', padding: '0.4rem 0.75rem' }}
-            onClick={() => { setShowAssignForm(!showAssignForm); setFormError(''); setFormSuccess(''); }}
-          >
-            <PlusCircle size={15} /> {showAssignForm ? 'Close Form' : 'Assign Assessment'}
-          </button>
-        </div>
+        {busy && <LoaderCircle size={16} className="spin detail-busy" />}
       </div>
 
-      {formSuccess && (
-        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', color: '#10b981', padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', marginBottom: '1rem' }}>
-          ✓ {formSuccess}
-        </div>
-      )}
+      <div className="detail-stats">
+        <div><span>Score</span><strong>{patient.score}</strong></div>
+        <div><span>vs baseline</span><strong className={change >= 0 ? 'positive' : 'negative'}>{change >= 0 ? '+' : '−'}{Math.abs(change)}%</strong></div>
+        <div><span>Sessions</span><strong>{patient.sessions}</strong></div>
+        <div><span>To review</span><strong>{pendingReview}</strong></div>
+      </div>
 
-      {/* Assign Assessment Form */}
+      <div className="detail-actions">
+        <button
+          type="button"
+          className="primary"
+          onClick={() => { setShowAssignForm(!showAssignForm); setFormError(''); setFormSuccess(''); }}
+        >
+          {showAssignForm ? <X size={15} /> : <PlusCircle size={15} />} {showAssignForm ? 'Close form' : 'Assign assessment'}
+        </button>
+        <button type="button" className="secondary" onClick={handleDemoDecline} disabled={busy}>
+          <Activity size={15} /> Load decline demo
+        </button>
+      </div>
+
+      {formSuccess && <div className="form-success"><Check size={15} /> {formSuccess}</div>}
+
       {showAssignForm && (
-        <form onSubmit={handleCreateAssignment} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <strong style={{ fontSize: '0.95rem' }}>New Assessment Protocol</strong>
-            <button type="button" className="icon-button" onClick={() => setShowAssignForm(false)} aria-label="Close"><X size={15} /></button>
+        <form onSubmit={handleCreateAssignment} className="assign-form">
+          <div className="assign-form-head">
+            <strong>New assessment protocol</strong>
+            <span className="eyebrow">for {patient.name.split(' ')[0]}</span>
           </div>
-
-          {formError && <div className="login-error" style={{ marginBottom: '0.75rem' }}>{formError}</div>}
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Protocol Type
-              <select
-                value={exerciseType}
-                onChange={(e) => handleExerciseChange(e.target.value)}
-                style={{ width: '100%', marginTop: '0.25rem', padding: '0.45rem', borderRadius: '6px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-              >
+          {formError && <div className="form-error">{formError}</div>}
+          <div className="form-grid">
+            <label className="field">Protocol
+              <select value={exerciseType} onChange={(e) => handleExerciseChange(e.target.value)}>
                 {CATEGORIES.map((cat) => (
                   <optgroup key={cat.id} label={cat.label}>
                     {EXERCISE_IDS.filter((id) => EXERCISES[id].category === cat.id).map((id) => (
@@ -347,170 +368,116 @@ function PatientDetail({ patient, onDemoLoaded }) {
                 ))}
               </select>
             </label>
-
-            <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+            <label className="field">
               {EXERCISES[exerciseType]?.mode === 'hold' ? `Hold time (fixed ${EXERCISES[exerciseType].holdSeconds}s)` : `Target ${EXERCISES[exerciseType]?.repsLabel || 'repetitions'}`}
-              <input
-                type="number"
-                min="1"
-                max="20"
-                disabled={EXERCISES[exerciseType]?.mode === 'hold'}
-                value={targetReps}
-                onChange={(e) => setTargetReps(e.target.value)}
-                style={{ width: '100%', marginTop: '0.25rem', padding: '0.45rem', borderRadius: '6px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-              />
+              <input type="number" min="1" max="20" disabled={EXERCISES[exerciseType]?.mode === 'hold'} value={targetReps} onChange={(e) => setTargetReps(e.target.value)} />
+            </label>
+            <label className="field">Due date
+              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </label>
           </div>
-
-          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.75rem' }}>Due Date
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              style={{ width: '100%', marginTop: '0.25rem', padding: '0.45rem', borderRadius: '6px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-            />
+          <label className="field">Clinician instructions
+            <textarea rows="3" value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="Enter tailored guidance for the patient…" />
           </label>
-
-          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.75rem' }}>Clinician Instructions
-            <textarea
-              rows="3"
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              placeholder="Enter tailored guidance for the patient..."
-              style={{ width: '100%', marginTop: '0.25rem', padding: '0.5rem', borderRadius: '6px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', resize: 'vertical' }}
-            />
-          </label>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+          <div className="form-actions">
             <button type="button" className="secondary" onClick={() => setShowAssignForm(false)}>Cancel</button>
             <button type="submit" className="primary" disabled={submitting}>
-              {submitting ? <LoaderCircle size={14} className="spin" /> : <Send size={14} />} Assign Protocol
+              {submitting ? <LoaderCircle size={14} className="spin" /> : <Send size={14} />} Assign protocol
             </button>
           </div>
         </form>
       )}
 
-      {/* Assigned Protocols Section */}
-      <div style={{ marginBottom: '1.25rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-            Assigned Protocols ({assignments.length})
-          </span>
+      <div className="detail-section">
+        <span className="eyebrow">Signals</span>
+        <div className="alert-section">
+          {alerts.length ? alerts.map((a) => <AlertCard key={a.id} alert={a} />) : (trends.length ? <StableCard /> : <p className="empty-note">No sessions recorded yet.</p>)}
         </div>
+      </div>
 
+      {trends.length > 0 && (
+        <div className="detail-section">
+          <span className="eyebrow">Recovery curve</span>
+          <TrendChart data={trends} height={190} />
+        </div>
+      )}
+
+      {explanation?.text && (
+        <div className="detail-section ai-summary">
+          <div className="ai-summary-head">
+            <span className="eyebrow"><Sparkles size={12} /> AI longitudinal summary</span>
+            <span className="soft-badge">
+              {explanation.source === 'gemini' ? 'Gemini' : explanation.source === 'openai' ? 'OpenAI'
+                : explanation.source === 'local-fallback' ? 'Local engine' : explanation.source === 'failed' ? 'Unavailable' : 'Baseline engine'}
+            </span>
+          </div>
+          <p>{explanation.text}</p>
+          <div className="mini-note"><ShieldCheck size={13} /><span>Assistive functional summary; clinical decisions must be made independently.</span></div>
+        </div>
+      )}
+
+      <div className="detail-section">
+        <span className="eyebrow">Assigned protocols · {assignments.length}</span>
         {assignments.length === 0 ? (
-          <p className="empty-note">No protocols currently assigned to this patient.</p>
+          <p className="empty-note">No protocols assigned to this patient yet.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <div className="asgn-list">
             {assignments.map((asgn) => {
               const isCompleted = asgn.status === 'completed';
               const isReviewed = asgn.status === 'reviewed';
               const isPending = asgn.status === 'assigned' || asgn.status === 'in_progress';
               const isReviewingThis = reviewingId === asgn.id;
-
-              const exerciseTitle = titleOfExercise(asgn.exerciseType);
-
               return (
-                <div
-                  key={asgn.id}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    padding: '0.75rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                <div key={asgn.id} className={`asgn ${asgn.status}`}>
+                  <div className="asgn-head">
                     <div>
-                      <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{exerciseTitle}</strong>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>Target: {assignedTargetText(asgn.exerciseType, asgn.targetReps)}</span>
+                      <strong>{titleOfExercise(asgn.exerciseType)}</strong>
+                      <small>Target: {assignedTargetText(asgn.exerciseType, asgn.targetReps)} · due {new Date(asgn.dueDate).toLocaleDateString()}</small>
                     </div>
-                    <span className={`status-badge ${asgn.status}`} style={{ textTransform: 'capitalize', fontSize: '0.7rem' }}>
-                      {asgn.status.replace('_', ' ')}
-                    </span>
+                    <span className={`status-badge ${asgn.status}`}><span /> {asgn.status.replace('_', ' ')}</span>
                   </div>
+                  {asgn.instructions && <p className="asgn-text">{asgn.instructions}</p>}
 
-                  <p style={{ margin: '0.25rem 0 0.5rem 0', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                    {asgn.instructions}
-                  </p>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    <span>Due: {new Date(asgn.dueDate).toLocaleDateString()}</span>
-                    
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
-                      {isPending && (
-                        <button
-                          type="button"
-                          className="table-button danger"
-                          style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem' }}
-                          onClick={() => handleCancelAssignment(asgn.id)}
-                        >
-                          <Ban size={11} /> Cancel
-                        </button>
-                      )}
-
-                      {isCompleted && !isReviewingThis && (
-                        <button
-                          type="button"
-                          className="table-button"
-                          style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#3b82f6', color: '#fff' }}
-                          onClick={() => { setReviewingId(asgn.id); setReviewNotes(''); }}
-                        >
-                          <FileText size={11} /> Review Session
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Completed Session Details */}
                   {asgn.completedSession && (
-                    <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.6rem', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', fontSize: '0.75rem', border: '1px dashed var(--border)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Completed on: {new Date(asgn.completedSession.timestamp).toLocaleDateString()}</span>
-                        <strong>Score: {asgn.completedSession.score}/100</strong>
-                      </div>
+                    <div className="asgn-session">
+                      <span>Completed {new Date(asgn.completedSession.timestamp).toLocaleDateString()}</span>
+                      <b>{asgn.completedSession.score}<small>/100</small></b>
                       {asgn.completedSession.trackingQuality?.qualityWarning && (
-                        <div style={{ color: '#f59e0b', marginTop: '0.2rem' }}>
-                          ⚠️ {asgn.completedSession.trackingQuality.qualityWarning}
-                        </div>
+                        <em><AlertCircle size={12} /> {asgn.completedSession.trackingQuality.qualityWarning}</em>
                       )}
                     </div>
                   )}
 
-                  {/* Doctor Review Notes Display */}
                   {isReviewed && asgn.doctorNotes && (
-                    <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.6rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '6px', borderLeft: '3px solid #10b981', fontSize: '0.75rem' }}>
-                      <strong style={{ color: '#10b981' }}>Clinician Review: </strong>
-                      <span style={{ color: 'var(--text-primary)' }}>{asgn.doctorNotes}</span>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.2rem' }}>
-                        Reviewed on {new Date(asgn.reviewedAt).toLocaleDateString()}
-                      </div>
+                    <div className="asgn-review">
+                      <strong>Clinician review</strong>
+                      <p>“{asgn.doctorNotes}”</p>
+                      <small>Reviewed {new Date(asgn.reviewedAt).toLocaleDateString()}</small>
                     </div>
                   )}
 
-                  {/* Review Input Box */}
+                  {(isPending || (isCompleted && !isReviewingThis)) && (
+                    <div className="asgn-actions">
+                      {isPending && (
+                        <button type="button" className="table-button danger" onClick={() => handleCancelAssignment(asgn.id)}><Ban size={12} /> Cancel</button>
+                      )}
+                      {isCompleted && !isReviewingThis && (
+                        <button type="button" className="primary small-btn" onClick={() => { setReviewingId(asgn.id); setReviewNotes(''); }}>
+                          <FileText size={13} /> Review session
+                        </button>
+                      )}
+                    </div>
+                  )}
+
                   {isReviewingThis && (
-                    <div style={{ marginTop: '0.6rem', padding: '0.6rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', border: '1px solid #3b82f6' }}>
-                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-                        Clinical Review Feedback
-                        <textarea
-                          rows="2"
-                          value={reviewNotes}
-                          onChange={(e) => setReviewNotes(e.target.value)}
-                          placeholder="Document clinical impression and guidance..."
-                          style={{ width: '100%', marginTop: '0.2rem', padding: '0.35rem', borderRadius: '4px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: '0.75rem' }}
-                        />
+                    <div className="asgn-review-form">
+                      <label className="field">Clinical review feedback
+                        <textarea rows="2" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} placeholder="Document clinical impression and guidance…" />
                       </label>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', marginTop: '0.3rem' }}>
-                        <button type="button" className="secondary" style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem' }} onClick={() => setReviewingId(null)}>Cancel</button>
-                        <button
-                          type="button"
-                          className="primary"
-                          style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}
-                          disabled={reviewSubmitting}
-                          onClick={() => handleReviewSession(asgn.id)}
-                        >
-                          {reviewSubmitting ? <LoaderCircle size={11} className="spin" /> : <Check size={11} />} Approve & Sign Off
+                      <div className="form-actions">
+                        <button type="button" className="secondary small-btn" onClick={() => setReviewingId(null)}>Cancel</button>
+                        <button type="button" className="primary small-btn" disabled={reviewSubmitting} onClick={() => handleReviewSession(asgn.id)}>
+                          {reviewSubmitting ? <LoaderCircle size={12} className="spin" /> : <Check size={13} />} Approve & sign off
                         </button>
                       </div>
                     </div>
@@ -520,37 +487,6 @@ function PatientDetail({ patient, onDemoLoaded }) {
             })}
           </div>
         )}
-      </div>
-
-      <div className="card-head" style={{ marginTop: '1.25rem' }}>
-        <div><span className="eyebrow">Recovery Trend</span><h3>Performance Progression</h3></div>
-      </div>
-      {trends.length ? <TrendChart data={trends} compact /> : <p className="empty-note">No sessions recorded yet.</p>}
-      
-      {explanation?.text && (
-        <div style={{ marginTop: '1rem', padding: '0.85rem', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)' }}>AI Longitudinal Summary</span>
-            <span className="soft-badge" style={{ fontSize: '0.7rem' }}>
-              <Sparkles size={11} /> {
-                explanation.source === 'gemini'
-                  ? 'Gemini AI'
-                  : explanation.source === 'local-fallback'
-                    ? 'Local Fallback'
-                    : (explanation.source === 'failed' ? 'Unavailable' : 'Baseline Engine')
-              }
-            </span>
-          </div>
-          <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5, color: 'var(--text-primary)' }}>{explanation.text}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.5rem' }}>
-            <ShieldCheck size={12} />
-            <span>Assistive functional summary; clinical decisions must be made independently.</span>
-          </div>
-        </div>
-      )}
-
-      <div className="alert-section" style={{ marginTop: '1rem' }}>
-        {alerts.length ? alerts.map((a) => <AlertCard key={a.id} alert={a} onReview={() => {}} />) : (trends.length ? <StableCard /> : null)}
       </div>
     </section>
   );

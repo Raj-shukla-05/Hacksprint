@@ -9,7 +9,7 @@ export default function AlertCard({ alert, onReview }) {
       <div className="alert-body">
         <div className="alert-title"><strong>{alert.type}</strong><span>{alert.timestamp}</span></div>
         <p>{alert.reason}</p>
-        <button onClick={onReview}>{alert.action || 'Review change'} <ArrowRight size={14} /></button>
+        {onReview && <button type="button" onClick={onReview}>{alert.action || 'Review change'} <ArrowRight size={14} /></button>}
       </div>
     </div>
   );
@@ -18,8 +18,8 @@ export default function AlertCard({ alert, onReview }) {
 export function StableCard() {
   return (
     <div className="stable-card">
-      <CheckCircle2 size={19} />
-      <div><strong>No concerning persistent change</strong><span>Your latest check is within the expected variation of your personal baseline.</span></div>
+      <CheckCircle2 size={22} />
+      <div><strong>No concerning persistent change</strong><span>The latest check is within the expected variation of the personal baseline.</span></div>
     </div>
   );
 }

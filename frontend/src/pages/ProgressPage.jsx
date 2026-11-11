@@ -8,7 +8,7 @@ export default function ProgressPage({ trends }) {
   const change = latest - first;
   return (
     <div className="page">
-      <div className="hero-row"><div><span className="eyebrow">Longitudinal view</span><h1>Your recovery trend</h1><p>NeuroGuard focuses on meaningful change across repeated sessions.</p></div><button className="secondary"><Download size={17} /> Export summary</button></div>
+      <div className="hero-row"><div><span className="eyebrow">Longitudinal view</span><h1>Your recovery <em>trend</em></h1><p>NeuroGuard focuses on meaningful change across repeated sessions.</p></div><button className="secondary"><Download size={17} /> Export summary</button></div>
       <div className="stats-strip">
         <div><span>Current score</span><strong>{latest}/100</strong></div>
         <div><span>Since first check</span><strong className={change >= 0 ? 'positive' : 'negative'}>{change >= 0 ? '+' : ''}{change} points</strong></div>
@@ -16,9 +16,9 @@ export default function ProgressPage({ trends }) {
         <div><span>Baseline window</span><strong>5 sessions</strong></div>
       </div>
       <section className="card wide">
-        <div className="card-head"><div><span className="eyebrow">Day 1 → Day 21</span><h3>Functional performance</h3></div><div className="trend-pill"><ArrowUpRight size={15} /> {Math.abs(change)} points</div></div>
+        <div className="card-head"><div><span className="eyebrow">{trends[0]?.day || 'Day 1'} → {trends[trends.length - 1]?.day || 'today'}</span><h3>Functional performance</h3></div><div className={`trend-pill ${change < 0 ? 'down' : ''}`}>{change >= 0 ? <ArrowUpRight size={15} /> : <ArrowDownRight size={15} />} {Math.abs(change)} points</div></div>
         <TrendChart data={trends} />
-        <div className="insight-box"><Info size={18} /><div><strong>Why this is more useful than a single score</strong><span>NeuroGuard can show a persistent pattern relative to Raj’s own recent performance rather than comparing him to a generic population average.</span></div></div>
+        <div className="insight-box"><Info size={18} /><div><strong>Why this is more useful than a single score</strong><span>NeuroGuard looks for a persistent pattern relative to your own recent performance rather than comparing you to a generic population average.</span></div></div>
       </section>
       <div className="history-grid">
         {trends.slice().reverse().slice(0, 5).map((item) => (

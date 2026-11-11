@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { HeartPulse, LoaderCircle, ShieldCheck } from 'lucide-react';
-import Sidebar from './components/Sidebar';
+import { HeartPulse, ShieldCheck } from 'lucide-react';
 import Topbar from './components/Topbar';
 import PatientDashboard from './pages/PatientDashboard';
 import ProgressPage from './pages/ProgressPage';
@@ -179,16 +178,23 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar view={view} setView={setView} role={role} userName={authUser.name} onDemoDecline={handleDemoDecline} />
-      <main className="main-shell">
-        <Topbar role={role} userName={authUser.name} onLogout={handleLogout} systemStatus={systemStatus} />
-        <div className="content-shell">
-          {loading && view === 'dashboard' && <div className="loading-bar"><LoaderCircle size={15} className="spin" /> Syncing recovery data…</div>}
-          {content}
-        </div>
-        <div className="medical-disclaimer"><ShieldCheck size={14} /> NeuroGuard is a prototype for functional monitoring and does not replace professional medical care.</div>
-        {toast && <div className="toast"><HeartPulse size={16} /> {toast}</div>}
+      <Topbar
+        role={role}
+        view={view}
+        setView={setView}
+        userName={authUser.name}
+        onLogout={handleLogout}
+        systemStatus={systemStatus}
+        onDemoDecline={handleDemoDecline}
+      />
+      {loading && <div className="sync-bar" role="progressbar" aria-label="Syncing recovery data" />}
+      <main className="content-shell" key={view}>
+        {content}
       </main>
+      <footer className="medical-disclaimer">
+        <ShieldCheck size={14} /> NeuroGuard is a prototype for functional monitoring and does not replace professional medical care.
+      </footer>
+      {toast && <div className="toast" role="status"><span><HeartPulse size={15} /></span> {toast}</div>}
     </div>
   );
 }

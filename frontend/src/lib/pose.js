@@ -119,7 +119,7 @@ export function drawSkeleton(ctx, video, landmarks) {
 
   ctx.lineWidth = 4;
   ctx.lineCap = 'round';
-  ctx.strokeStyle = '#8fe3d5';
+  ctx.strokeStyle = '#d4f15a';
   ctx.fillStyle = '#ffffff';
 
   for (const [aIdx, bIdx] of connections) {
@@ -132,11 +132,14 @@ export function drawSkeleton(ctx, video, landmarks) {
     ctx.stroke();
   }
 
-  ctx.fillStyle = '#0f766e';
+  ctx.fillStyle = '#16140f';
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = '#d4f15a';
   for (const point of landmarks) {
     if (!visiblePoint(point, 0.4)) continue;
     ctx.beginPath();
     ctx.arc(point.x * width, point.y * height, 5.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.stroke();
   }
 }

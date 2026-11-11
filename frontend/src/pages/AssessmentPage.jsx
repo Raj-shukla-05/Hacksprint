@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  AlertCircle, ArrowLeft, ChevronRight, Clock, Eye, FileText, Play, ShieldCheck, Sparkles, Timer, User, X,
+  AlertCircle, ArrowLeft, ChevronRight, Clock, Eye, FileText, Play, ShieldCheck, Timer, User, X,
 } from 'lucide-react';
 import CameraAssessment from '../components/CameraAssessment';
-import BodyFigure from '../components/BodyFigure';
+import MotionFigure from '../components/MotionFigure';
 import ScoreRing from '../components/ScoreRing';
 import TrendChart from '../components/TrendChart';
 import { api } from '../lib/api';
@@ -90,14 +90,14 @@ export default function AssessmentPage({
         <div className="exercise-head">
           <div>
             <button type="button" className="back-link" onClick={backToTests}><ArrowLeft size={15} /> Back to tests</button>
-            <h1>Today’s check</h1>
+            <h1>Today’s <em>check</em></h1>
             <p>
               {t.mode === 'hold'
                 ? `The test ends on its own after ${t.holdSeconds} seconds.`
                 : `The test ends on its own after ${t.maxSeconds} seconds, or as soon as you finish ${t.targetReps} ${t.repsLabel}.`}
             </p>
           </div>
-          <span className="privacy-pill"><Sparkles size={14} /> Privacy-first</span>
+          <span className="privacy-pill"><ShieldCheck size={14} /> Video stays on this device</span>
         </div>
 
         {trackingWarning && (
@@ -141,10 +141,11 @@ export default function AssessmentPage({
     <div className="page exercise-page">
       <div className="exercise-head">
         <div>
-          <h1>{assignment ? 'Assigned protocol' : 'Today’s check'}</h1>
+          <span className="eyebrow">Step 2 of 3 · movement test</span>
+          <h1>{assignment ? <>Assigned <em>protocol</em></> : <>Today’s <em>check</em></>}</h1>
           <p>Pick a test and press Start. The camera opens only then, and the test ends by itself.</p>
         </div>
-        <span className="privacy-pill"><Sparkles size={14} /> Privacy-first</span>
+        <span className="privacy-pill"><ShieldCheck size={14} /> Video stays on this device</span>
       </div>
 
       <div className="check-grid">
@@ -247,12 +248,14 @@ export default function AssessmentPage({
         {/* Skeleton */}
         <section className="panel check-center">
           <div className="check-center-head">
-            <span className="eyebrow">Selected test</span>
+            <span className="eyebrow">Watch the movement · then press start</span>
             <h2>{info.title}</h2>
             <p>{info.instruction}</p>
           </div>
-          <BodyFigure highlight={info.region} />
-          <div className="check-area"><strong>{info.area}</strong><span>highlighted area</span></div>
+          <div className="check-stage">
+            <MotionFigure motion={exercise} variant="light" yaw={-32} swing={14} />
+            <span className="check-area"><i /> {info.area}</span>
+          </div>
           <div className="setup-chips">
             <span><User size={13} /> {info.position}</span>
             <span><Eye size={13} /> {info.view}</span>
@@ -260,8 +263,8 @@ export default function AssessmentPage({
           <div className="measure-chips">
             {info.measured.map((m) => <span key={m}>{m}</span>)}
           </div>
-          <button className="auth-submit start-big" type="button" onClick={() => startTest(exercise)}>
-            <Play size={17} /> <span>Start {info.title}</span>
+          <button className="cta start-big" type="button" onClick={() => startTest(exercise)}>
+            Start {info.title} <span className="cta-arrow"><Play size={15} /></span>
           </button>
           <p className="check-note"><ShieldCheck size={14} /> {info.safety}</p>
         </section>

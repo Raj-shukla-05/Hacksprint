@@ -1,0 +1,70 @@
+/* =====================================================================
+   MotionFigure — the animated 3D motion-capture skeleton
+   ===================================================================== */
+.mf {
+  --mf-bone: #f4efe3; --mf-flesh: rgba(244, 239, 227, .08); --mf-joint: #16140f; --mf-joint-ring: #f4efe3;
+  --mf-hot: #d4f15a; --mf-hot-flesh: rgba(212, 241, 90, .16); --mf-floor: rgba(244, 239, 227, .16);
+  --mf-shadow: rgba(0, 0, 0, .45); --mf-stool: rgba(244, 239, 227, .35); --mf-trail: #d4f15a; --mf-torso: rgba(244, 239, 227, .05);
+  position: relative; width: 100%; aspect-ratio: 300 / 360; user-select: none;
+}
+.mf-light {
+  --mf-bone: #16140f; --mf-flesh: rgba(22, 20, 15, .06); --mf-joint: #fffdf8; --mf-joint-ring: #16140f;
+  --mf-hot: #16140f; --mf-hot-flesh: rgba(212, 241, 90, .75); --mf-floor: rgba(22, 20, 15, .14);
+  --mf-shadow: rgba(22, 20, 15, .16); --mf-stool: rgba(22, 20, 15, .3); --mf-trail: #9cc21f; --mf-torso: rgba(22, 20, 15, .035);
+}
+.mf-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+.mf-ring { fill: none; stroke: var(--mf-floor); stroke-width: 1.2; }
+.mf-ring.outer { stroke-dasharray: 2 6; }
+.mf-ripple { fill: none; stroke: var(--mf-hot); stroke-width: 1.4; }
+.mf-shadow { fill: var(--mf-shadow); filter: blur(5px); }
+.mf-stool line { stroke: var(--mf-stool); stroke-width: 3; stroke-linecap: round; }
+.mf-stool polygon { fill: var(--mf-stool); stroke: var(--mf-stool); stroke-width: 2; stroke-linejoin: round; }
+
+.mf-trail line { stroke: var(--mf-trail); stroke-linecap: round; }
+.mf-torso { fill: var(--mf-torso); }
+.mf-torso.hot { fill: var(--mf-hot-flesh); }
+
+.mf-flesh { stroke: var(--mf-flesh); stroke-linecap: round; }
+.hot > .mf-flesh { stroke: var(--mf-hot-flesh); }
+.mf-glow { stroke: var(--mf-hot); stroke-linecap: round; opacity: .18; }
+.mf-light .mf-glow { opacity: 0; }
+.mf-bone { stroke: var(--mf-bone); stroke-linecap: round; }
+.hot > .mf-bone { stroke: var(--mf-hot); }
+
+.mf-joint { fill: var(--mf-joint); stroke: var(--mf-joint-ring); stroke-width: 1.8; }
+.mf-joint.hot { fill: var(--mf-hot); stroke: var(--mf-joint); stroke-width: 2; }
+.mf-light .mf-joint.hot { fill: #d4f15a; stroke: #16140f; }
+.mf-head { fill: var(--mf-flesh); stroke: var(--mf-bone); stroke-width: 2.4; }
+.mf-head.hot { stroke: var(--mf-hot); fill: var(--mf-hot-flesh); }
+.mf-nose { fill: var(--mf-bone); }
+.mf-voice { fill: none; stroke: var(--mf-hot); stroke-width: 2.4; stroke-linecap: round; }
+
+/* joint hotspots */
+.mf-marker {
+  position: absolute; width: 0; height: 0; padding: 0; border: 0; background: transparent; z-index: 2;
+}
+.mf-marker > i {
+  position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--mf-hot); background: rgba(212, 241, 90, .12);
+}
+.mf-marker > i::after {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid var(--mf-hot);
+  animation: hotspot 1.8s ease-out infinite;
+}
+.mf-light .mf-marker > i { border-color: var(--ink); background: rgba(212, 241, 90, .6); }
+.mf-light .mf-marker > i::after { border-color: var(--ink); }
+.mf-marker:not(.on) > i { transform: scale(.7); opacity: .75; }
+.mf-marker:hover > i { opacity: 1; transform: scale(.95); }
+@keyframes hotspot { from { transform: scale(.6); opacity: .9; } to { transform: scale(1.7); opacity: 0; } }
+.mf-marker > span {
+  position: absolute; top: -22px; display: grid; gap: 1px; white-space: nowrap; text-align: left;
+  padding: 7px 12px 8px; border-radius: 14px; background: var(--volt); color: var(--ink);
+  box-shadow: 0 14px 30px -14px rgba(0, 0, 0, .7); animation: pop .25s ease both; pointer-events: none;
+}
+.mf-marker.left > span { right: 18px; }
+.mf-marker.right > span { left: 18px; }
+.mf-marker > span small { font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: .1em; opacity: .7; }
+.mf-marker > span b { font: 400 24px/1 var(--serif); }
+.mf-marker:focus-visible { outline: none; }
+.mf-marker:focus-visible > i { outline: 2px solid var(--mf-hot); outline-offset: 4px; }

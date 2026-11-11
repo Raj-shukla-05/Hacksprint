@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Activity, ArrowRight, Eye, EyeOff, Lock, LoaderCircle, Mail, ShieldCheck,
-  Stethoscope, TrendingUp, UserPlus, UserRound,
+  ArrowRight, Eye, EyeOff, Lock, LoaderCircle, Mail, ShieldCheck, Stethoscope, UserPlus, UserRound,
 } from 'lucide-react';
 import { Logo } from '../components/Logo';
+import MotionFigure from '../components/MotionFigure';
 import { api } from '../lib/api';
+import { EXERCISES } from '../lib/exercises';
 
 const DEMO_ACCOUNTS = [
   { label: 'Patient', name: 'Raj Kumar', email: 'raj@neuroguard.demo', password: 'patient123', icon: UserRound },
@@ -12,56 +13,39 @@ const DEMO_ACCOUNTS = [
 ];
 
 const FEATURES = [
-  { icon: Activity, title: 'Guided home exercises', text: 'Camera-based movement checks, scored in seconds.' },
-  { icon: TrendingUp, title: 'Your own baseline', text: 'Progress is measured against you, not an average.' },
-  { icon: ShieldCheck, title: 'Private by design', text: 'Video is processed on your device and never uploaded.' },
+  ['9', 'guided movement tests'],
+  ['0', 'video frames uploaded'],
+  ['1', 'baseline that matters: yours'],
 ];
 
-/* Animated pose-skeleton used as the hero illustration. */
-function PoseHero() {
-  const joints = [
-    [150, 94], [108, 120], [192, 120], [88, 182], [84, 244],
-    [124, 232], [176, 232], [120, 318], [180, 318], [118, 396], [182, 396],
-  ];
-  return (
-    <div className="pose-hero" aria-hidden="true">
-      <svg viewBox="0 0 300 430" className="pose-svg">
-        <defs>
-          <radialGradient id="poseGlow" cx="50%" cy="45%" r="55%">
-            <stop offset="0" stopColor="#7aa7ff" stopOpacity=".55" />
-            <stop offset="1" stopColor="#2563eb" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        <circle cx="150" cy="215" r="190" fill="url(#poseGlow)" />
-        <g className="pose-lines">
-          <circle cx="150" cy="52" r="26" />
-          <path d="M150 78 L150 94" />
-          <path d="M108 120 L192 120" />
-          <path d="M108 120 L124 232 M192 120 L176 232 M124 232 L176 232" />
-          <path d="M108 120 L88 182 L84 244" />
-          <path d="M124 232 L120 318 L118 396" />
-          <path d="M176 232 L180 318 L182 396" />
-        </g>
-        {/* the right arm raises and lowers like the Arm Raise exercise */}
-        <g className="pose-arm">
-          <path d="M192 120 L212 182 L216 244" className="pose-arm-line" />
-          <circle cx="212" cy="182" r="6" className="pose-joint" />
-          <circle cx="216" cy="244" r="6" className="pose-joint" />
-        </g>
-        {joints.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="6" className="pose-joint" style={{ animationDelay: `${i * 0.18}s` }} />
-        ))}
-        <circle cx="150" cy="52" r="6" className="pose-joint" />
-      </svg>
+const SHOWCASE = ['arm_raise', 'marching', 'sit_to_stand', 'hand_to_mouth', 'trunk_lean', 'knee_extension', 'balance_hold', 'elbow_flexion', 'seated_reach'];
+const SHOWCASE_MS = 5600;
 
-      <div className="float-card fc-top">
-        <span className="fc-dot" /> <strong>Body detected</strong>
-        <small>AI live · on-device</small>
+/* The hero: the motion model cycles through every test the app can score. */
+function MotionHero() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setI((n) => (n + 1) % SHOWCASE.length), SHOWCASE_MS);
+    return () => window.clearInterval(id);
+  }, []);
+  const id = SHOWCASE[i];
+  const t = EXERCISES[id];
+  return (
+    <div className="auth-stage">
+      <div className="auth-stage-figure">
+        <MotionFigure motion={id} variant="dark" yaw={-30} swing={20} label={`${t.title} demonstration`} />
       </div>
-      <div className="float-card fc-mid">
-        <small>Arm raise</small>
-        <strong>Rep 3 / 5</strong>
-        <div className="fc-bar"><i /></div>
+      <div className="auth-readout" aria-live="polite">
+        <small>Now demonstrating · {String(i + 1).padStart(2, '0')}/{String(SHOWCASE.length).padStart(2, '0')}</small>
+        <strong key={id}>{t.title}</strong>
+        <span>{t.measured.slice(0, 3).join(' · ')}</span>
+        <div className="auth-ticks">
+          {SHOWCASE.map((x, n) => (
+            <button key={x} type="button" className={n === i ? 'on' : ''} onClick={() => setI(n)} aria-label={`Show ${EXERCISES[x].title}`}>
+              {n === i && <i key={i} style={{ animationDuration: `${SHOWCASE_MS}ms` }} />}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -131,20 +115,17 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className="auth-shell">
-      {/* Brand / hero side */}
       <section className="auth-hero">
-        <div className="auth-hero-top"><Logo /></div>
-        <PoseHero />
+        <div className="auth-hero-top">
+          <Logo tone="light" />
+          <span className="auth-tag"><i /> On-device pose AI</span>
+        </div>
+        <MotionHero />
         <div className="auth-hero-copy">
-          <h2>Recovery you can <em>see</em>, from home.</h2>
-          <p>NeuroGuard turns a short daily exercise into clear, clinician-ready progress for stroke recovery.</p>
+          <h2>Recovery, <em>in motion.</em></h2>
+          <p>A short daily movement check, scored in your browser and turned into clear, clinician-ready progress for stroke recovery.</p>
           <ul className="auth-features">
-            {FEATURES.map(({ icon: Icon, title, text }) => (
-              <li key={title}>
-                <span><Icon size={17} /></span>
-                <div><strong>{title}</strong><small>{text}</small></div>
-              </li>
-            ))}
+            {FEATURES.map(([n, text]) => <li key={text}><b>{n}</b><span>{text}</span></li>)}
           </ul>
         </div>
       </section>
@@ -154,7 +135,8 @@ export default function LoginPage({ onLogin }) {
         <form className={`auth-card ${signup && role === 'doctor' ? 'wide' : ''}`} onSubmit={submit} noValidate>
           <div className="auth-mobile-logo"><Logo /></div>
           <div className="auth-title">
-            <h1>{signup ? 'Create your account' : 'Welcome back'}</h1>
+            <span className="eyebrow">{signup ? 'New account' : 'Sign in'}</span>
+            <h1>{signup ? <>Start your <em>baseline</em>.</> : <>Welcome <em>back</em>.</>}</h1>
             <p>{signup ? 'Set up NeuroGuard to start monitoring recovery.' : 'Sign in to continue your recovery monitoring.'}</p>
           </div>
 
@@ -243,9 +225,8 @@ export default function LoginPage({ onLogin }) {
           {error && <div className="auth-error" role="alert">{error}</div>}
 
           <button className="auth-submit" type="submit" disabled={busy}>
-            {busy ? <LoaderCircle size={17} className="spin" /> : signup ? <UserPlus size={17} /> : null}
             <span>{signup ? 'Create account' : 'Sign in'}</span>
-            {!busy && !signup && <ArrowRight size={17} />}
+            <i className="auth-submit-icon">{busy ? <LoaderCircle size={17} className="spin" /> : signup ? <UserPlus size={17} /> : <ArrowRight size={17} />}</i>
           </button>
 
           <div className="auth-switch">
@@ -255,7 +236,7 @@ export default function LoginPage({ onLogin }) {
 
           {!signup && (
             <div className="auth-demo">
-              <div className="auth-demo-title"><span /> Try a demo account <span /></div>
+              <div className="auth-demo-title"><span /> Demo accounts · tap to fill <span /></div>
               <div className="auth-demo-grid">
                 {DEMO_ACCOUNTS.map((a) => {
                   const Icon = a.icon;
@@ -263,6 +244,7 @@ export default function LoginPage({ onLogin }) {
                     <button key={a.email} type="button" disabled={busy} onClick={() => fillDemo(a)}>
                       <span className="demo-avatar"><Icon size={16} /></span>
                       <span className="demo-text"><strong>{a.label}</strong><small>{a.name}</small></span>
+                      <ArrowRight size={15} className="demo-go" />
                     </button>
                   );
                 })}
