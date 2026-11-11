@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, ShieldAlert, FileText, CheckCircle2, Activity, Calendar, Clock, User, HeartPulse } from 'lucide-react';
+import { exerciseTitle } from '../lib/exercises';
 
 export default function RecoveryReportModal({ report, onClose }) {
   if (!report) return null;
@@ -68,18 +69,17 @@ export default function RecoveryReportModal({ report, onClose }) {
             <div className="report-section">
               <h3 className="section-title">Protocol Distribution</h3>
               <div className="protocol-tags-row">
-                <div className="protocol-tag">
-                  <strong>Arm Raise (Bilateral)</strong>
-                  <span>{summary.exerciseBreakdown.arm_raise || 0} sessions</span>
-                </div>
-                <div className="protocol-tag">
-                  <strong>Sit to Stand (Stability)</strong>
-                  <span>{summary.exerciseBreakdown.sit_to_stand || 0} sessions</span>
-                </div>
-                <div className="protocol-tag">
-                  <strong>Seated Reach (Kinematics)</strong>
-                  <span>{summary.exerciseBreakdown.seated_reach || 0} sessions</span>
-                </div>
+                {Object.entries(summary.exerciseBreakdown)
+                  .filter(([, count]) => count > 0)
+                  .map(([type, count]) => (
+                    <div className="protocol-tag" key={type}>
+                      <strong>{exerciseTitle(type)}</strong>
+                      <span>{count} session{count === 1 ? '' : 's'}</span>
+                    </div>
+                  ))}
+                {Object.values(summary.exerciseBreakdown).every((count) => !count) && (
+                  <div className="protocol-tag"><strong>No sessions yet</strong><span>0 sessions</span></div>
+                )}
               </div>
             </div>
           )}
@@ -114,7 +114,7 @@ export default function RecoveryReportModal({ report, onClose }) {
                         </td>
                         <td>
                           <span className="protocol-badge">
-                            {s.exerciseType === 'arm_raise' ? 'Arm Raise' : s.exerciseType === 'sit_to_stand' ? 'Sit-to-Stand' : 'Seated Reach'}
+                            {exerciseTitle(s.exerciseType)}
                           </span>
                         </td>
                         <td>

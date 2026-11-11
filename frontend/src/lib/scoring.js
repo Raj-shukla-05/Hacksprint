@@ -45,7 +45,7 @@ export function buildArmRaiseSession(frames) {
 
   let reps = 0;
   let state = 'down';
-  let lastPeak = 0;
+  let lastPeak = -Infinity;
   const leftValues = valid.map((f) => f.leftElevation);
   const rightValues = valid.map((f) => f.rightElevation);
   const maxLeft = Math.max(...leftValues);
@@ -55,9 +55,12 @@ export function buildArmRaiseSession(frames) {
 
   for (const frame of valid) {
     const peak = frame.averageElevation;
-    if (state === 'down' && peak >= 78 && Date.now() - lastPeak > 700) {
+    // Use each frame's own capture time. (Date.now() here is the same instant for every frame once the
+    // test has finished, which stopped any rep after the first from being counted.)
+    const frameTime = frame.at ?? Date.now();
+    if (state === 'down' && peak >= 78 && frameTime - lastPeak > 700) {
       state = 'up';
-      lastPeak = Date.now();
+      lastPeak = frameTime;
     } else if (state === 'up' && peak <= 55) {
       reps += 1;
       state = 'down';

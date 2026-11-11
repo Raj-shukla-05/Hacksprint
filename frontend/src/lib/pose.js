@@ -56,6 +56,8 @@ export async function createPoseLandmarker() {
 
 export const LANDMARKS = {
   nose: 0,
+  mouthLeft: 9,
+  mouthRight: 10,
   leftShoulder: 11,
   rightShoulder: 12,
   leftElbow: 13,

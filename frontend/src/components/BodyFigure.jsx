@@ -26,6 +26,14 @@ const REGIONS = {
     shapes: ['M84 112 C80 170 86 224 94 262 L146 262 C154 224 160 170 156 112 Z'],
     joints: [[120, 188]],
   },
+  body: {
+    shapes: [
+      'M84 112 C80 170 86 224 94 262 L146 262 C154 224 160 170 156 112 Z',
+      'M94 262 C90 330 92 384 98 424 L116 424 C118 380 118 320 120 262 Z',
+      'M146 262 C150 330 148 384 142 424 L124 424 C122 380 122 320 120 262 Z',
+    ],
+    joints: [[120, 188], [106, 330], [134, 330], [106, 440], [134, 440]],
+  },
 };
 
 export default function BodyFigure({ highlight = null, markers = [], activeId = null, onSelect, caption }) {

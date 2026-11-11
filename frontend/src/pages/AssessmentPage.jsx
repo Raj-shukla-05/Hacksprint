@@ -1,32 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import {
-  AlertCircle, ArrowLeft, Check, ChevronRight, Clock, FileText, Hand, MoveUp, Play, Scale, ShieldCheck,
-  Sparkles, Timer, X,
+  AlertCircle, ArrowLeft, ChevronRight, Clock, Eye, FileText, Play, ShieldCheck, Sparkles, Timer, User, X,
 } from 'lucide-react';
-import CameraAssessment, { EXERCISES, TEST_SECONDS } from '../components/CameraAssessment';
+import CameraAssessment from '../components/CameraAssessment';
 import BodyFigure from '../components/BodyFigure';
 import ScoreRing from '../components/ScoreRing';
 import TrendChart from '../components/TrendChart';
 import { api } from '../lib/api';
+import {
+  CATEGORIES, EXERCISES, EXERCISE_IDS, assignedTargetText, exerciseTitle, targetText,
+} from '../lib/exercises';
+import { Hand, MoveUp, Scale } from 'lucide-react';
 
-const tests = [
-  { id: 'arm_raise', desc: 'Range, symmetry and control', icon: MoveUp, featured: true },
-  { id: 'sit_to_stand', desc: 'Repetitions and stability', icon: Scale },
-  { id: 'seated_reach', desc: 'Reach and path efficiency', icon: Hand },
+const DATA_ROWS = [
+  { key: 'Movement', icon: MoveUp },
+  { key: 'Balance', icon: Scale },
+  { key: 'Coordination', icon: Hand },
 ];
-
-const MEASURED = {
-  arm_raise: ['Shoulder range', 'Left/right symmetry', 'Movement control', 'Reps'],
-  sit_to_stand: ['Knee angle', 'Stability', 'Movement control', 'Reps'],
-  seated_reach: ['Reach distance', 'Path efficiency', 'Movement control', 'Reps'],
-};
-
-const titleOf = (type) => EXERCISES[type]?.title || type;
 
 export default function AssessmentPage({
   onSave, onDone, assignment, onClearAssignment, onSelectAssignment, userId, dashboard, trends = [],
 }) {
   const [exercise, setExercise] = useState(() => assignment?.exerciseType || 'arm_raise');
+  const [category, setCategory] = useState(() => EXERCISES[assignment?.exerciseType || 'arm_raise']?.category || 'upper');
   const [phase, setPhase] = useState('select'); // 'select' | 'test'
   const [runKey, setRunKey] = useState(0);
   const [sessionResult, setSessionResult] = useState(null);
@@ -34,7 +30,10 @@ export default function AssessmentPage({
   const [plan, setPlan] = useState([]);
 
   useEffect(() => {
-    if (assignment?.exerciseType) setExercise(assignment.exerciseType);
+    if (assignment?.exerciseType && EXERCISES[assignment.exerciseType]) {
+      setExercise(assignment.exerciseType);
+      setCategory(EXERCISES[assignment.exerciseType].category);
+    }
   }, [assignment?.exerciseType]);
 
   useEffect(() => {
@@ -46,8 +45,13 @@ export default function AssessmentPage({
     return () => { cancelled = true; };
   }, [userId, sessionResult]);
 
-  const startTest = (id) => {
+  const choose = (id) => {
     setExercise(id);
+    setCategory(EXERCISES[id].category);
+  };
+
+  const startTest = (id) => {
+    choose(id);
     setSessionResult(null);
     setTrackingWarning(null);
     setRunKey((k) => k + 1);
@@ -62,7 +66,7 @@ export default function AssessmentPage({
     // A test only counts if the body was actually tracked.
     const isValidSession = result.score > 0 && result.duration >= 3;
     if (!isValidSession) {
-      setTrackingWarning('Inconsistent body tracking detected, so this attempt was not saved. Make sure your upper body is in view with good lighting, then try again.');
+      setTrackingWarning('Inconsistent body tracking detected, so this attempt was not saved. Make sure the body parts this test needs are in view with good lighting, then try again.');
       setSessionResult(null);
       return;
     }
@@ -80,13 +84,18 @@ export default function AssessmentPage({
 
   /* ---------------- Camera / test view ---------------- */
   if (phase === 'test') {
+    const t = EXERCISES[exercise];
     return (
       <div className="page exercise-page">
         <div className="exercise-head">
           <div>
             <button type="button" className="back-link" onClick={backToTests}><ArrowLeft size={15} /> Back to tests</button>
             <h1>Today’s check</h1>
-            <p>The test ends on its own after {TEST_SECONDS} seconds, or as soon as you finish 5 reps.</p>
+            <p>
+              {t.mode === 'hold'
+                ? `The test ends on its own after ${t.holdSeconds} seconds.`
+                : `The test ends on its own after ${t.maxSeconds} seconds, or as soon as you finish ${t.targetReps} ${t.repsLabel}.`}
+            </p>
           </div>
           <span className="privacy-pill"><Sparkles size={14} /> Privacy-first</span>
         </div>
@@ -125,12 +134,8 @@ export default function AssessmentPage({
   const info = EXERCISES[exercise];
   const metrics = dashboard?.metrics || {};
   const summary = dashboard?.summary || {};
-  const last = trends[trends.length - 1];
-  const dataRows = [
-    { label: 'Movement', icon: MoveUp, m: metrics.Movement },
-    { label: 'Balance', icon: Scale, m: metrics.Balance },
-    { label: 'Coordination', icon: Hand, m: metrics.Coordination },
-  ];
+  const lastSession = trends[trends.length - 1];
+  const visibleTests = EXERCISE_IDS.filter((id) => EXERCISES[id].category === category);
 
   return (
     <div className="page exercise-page">
@@ -152,8 +157,24 @@ export default function AssessmentPage({
                 <button type="button" className="link-button" onClick={onClearAssignment}><X size={12} /> Free practice</button>
               )}
             </div>
+            <div className="cat-tabs" role="tablist" aria-label="Test areas">
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={category === c.id}
+                  className={category === c.id ? 'on' : ''}
+                  onClick={() => setCategory(c.id)}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
             <div className="test-list">
-              {tests.map(({ id, desc, icon: Icon, featured }) => {
+              {visibleTests.map((id) => {
+                const t = EXERCISES[id];
+                const Icon = t.icon;
                 const locked = !!assignment && assignment.exerciseType !== id;
                 return (
                   <div
@@ -162,22 +183,22 @@ export default function AssessmentPage({
                     tabIndex={locked ? -1 : 0}
                     aria-disabled={locked}
                     className={`test-card ${exercise === id ? 'selected' : ''} ${locked ? 'locked' : ''}`}
-                    onClick={() => !locked && setExercise(id)}
-                    onKeyDown={(e) => { if (!locked && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setExercise(id); } }}
+                    onClick={() => !locked && choose(id)}
+                    onKeyDown={(e) => { if (!locked && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); choose(id); } }}
                   >
                     <span className="tile-icon"><Icon size={18} /></span>
                     <span className="tile-text">
-                      <strong>{titleOf(id)}</strong>
-                      <small>{desc}</small>
-                      <em><Timer size={11} /> 5 reps · up to {TEST_SECONDS}s</em>
+                      <strong>{t.title}</strong>
+                      <small>{t.desc}</small>
+                      <em><Timer size={11} /> {targetText(t)}</em>
                     </span>
-                    {featured && exercise !== id && <span className="recommended">Suggested</span>}
+                    {t.suggested && exercise !== id && <span className="recommended">Suggested</span>}
                     <button
                       type="button"
                       className="test-start"
                       disabled={locked}
                       onClick={(e) => { e.stopPropagation(); startTest(id); }}
-                      aria-label={`Start ${titleOf(id)}`}
+                      aria-label={`Start ${t.title}`}
                     >
                       <Play size={14} /> Start
                     </button>
@@ -192,9 +213,9 @@ export default function AssessmentPage({
             {assignment && (
               <div className="plan-active">
                 <div className="plan-active-head"><FileText size={14} /> Current protocol</div>
-                <strong>{titleOf(assignment.exerciseType)}</strong>
+                <strong>{exerciseTitle(assignment.exerciseType)}</strong>
                 <p>{assignment.instructions}</p>
-                <small>Target: {assignment.targetReps} reps</small>
+                <small>Target: {assignedTargetText(assignment.exerciseType, assignment.targetReps)}</small>
               </div>
             )}
             {plan.length > 0 ? (
@@ -210,8 +231,8 @@ export default function AssessmentPage({
                       onClick={() => onSelectAssignment?.(asgn)}
                     >
                       <span className="plan-time"><Clock size={12} /> {daysLeft > 0 ? `${daysLeft}d left` : 'Today'}</span>
-                      <strong>{titleOf(asgn.exerciseType)}</strong>
-                      <small>{asgn.targetReps} controlled reps</small>
+                      <strong>{exerciseTitle(asgn.exerciseType)}</strong>
+                      <small>{assignedTargetText(asgn.exerciseType, asgn.targetReps)}</small>
                       <ChevronRight size={16} className="plan-go" />
                     </button>
                   );
@@ -232,13 +253,17 @@ export default function AssessmentPage({
           </div>
           <BodyFigure highlight={info.region} />
           <div className="check-area"><strong>{info.area}</strong><span>highlighted area</span></div>
+          <div className="setup-chips">
+            <span><User size={13} /> {info.position}</span>
+            <span><Eye size={13} /> {info.view}</span>
+          </div>
           <div className="measure-chips">
-            {MEASURED[exercise].map((m) => <span key={m}>{m}</span>)}
+            {info.measured.map((m) => <span key={m}>{m}</span>)}
           </div>
           <button className="auth-submit start-big" type="button" onClick={() => startTest(exercise)}>
             <Play size={17} /> <span>Start {info.title}</span>
           </button>
-          <p className="check-note"><ShieldCheck size={14} /> Video is processed on your device and never uploaded.</p>
+          <p className="check-note"><ShieldCheck size={14} /> {info.safety}</p>
         </section>
 
         {/* Data */}
@@ -247,18 +272,21 @@ export default function AssessmentPage({
             <div className="panel-head"><h3>Your data</h3>{summary.trend && <span className="soft-badge green">{summary.trend}</span>}</div>
             <ScoreRing score={summary.functionalScore ?? 0} change={summary.change ?? 0} />
             <div className="data-rows">
-              {dataRows.map(({ label, icon: Icon, m }) => (
-                <div className="data-row" key={label}>
-                  <span className="data-icon"><Icon size={15} /></span>
-                  <span>{label}</span>
-                  <strong>{m?.value ?? '–'}</strong>
-                  <em className={Number(m?.change) < -0.5 ? 'down' : Number(m?.change) > 0.5 ? 'up' : ''}>
-                    {m?.change == null ? '' : `${Number(m.change) > 0 ? '+' : ''}${Number(m.change).toFixed(0)}%`}
-                  </em>
-                </div>
-              ))}
+              {DATA_ROWS.map(({ key, icon: Icon }) => {
+                const m = metrics[key];
+                return (
+                  <div className="data-row" key={key}>
+                    <span className="data-icon"><Icon size={15} /></span>
+                    <span>{key}</span>
+                    <strong>{m?.value ?? '–'}</strong>
+                    <em className={Number(m?.change) < -0.5 ? 'down' : Number(m?.change) > 0.5 ? 'up' : ''}>
+                      {m?.change == null ? '' : `${Number(m.change) > 0 ? '+' : ''}${Number(m.change).toFixed(0)}%`}
+                    </em>
+                  </div>
+                );
+              })}
             </div>
-            {last && <p className="data-last">Latest session: <strong>{last.day}</strong> · score <strong>{last.score}</strong></p>}
+            {lastSession && <p className="data-last">Latest session: <strong>{lastSession.day}</strong> · score <strong>{lastSession.score}</strong></p>}
           </section>
           <section className="panel">
             <div className="panel-head"><h3>Recent trend</h3></div>

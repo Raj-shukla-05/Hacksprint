@@ -4,10 +4,11 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import TrendChart from '../components/TrendChart';
 import AlertCard, { StableCard } from '../components/AlertCard';
 import { api } from '../lib/api';
+import { EXERCISES, EXERCISE_IDS } from '../lib/exercises';
 
 const STATUS_ORDER = { review: 0, monitor: 1, stable: 2 };
 const STATUS_LABEL = { review: 'Review recommended', monitor: 'Monitor', stable: 'Stable' };
-const EXERCISE_LABEL = { arm_raise: 'Arm Raise', sit_to_stand: 'Sit-to-Stand', seated_reach: 'Seated Reach' };
+const EXERCISE_LABEL = Object.fromEntries(EXERCISE_IDS.map((id) => [id, EXERCISES[id].title]));
 const DOMAIN_LINES = [
   { key: 'movement', name: 'Movement', color: '#0f766e' },
   { key: 'balance', name: 'Balance', color: '#2563eb' },

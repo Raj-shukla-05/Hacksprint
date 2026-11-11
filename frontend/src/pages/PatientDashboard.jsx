@@ -9,10 +9,9 @@ import TrendChart from '../components/TrendChart';
 import BodyFigure from '../components/BodyFigure';
 import AlertCard, { StableCard } from '../components/AlertCard';
 import { api } from '../lib/api';
+import { assignedTargetText, exerciseTitle } from '../lib/exercises';
 
-const exerciseName = (type) => (
-  type === 'arm_raise' ? 'Arm Raise' : type === 'sit_to_stand' ? 'Sit-to-Stand' : 'Seated Reach'
-);
+const exerciseName = exerciseTitle;
 
 function TrendPill({ value }) {
   const n = Number(value || 0);
@@ -202,7 +201,7 @@ export default function PatientDashboard({ dashboard, trends, alerts, setView, o
                       <span className="protocol-icon"><Activity size={17} /></span>
                       <div className="protocol-body">
                         <strong>{exerciseName(asgn.exerciseType)}</strong>
-                        <small>{asgn.targetReps} controlled reps · {daysLeft > 0 ? `due in ${daysLeft} day${daysLeft === 1 ? '' : 's'}` : 'due today'}</small>
+                        <small>{assignedTargetText(asgn.exerciseType, asgn.targetReps)} ·{daysLeft > 0 ? `due in ${daysLeft} day${daysLeft === 1 ? '' : 's'}` : 'due today'}</small>
                         {asgn.instructions && <p>{asgn.instructions}</p>}
                       </div>
                       <button

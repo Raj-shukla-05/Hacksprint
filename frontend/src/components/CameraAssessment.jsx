@@ -2,46 +2,20 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Camera, CheckCircle2, CircleAlert, LoaderCircle, Play, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import { createPoseLandmarker, drawSkeleton } from '../lib/pose';
 import BodyFigure from './BodyFigure';
-import { armRaiseFrame, buildArmRaiseSession, buildSeatedReachSession, buildSitToStandSession, seatedReachFrame, sitToStandFrame } from '../lib/scoring';
+import { EXERCISES } from '../lib/exercises';
 
-export const EXERCISES = {
-  arm_raise: {
-    title: 'Arm Raise',
-    instruction: 'Raise both arms slowly until they are as high and comfortable as possible, then lower.',
-    target: '5 controlled repetitions',
-    region: 'arms',
-    area: 'Shoulders and arms',
-  },
-  sit_to_stand: {
-    title: 'Sit-to-Stand',
-    instruction: 'From a stable chair, stand up tall and return to the seated position at a comfortable pace.',
-    target: '5 controlled repetitions',
-    region: 'legs',
-    area: 'Hips, knees and legs',
-  },
-  seated_reach: {
-    title: 'Seated Reach',
-    instruction: 'Reach forward and slightly upward with both hands, then return to your starting position.',
-    target: '5 controlled repetitions',
-    region: 'torso',
-    area: 'Trunk and reaching arm',
-  },
-};
-
-export const TEST_SECONDS = 45;   // a test always ends by itself after this long
 const GET_READY_SECONDS = 3;       // time to get into position before recording starts
-const TARGET_REPS = 5;             // reaching this ends the test early (after a short pause)
-const FINISH_DELAY_MS = 1500;
+const FINISH_DELAY_MS = 1500;      // short pause after the last rep so it is captured
+const MAX_FRAMES = 3600;           // enough to keep a whole test (about 60s) for scoring
 
 const pad = (n) => String(n).padStart(2, '0');
+const cap = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
-export default function CameraAssessment({
-  exercise = 'arm_raise',
-  onComplete,
-  onExit,
-  autoStart = false,
-  maxSeconds = TEST_SECONDS,
-}) {
+export default function CameraAssessment({ exercise = 'arm_raise', onComplete, onExit, autoStart = false }) {
+  const ex = EXERCISES[exercise];
+  const maxSeconds = ex.maxSeconds;
+  const targetReps = ex.mode === 'hold' ? 0 : ex.targetReps;
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const landmarkerRef = useRef(null);
@@ -59,7 +33,7 @@ export default function CameraAssessment({
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0); // get-ready seconds left (0 = recording)
   const [elapsed, setElapsed] = useState(0);
-  const [liveMetrics, setLiveMetrics] = useState({ phase: 'Ready', value: 0, symmetry: 0, reps: 0 });
+  const [liveMetrics, setLiveMetrics] = useState({ phase: 'Ready', value: 0, quality: 0, reps: 0 });
   const [result, setResult] = useState(null);
 
   elapsedRef.current = elapsed;
@@ -101,9 +75,9 @@ export default function CameraAssessment({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, countdown, elapsed, maxSeconds]);
 
-  // …or the rep target has been reached (short pause so the last rep is captured).
+  // …or the rep target has been reached (short pause so the last rep is captured). Hold tests only end on time.
   useEffect(() => {
-    if (status !== 'running' || countdown > 0 || liveMetrics.reps < TARGET_REPS) return undefined;
+    if (ex.mode === 'hold' || status !== 'running' || countdown > 0 || liveMetrics.reps < targetReps) return undefined;
     const id = window.setTimeout(finishAssessment, FINISH_DELAY_MS);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -118,7 +92,7 @@ export default function CameraAssessment({
       recordingRef.current = false;
       finishedRef.current = false;
       setElapsed(0);
-      setLiveMetrics({ phase: 'Ready', value: 0, symmetry: 0, reps: 0 });
+      setLiveMetrics({ phase: 'Ready', value: 0, quality: 0, reps: 0 });
       setStatus('loading');
       if (!landmarkerRef.current) landmarkerRef.current = await createPoseLandmarker();
       if (runRef.current !== runId) return;
@@ -155,53 +129,19 @@ export default function CameraAssessment({
       const ctx = canvas.getContext('2d');
       if (landmarks) {
         drawSkeleton(ctx, video, landmarks);
-        const kind = exerciseRef.current;
-        let frame;
-        if (kind === 'arm_raise') frame = armRaiseFrame(landmarks);
-        if (kind === 'sit_to_stand') frame = sitToStandFrame(landmarks);
-        if (kind === 'seated_reach') frame = seatedReachFrame(landmarks);
+        const test = EXERCISES[exerciseRef.current];
+        const frame = test.frame(landmarks);
         if (frame?.ready && recordingRef.current) {
           framesRef.current.push({ ...frame, at: Date.now() });
-          if (framesRef.current.length > 450) framesRef.current.shift();
+          if (framesRef.current.length > MAX_FRAMES) framesRef.current.shift();
           const frames = framesRef.current;
-          const current = frames[frames.length - 1];
-          const reps = estimateReps(kind, frames);
-          setLiveMetrics({
-            phase: kind === 'arm_raise' ? (current.averageElevation > 70 ? 'Raise' : 'Lower') : 'Tracking',
-            value: kind === 'arm_raise' ? Math.round(current.averageElevation) : Math.round(current.reach ?? current.kneeAngle ?? 0),
-            symmetry: Math.round(current.symmetry ?? current.stability ?? current.reach ?? 0),
-            reps,
-          });
+          setLiveMetrics({ ...test.live(frames), reps: test.count(frames) });
         }
       }
     } catch (err) {
       // Ignore individual-frame issues to keep the assessment loop alive.
     }
     rafRef.current = requestAnimationFrame(processFrame);
-  }
-
-  function estimateReps(kind, frames) {
-    if (kind === 'arm_raise') return countPeaks(frames.map((f) => f.averageElevation || 0), 70, 48);
-    if (kind === 'sit_to_stand') return countValleys(frames.map((f) => f.kneeAngle || 0), 110, 150);
-    return countPeaks(frames.map((f) => f.reach || 0), 40, 25);
-  }
-
-  function countPeaks(values, high, low) {
-    let count = 0; let state = 'low';
-    for (const value of values) {
-      if (state === 'low' && value >= high) state = 'high';
-      if (state === 'high' && value <= low) { count += 1; state = 'low'; }
-    }
-    return Math.min(TARGET_REPS, count);
-  }
-
-  function countValleys(values, low, high) {
-    let count = 0; let state = 'high';
-    for (const value of values) {
-      if (state === 'high' && value <= low) state = 'low';
-      if (state === 'low' && value >= high) { count += 1; state = 'high'; }
-    }
-    return Math.min(TARGET_REPS, count);
   }
 
   function stopCamera() {
@@ -215,15 +155,11 @@ export default function CameraAssessment({
   function finishAssessment() {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    const kind = exerciseRef.current;
-    const frames = framesRef.current;
-    let data;
-    if (kind === 'arm_raise') data = buildArmRaiseSession(frames);
-    if (kind === 'sit_to_stand') data = buildSitToStandSession(frames);
-    if (kind === 'seated_reach') data = buildSeatedReachSession(frames);
+    const test = EXERCISES[exerciseRef.current];
+    const data = test.build(framesRef.current);
     const final = {
-      exercise: kind,
-      exerciseTitle: EXERCISES[kind].title,
+      exercise: test.id,
+      exerciseTitle: test.title,
       score: data.score,
       metrics: data.metrics,
       duration: elapsedRef.current,
@@ -241,10 +177,10 @@ export default function CameraAssessment({
     onExit?.();
   }
 
-  const info = EXERCISES[exercise];
   const remaining = Math.max(0, maxSeconds - elapsed);
   const progress = Math.min(100, (elapsed / maxSeconds) * 100);
   const active = status === 'running' || status === 'loading';
+  const unit = ex.levelUnit;
 
   return (
     <div className="assessment-layout">
@@ -252,8 +188,8 @@ export default function CameraAssessment({
         <div className="assessment-head">
           <div>
             <span className="eyebrow">{status === 'done' ? 'Test complete' : 'Live functional check'}</span>
-            <h2>{info.title}</h2>
-            <p>{info.instruction}</p>
+            <h2>{ex.title}</h2>
+            <p>{ex.instruction}</p>
           </div>
           <div className={`timer-pill ${status === 'running' && countdown === 0 ? 'live' : ''}`}>
             <span /> {status === 'running' && countdown === 0 ? `${pad(Math.floor(remaining / 60))}:${pad(remaining % 60)} left` : `${pad(Math.floor(maxSeconds / 60))}:${pad(maxSeconds % 60)} test`}
@@ -269,7 +205,7 @@ export default function CameraAssessment({
               <div className="camera-placeholder">
                 <div className="camera-placeholder-icon"><Camera size={30} /></div>
                 <strong>Ready for your check</strong>
-                <span>Stand or sit where your head, shoulders, hands and feet are visible.</span>
+                <span>{ex.view}.</span>
                 <button className="primary" onClick={startCamera}><Play size={17} /> Start test</button>
               </div>
             )}
@@ -283,7 +219,8 @@ export default function CameraAssessment({
                   <div className="get-ready">
                     <small>Starting in</small>
                     <strong key={countdown}>{countdown}</strong>
-                    <span>{info.instruction}</span>
+                    <span>{ex.instruction}</span>
+                    <em>{ex.position} · {ex.view}</em>
                   </div>
                 )}
               </div>
@@ -308,7 +245,7 @@ export default function CameraAssessment({
         {status === 'done' && result && (
           <div className="result-banner">
             <div className="result-score">{result.score}<span>/100</span></div>
-            <div><strong>{result.score > 0 ? `${result.exerciseTitle} completed` : 'Test ended with no score'}</strong><span>{result.score > 0 ? 'Session processed. Your metrics are ready for baseline comparison.' : 'Make sure your whole upper body is in view with good lighting, then try again.'}</span></div>
+            <div><strong>{result.score > 0 ? `${result.exerciseTitle} completed` : 'Test ended with no score'}</strong><span>{result.score > 0 ? 'Session processed. Your metrics are ready for baseline comparison.' : 'Make sure the needed body parts are in view with good lighting, then try again.'}</span></div>
             <div className="result-actions">
               <button className="secondary" onClick={startCamera}><RotateCcw size={15} /> Try again</button>
               {onExit && <button className="primary" onClick={onExit}><ArrowLeft size={15} /> Back to tests</button>}
@@ -320,24 +257,30 @@ export default function CameraAssessment({
       <aside className="assessment-side">
         <div className="side-section body-detail">
           <span className="section-kicker">Target area</span>
-          <BodyFigure highlight={info.region} caption={<div className="body-caption"><strong>{info.area}</strong><span>{info.title}</span></div>} />
+          <BodyFigure highlight={ex.region} caption={<div className="body-caption"><strong>{ex.area}</strong><span>{ex.title}</span></div>} />
         </div>
         <div className="side-section">
           <span className="section-kicker">Session target</span>
-          <div className="target-card"><span className="target-number">{TARGET_REPS}</span><div><strong>controlled reps</strong><span>or {maxSeconds}s, whichever comes first</span></div></div>
+          {ex.mode === 'hold' ? (
+            <div className="target-card"><span className="target-number">{ex.holdSeconds}</span><div><strong>seconds, as still as you can</strong><span>{ex.position}</span></div></div>
+          ) : (
+            <div className="target-card"><span className="target-number">{ex.targetReps}</span><div><strong>controlled {ex.repsLabel}</strong><span>or {maxSeconds}s, whichever comes first</span></div></div>
+          )}
         </div>
         <div className="side-section">
           <span className="section-kicker">Live metrics</span>
           <div className="live-metrics">
             <div><span>Movement phase</span><strong>{liveMetrics.phase}</strong></div>
-            <div><span>Movement level</span><strong>{liveMetrics.value}{exercise === 'arm_raise' ? '%' : '°'}</strong></div>
-            <div><span>Quality signal</span><strong>{liveMetrics.symmetry}%</strong></div>
-            <div><span>Repetitions</span><strong>{liveMetrics.reps}/{TARGET_REPS}</strong></div>
+            <div><span>{ex.levelLabel}</span><strong>{liveMetrics.value}{unit}</strong></div>
+            <div><span>{ex.qualityLabel}</span><strong>{liveMetrics.quality}%</strong></div>
+            {ex.mode === 'hold'
+              ? <div><span>Hold time</span><strong>{Math.min(elapsed, maxSeconds)}/{ex.holdSeconds}s</strong></div>
+              : <div><span>{cap(ex.repsLabel)}</span><strong>{liveMetrics.reps}/{targetReps}</strong></div>}
           </div>
         </div>
         <div className="side-section">
           <span className="section-kicker">Safety</span>
-          <div className="safety-note"><ShieldCheck size={18} /><div><strong>Low-risk demo mode</strong><span>Use a stable chair and stop if you feel unsafe or unwell.</span></div></div>
+          <div className="safety-note"><ShieldCheck size={18} /><div><strong>Stay safe</strong><span>{ex.safety}</span></div></div>
         </div>
       </aside>
     </div>

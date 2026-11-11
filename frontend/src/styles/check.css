@@ -43,6 +43,14 @@
 .start-big { width: min(100%, 340px); margin-top: 4px; }
 .check-note { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; color: var(--muted); }
 
+/* category tabs + setup chips */
+.cat-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: #eceff6; padding: 4px; border-radius: 14px; margin-bottom: 12px; }
+.cat-tabs button { border: 0; background: transparent; border-radius: 10px; padding: 8px 4px; font-size: 12px; font-weight: 700; color: #4a5266; transition: .15s ease; }
+.cat-tabs button.on { background: #fff; color: var(--brand); box-shadow: 0 2px 8px rgba(20, 27, 45, .1); }
+.setup-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.setup-chips span { display: inline-flex; align-items: center; gap: 6px; background: var(--brand-soft); color: var(--brand); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; }
+.get-ready em { font-style: normal; font-size: 12px; font-weight: 700; background: rgba(255, 255, 255, .16); border-radius: 999px; padding: 5px 12px; }
+
 /* data column */
 .data-rows { display: grid; gap: 4px; margin-top: 10px; }
 .data-row { display: grid; grid-template-columns: 30px 1fr auto 52px; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
@@ -89,3 +97,5 @@
 @media (prefers-reduced-motion: reduce) {
   .get-ready strong, .timer-pill.live span { animation: none; }
 }
+
+.timer-pill { white-space: nowrap; flex: none; }

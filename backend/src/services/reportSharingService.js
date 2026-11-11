@@ -7,6 +7,7 @@ const Appointment = require('../models/Appointment');
 const { buildDashboard, buildTrend, createAlert, personalBaseline } = require('../trendEngine');
 const { findDoctor } = require('./appointmentService');
 const { createNotification } = require('./notificationService');
+const { EXERCISE_TYPES } = require('../exerciseTypes');
 
 /**
  * Compiles a comprehensive, genuine recovery report directly from patient assessment records.
@@ -55,11 +56,9 @@ async function compilePatientRecoveryReport(patientId) {
   const activeAlert = createAlert(patientId, patientAssessments);
 
   // Group assessments by exercise type
-  const exerciseBreakdown = {
-    arm_raise: patientAssessments.filter((a) => a.exerciseType === 'arm_raise').length,
-    sit_to_stand: patientAssessments.filter((a) => a.exerciseType === 'sit_to_stand').length,
-    seated_reach: patientAssessments.filter((a) => a.exerciseType === 'seated_reach').length,
-  };
+  const exerciseBreakdown = Object.fromEntries(
+    EXERCISE_TYPES.map((type) => [type, patientAssessments.filter((a) => a.exerciseType === type).length])
+  );
 
   return {
     patient: {
