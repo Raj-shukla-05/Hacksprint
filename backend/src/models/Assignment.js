@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { EXERCISE_TYPES } = require('../exerciseTypes');
 
 const AssignmentSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true, index: true },
@@ -7,7 +8,7 @@ const AssignmentSchema = new mongoose.Schema({
   exerciseType: {
     type: String,
     required: true,
-    enum: ['arm_raise', 'sit_to_stand', 'seated_reach'],
+    enum: EXERCISE_TYPES,
     default: 'arm_raise',
   },
   instructions: { type: String, required: true, trim: true },

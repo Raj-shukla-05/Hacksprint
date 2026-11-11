@@ -6,8 +6,11 @@ AI-powered home recovery & functional monitoring for stroke survivors.
 
 - React + Vite frontend and separate Node.js + Express backend
 - Browser-side MediaPipe Pose Landmarker for privacy-first movement analysis
-- Live Arm Raise exercise with skeleton overlay, ROM, symmetry, control and rep counting
-- Sit-to-Stand and Seated Reach exercises using the same pose pipeline
+- Nine camera-based movement tests with skeleton overlay, scoring and rep counting, grouped by area:
+  - Upper limb: Arm Raise, Elbow Flex & Extend, Hand to Mouth
+  - Lower limb: Sit-to-Stand, Seated Knee Extension, Marching in Place
+  - Balance & trunk: Seated Reach, Seated Trunk Lean, Standing Balance Hold
+- Today's check: pick a test, the camera opens only on Start, and the test ends by itself (rep target or time limit)
 - Personal baseline and longitudinal trend engine
 - Doctor dashboard with Stable / Monitor / Review Recommended states
 - Explainable alerts based on deterministic trend logic

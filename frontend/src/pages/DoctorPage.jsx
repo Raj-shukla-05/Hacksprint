@@ -7,8 +7,10 @@ import {
 import TrendChart from '../components/TrendChart';
 import AlertCard, { StableCard } from '../components/AlertCard';
 import { api } from '../lib/api';
+import { CATEGORIES, EXERCISES, EXERCISE_IDS, assignedTargetText, exerciseTitle as titleOfExercise } from '../lib/exercises';
 
 const DEFAULT_INSTRUCTIONS = {
+  ...Object.fromEntries(EXERCISE_IDS.map((id) => [id, EXERCISES[id].doctorHint])),
   arm_raise: 'Perform 5 slow, bilateral arm raises in the morning. Keep shoulders level and pause at highest comfortable elevation.',
   sit_to_stand: 'Complete 5 repetitions from a stable chair with arms crossed over chest. Focus on smooth, balanced ascent and descent.',
   seated_reach: 'Perform 5 controlled forward reaches from an upright seated posture. Maintain core stability throughout.',
@@ -210,6 +212,8 @@ function PatientDetail({ patient, onDemoLoaded }) {
   const handleExerciseChange = (type) => {
     setExerciseType(type);
     setInstructions(DEFAULT_INSTRUCTIONS[type] || '');
+    const test = EXERCISES[type];
+    if (test) setTargetReps(test.mode === 'hold' ? 1 : test.targetReps);
   };
 
   const handleCreateAssignment = async (e) => {
@@ -334,17 +338,23 @@ function PatientDetail({ patient, onDemoLoaded }) {
                 onChange={(e) => handleExerciseChange(e.target.value)}
                 style={{ width: '100%', marginTop: '0.25rem', padding: '0.45rem', borderRadius: '6px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
               >
-                <option value="arm_raise">Arm Raise (Upper body ROM & symmetry)</option>
-                <option value="sit_to_stand">Sit-to-Stand (Functional lower limb)</option>
-                <option value="seated_reach">Seated Reach (Core stability & reach)</option>
+                {CATEGORIES.map((cat) => (
+                  <optgroup key={cat.id} label={cat.label}>
+                    {EXERCISE_IDS.filter((id) => EXERCISES[id].category === cat.id).map((id) => (
+                      <option key={id} value={id}>{EXERCISES[id].title} ({EXERCISES[id].desc})</option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </label>
 
-            <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Target Repetitions
+            <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+              {EXERCISES[exerciseType]?.mode === 'hold' ? `Hold time (fixed ${EXERCISES[exerciseType].holdSeconds}s)` : `Target ${EXERCISES[exerciseType]?.repsLabel || 'repetitions'}`}
               <input
                 type="number"
                 min="1"
                 max="20"
+                disabled={EXERCISES[exerciseType]?.mode === 'hold'}
                 value={targetReps}
                 onChange={(e) => setTargetReps(e.target.value)}
                 style={{ width: '100%', marginTop: '0.25rem', padding: '0.45rem', borderRadius: '6px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
@@ -398,9 +408,7 @@ function PatientDetail({ patient, onDemoLoaded }) {
               const isPending = asgn.status === 'assigned' || asgn.status === 'in_progress';
               const isReviewingThis = reviewingId === asgn.id;
 
-              const exerciseTitle = asgn.exerciseType === 'arm_raise'
-                ? 'Arm Raise'
-                : asgn.exerciseType === 'sit_to_stand' ? 'Sit-to-Stand' : 'Seated Reach';
+              const exerciseTitle = titleOfExercise(asgn.exerciseType);
 
               return (
                 <div
@@ -415,7 +423,7 @@ function PatientDetail({ patient, onDemoLoaded }) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
                     <div>
                       <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{exerciseTitle}</strong>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>Target: {asgn.targetReps} reps</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>Target: {assignedTargetText(asgn.exerciseType, asgn.targetReps)}</span>
                     </div>
                     <span className={`status-badge ${asgn.status}`} style={{ textTransform: 'capitalize', fontSize: '0.7rem' }}>
                       {asgn.status.replace('_', ' ')}

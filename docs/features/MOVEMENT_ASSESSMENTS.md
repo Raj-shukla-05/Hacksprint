@@ -1,17 +1,28 @@
-# Feature Documentation: Movement Assessments (Arm Raise, Sit-to-Stand, Seated Reach)
+# Feature Documentation: Movement Assessments (nine camera-based tests)
 
 ---
 
 ## 1. Feature Name
-**Objective Kinematic Movement Assessment Protocols (Arm Raise, Sit-to-Stand, Seated Reach)**
+**Objective Kinematic Movement Assessment Protocols (nine tests across upper limb, lower limb, and balance & trunk)**
 
 ---
 
 ## 2. What is this feature?
-NeuroGuard AI implements three standardized, clinically inspired functional movement assessments tailored for stroke survivors:
-1. **Arm Raise (Bilateral Upper-Limb Range of Motion & Symmetry)**
-2. **Sit-to-Stand (Lower-Limb Strength & Postural Balance Stability)**
-3. **Seated Reach (Upper-Body Forward Reach & Kinematic Path Efficiency)**
+NeuroGuard AI implements nine clinically inspired functional movement tests tailored for stroke survivors. Thresholds are prototype values and are not clinically validated.
+
+| Area | Test | What it measures |
+| :--- | :--- | :--- |
+| Upper limb | **Arm Raise** | Bilateral shoulder range of motion and symmetry |
+| Upper limb | **Elbow Flex & Extend** | Elbow range of motion and smoothness |
+| Upper limb | **Hand to Mouth** | Eating/drinking movement: reach accuracy, range, smoothness |
+| Lower limb | **Sit-to-Stand** | Leg strength and postural stability |
+| Lower limb | **Seated Knee Extension** | Isolated knee range and control (sit side-on to the camera) |
+| Lower limb | **Marching in Place** | Step height, left/right alternation and rhythm |
+| Balance & trunk | **Seated Reach** | Forward reach and path efficiency |
+| Balance & trunk | **Seated Trunk Lean** | Side-to-side trunk control, lean range and symmetry |
+| Balance & trunk | **Standing Balance Hold** | Sway while standing still for 30 seconds (hold test, not reps) |
+
+All tests are described in one registry, `frontend/src/lib/exercises.js` (title, instructions, framing, scoring function, rep counter, live metrics). Scoring maths for the six newer tests is in `frontend/src/lib/movementTests.js`. The backend list and the mapping into the shared Movement / Balance / Coordination metrics is in `backend/src/exerciseTypes.js`.
 
 Each assessment runs in the browser, tracking key anatomical landmarks, evaluating joint mechanics, counting repetitions via finite-state machines, and calculating composite functional recovery scores (0–100).
 
@@ -33,10 +44,10 @@ Each assessment runs in the browser, tracking key anatomical landmarks, evaluati
 ## 5. How does this feature work?
 1. The patient selects an exercise on [AssessmentPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AssessmentPage.jsx) (or it auto-selects from an assigned clinician protocol).
 2. [CameraAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx) initializes the camera and MediaPipe tracking loop.
-3. For each video frame, landmark coordinates are evaluated by the specific frame calculator: `armRaiseFrame()`, `sitToStandFrame()`, or `seatedReachFrame()`.
+3. For each video frame, landmark coordinates are evaluated by the specific frame calculator: the test's frame function (for example `armRaiseFrame()` or `balanceFrame()`).
 4. Valid frames are pushed to a sliding window buffer (`framesRef.current`).
 5. Real-time feedback displays current repetition counts and movement levels.
-6. The patient clicks *"Finish"*. The aggregator function (`buildArmRaiseSession`, `buildSitToStandSession`, or `buildSeatedReachSession`) processes the buffered frame history, computes composite scores and metrics, and returns the final assessment object.
+6. The test ends on its own: after a 3-second get-ready countdown, it finishes when the rep target is reached or the time limit passes (hold tests end on time only). The registry's `build` function for that test processes the buffered frame history, computes composite scores and metrics, and returns the final assessment object.
 7. The client posts the results to `POST /api/assessments` for persistent baseline tracking.
 
 ---

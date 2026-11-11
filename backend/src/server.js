@@ -20,6 +20,7 @@ const appointmentRoutes = require('./routes/appointmentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const { seedDatabaseIfEmpty } = require('./services/seedService');
+const { EXERCISE_TYPES, isValidExerciseType, normalizeMetrics } = require('./exerciseTypes');
 
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
@@ -304,8 +305,8 @@ app.post('/api/assignments', authenticateToken, requireRole('doctor'), async (re
     return res.status(400).json({ message: 'Clinician-approved instructions are required' });
   }
 
-  if (!['arm_raise', 'sit_to_stand', 'seated_reach'].includes(exerciseType)) {
-    return res.status(400).json({ message: 'Invalid exercise type. Supported: arm_raise, sit_to_stand, seated_reach' });
+  if (!isValidExerciseType(exerciseType)) {
+    return res.status(400).json({ message: `Invalid exercise type. Supported: ${EXERCISE_TYPES.join(', ')}` });
   }
 
   const reps = Number(targetReps);
@@ -523,6 +524,9 @@ app.post('/api/assessments', authenticateToken, (req, res) => {
   if (!userId || !exerciseType || typeof score !== 'number') {
     return res.status(400).json({ message: 'userId, exerciseType and numeric score are required' });
   }
+  if (!isValidExerciseType(exerciseType)) {
+    return res.status(400).json({ message: `Invalid exercise type. Supported: ${EXERCISE_TYPES.join(', ')}` });
+  }
 
   // Patients can only submit assessments for their own account
   if (req.user.role === 'patient' && req.user.userId !== userId) {
@@ -559,37 +563,7 @@ app.post('/api/assessments', authenticateToken, (req, res) => {
     }
   }
 
-  const inputMetrics = metrics || {};
-  const normalizedMetrics = { ...inputMetrics };
-  if (exerciseType === 'arm_raise') {
-    // arm_raise measures movement (range of motion) and coordination (symmetry).
-    // Balance is NOT measured in an arm_raise session.
-    normalizedMetrics.movement = Number(inputMetrics.rangeOfMotion ?? inputMetrics.movementQuality ?? score);
-    normalizedMetrics.coordination = Number(inputMetrics.symmetry ?? score);
-    if (inputMetrics.speech !== undefined && inputMetrics.speech !== null) {
-      normalizedMetrics.speech = Number(inputMetrics.speech);
-    } else {
-      delete normalizedMetrics.speech;
-    }
-    if (inputMetrics.balance === undefined || inputMetrics.balance === null) {
-      delete normalizedMetrics.balance;
-    }
-  } else if (exerciseType === 'sit_to_stand') {
-    // sit_to_stand measures movement quality and balance (stability).
-    normalizedMetrics.movement = Number(inputMetrics.movementQuality ?? score);
-    if (inputMetrics.stability !== undefined || inputMetrics.balance !== undefined) {
-      normalizedMetrics.balance = Number(inputMetrics.stability ?? inputMetrics.balance);
-    }
-    delete normalizedMetrics.speech;
-  } else if (exerciseType === 'seated_reach') {
-    // seated_reach measures movement quality and coordination (path efficiency).
-    normalizedMetrics.movement = Number(inputMetrics.movementQuality ?? score);
-    if (inputMetrics.pathEfficiency !== undefined || inputMetrics.coordination !== undefined) {
-      normalizedMetrics.coordination = Number(inputMetrics.pathEfficiency ?? inputMetrics.coordination);
-    }
-    delete normalizedMetrics.balance;
-    delete normalizedMetrics.speech;
-  }
+  const normalizedMetrics = normalizeMetrics(exerciseType, metrics, score);
 
   const record = {
     id: `assessment-${Date.now()}`,
