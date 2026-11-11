@@ -10,10 +10,10 @@ const STATUS_ORDER = { review: 0, monitor: 1, stable: 2 };
 const STATUS_LABEL = { review: 'Review recommended', monitor: 'Monitor', stable: 'Stable' };
 const EXERCISE_LABEL = Object.fromEntries(EXERCISE_IDS.map((id) => [id, EXERCISES[id].title]));
 const DOMAIN_LINES = [
-  { key: 'movement', name: 'Movement', color: '#0f766e' },
-  { key: 'balance', name: 'Balance', color: '#2563eb' },
-  { key: 'coordination', name: 'Coordination', color: '#d97706' },
-  { key: 'speech', name: 'Speech', color: '#7c3aed' },
+  { key: 'movement', name: 'Movement', color: '#16140f' },
+  { key: 'balance', name: 'Balance', color: '#ef5f2f' },
+  { key: 'coordination', name: 'Coordination', color: '#8a78ee' },
+  { key: 'speech', name: 'Speech', color: '#9cc21f' },
 ];
 
 export default function DoctorProgressPage({ doctor }) {
@@ -68,16 +68,15 @@ export default function DoctorProgressPage({ doctor }) {
       <div className="hero-row">
         <div>
           <span className="eyebrow">Detailed review</span>
-          <h1>Patient progress</h1>
+          <h1>Patient <em>progress</em></h1>
           <p>Longitudinal performance, domain breakdown and session history for one patient. Signals are functional-monitoring aids, not diagnoses.</p>
         </div>
-        <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+        <label className="field patient-picker">
           Patient
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
             disabled={loadingList || !patients.length}
-            style={{ display: 'block', marginTop: '0.25rem', minWidth: '220px', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--line)', background: '#fff' }}
           >
             {patients.map((p) => <option key={p.id} value={p.id}>{p.name} — {STATUS_LABEL[p.status] || p.status}</option>)}
           </select>
@@ -112,7 +111,7 @@ export default function DoctorProgressPage({ doctor }) {
 
               <section className="card wide">
                 <div className="card-head"><div><span className="eyebrow">Domain breakdown</span><h3>Movement, balance, coordination, speech</h3></div></div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', marginBottom: '1rem' }}>
+                <div className="domain-grid">
                   {Object.entries(data.dashboard.metrics).map(([name, m]) => (
                     <div className="history-card" key={name}>
                       <div><span>{name}</span></div>
@@ -134,19 +133,19 @@ export default function DoctorProgressPage({ doctor }) {
                 </div>
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={trends} margin={{ left: 0, right: 8, top: 10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="4 5" stroke="#e6efef" vertical={false} />
-                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#758287', fontSize: 12 }} dy={8} />
-                    <YAxis domain={[40, 100]} axisLine={false} tickLine={false} tick={{ fill: '#758287', fontSize: 12 }} width={28} />
-                    <Tooltip />
-                    <Legend />
+                    <CartesianGrid strokeDasharray="2 6" stroke="#ddd5c4" vertical={false} />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#7d7668', fontSize: 11, fontFamily: 'Geist Mono, monospace' }} dy={8} />
+                    <YAxis domain={[40, 100]} axisLine={false} tickLine={false} tick={{ fill: '#7d7668', fontSize: 11, fontFamily: 'Geist Mono, monospace' }} width={34} />
+                    <Tooltip contentStyle={{ background: '#16140f', border: 0, borderRadius: 12, color: '#f2eee5', fontSize: 12 }} itemStyle={{ color: '#f2eee5' }} labelStyle={{ color: '#d4f15a', fontFamily: 'Geist Mono, monospace' }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
                     {DOMAIN_LINES.map((l) => <Line key={l.key} type="monotone" dataKey={l.key} name={l.name} stroke={l.color} strokeWidth={2.5} dot={false} />)}
                   </LineChart>
                 </ResponsiveContainer>
-                <p className="empty-note" style={{ marginTop: '0.5rem' }}>Domains an exercise does not measure are filled with the session score (or a default for speech) in this chart; check the session log for what each session actually recorded.</p>
+                <p className="empty-note">Domains an exercise does not measure are filled with the session score (or a default for speech) in this chart; check the session log for what each session actually recorded.</p>
               </section>
 
               <div className="alert-section">
-                {data.alerts.length ? data.alerts.map((a) => <AlertCard key={a.id} alert={a} onReview={() => {}} />) : <StableCard />}
+                {data.alerts.length ? data.alerts.map((a) => <AlertCard key={a.id} alert={a} />) : <StableCard />}
               </div>
             </>
           )}
@@ -154,9 +153,9 @@ export default function DoctorProgressPage({ doctor }) {
           <section className="card wide">
             <div className="card-head"><div><span className="eyebrow">Session log</span><h3>All recorded sessions ({sessions.length})</h3></div></div>
             {!sessions.length ? <p className="empty-note">No sessions recorded.</p> : (
-              <div className="patient-table">
+              <div className="session-log">
                 {sessions.map((s) => (
-                  <div className="patient-row" key={s.id}>
+                  <div className="session-row" key={s.id}>
                     <div className="patient-person"><div><strong>{EXERCISE_LABEL[s.exerciseType] || s.exerciseType}</strong><span>{new Date(s.timestamp).toLocaleString()} · {s.duration || 0}s{s.source === 'demo' ? ' · demo data' : ''}</span></div></div>
                     <div className="patient-score"><strong>{Math.round(s.score)}</strong><span>/100</span></div>
                     <span>{s.assignmentId ? 'Prescribed protocol' : 'Self-initiated'}</span>

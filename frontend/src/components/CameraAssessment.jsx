@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Camera, CheckCircle2, CircleAlert, LoaderCircle, Play, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import { createPoseLandmarker, drawSkeleton } from '../lib/pose';
-import BodyFigure from './BodyFigure';
+import MotionFigure from './MotionFigure';
 import { EXERCISES } from '../lib/exercises';
 
 const GET_READY_SECONDS = 3;       // time to get into position before recording starts
@@ -256,8 +256,9 @@ export default function CameraAssessment({ exercise = 'arm_raise', onComplete, o
 
       <aside className="assessment-side">
         <div className="side-section body-detail">
-          <span className="section-kicker">Target area</span>
-          <BodyFigure highlight={ex.region} caption={<div className="body-caption"><strong>{ex.area}</strong><span>{ex.title}</span></div>} />
+          <span className="section-kicker">Follow along</span>
+          <MotionFigure motion={exercise} variant="light" yaw={-30} swing={10} floor={false} />
+          <div className="body-caption"><strong>{ex.area}</strong><span>{ex.title}</span></div>
         </div>
         <div className="side-section">
           <span className="section-kicker">Session target</span>

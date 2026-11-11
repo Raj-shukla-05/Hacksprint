@@ -4,7 +4,7 @@ import { Check, LockKeyhole, ShieldCheck } from 'lucide-react';
 export default function SettingsPage() {
   return (
     <div className="page">
-      <div className="hero-row compact"><div><span className="eyebrow">Privacy & safety</span><h1>Designed around data minimization</h1><p>NeuroGuard stores functional metrics, not a permanent library of patient videos.</p></div></div>
+      <div className="hero-row compact"><div><span className="eyebrow">Privacy & safety</span><h1>Designed around data <em>minimization</em></h1><p>NeuroGuard stores functional metrics, not a permanent library of patient videos.</p></div></div>
       <div className="settings-grid">
         <section className="card"><div className="card-head"><div><span className="eyebrow">Data controls</span><h3>Your choices</h3></div><ShieldCheck size={19} className="muted" /></div>
           <SettingRow title="Store assessment metrics" desc="Scores, exercise type, timestamps and feature summaries" enabled />
