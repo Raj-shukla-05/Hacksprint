@@ -53,17 +53,17 @@ sequenceDiagram
 
 ### Step 1: Authentication & Session Initialization
 - **User Action:** Patient enters credentials or clicks demo login.
-- **Frontend Component:** [LoginPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/LoginPage.jsx).
+- **Frontend Component:** [LoginPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/LoginPage.jsx).
 - **API Request:** `POST /api/auth/login` with `{ email, password }`.
-- **Backend Handler:** [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L66-L100).
+- **Backend Handler:** [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L66-L100).
 - **Backend Function:** `bcrypt.compare()` verifies the password hash, and `generateToken()` issues a 7-day JWT.
 - **Client Storage:** `api.setAuthToken(token)` stores the JWT in `sessionStorage.getItem('neuroguard.token')`.
 
 ### Step 2: Dashboard Data Retrieval
-- **Frontend Component:** [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/PatientDashboard.jsx).
+- **Frontend Component:** [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/PatientDashboard.jsx).
 - **API Request:** `GET /api/users/:id/dashboard`.
-- **Backend Processing:** [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L51-L92) compiles the last 5 sessions into an arithmetic baseline and calculates the relative percentage change.
-- **Rendering:** [ScoreRing.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/ScoreRing.jsx) renders the circular gauge, while [MetricCard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/MetricCard.jsx) renders domain cards for Movement, Balance, Coordination, and Speech.
+- **Backend Processing:** [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js#L51-L92) compiles the last 5 sessions into an arithmetic baseline and calculates the relative percentage change.
+- **Rendering:** [ScoreRing.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/ScoreRing.jsx) renders the circular gauge, while [MetricCard.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/MetricCard.jsx) renders domain cards for Movement, Balance, Coordination, and Speech.
 
 ### Step 3: Clinician Protocol Identification
 - **Frontend Processing:** Queries `GET /api/patients/:id/assignments`.
@@ -71,15 +71,15 @@ sequenceDiagram
 - **Action:** Clicking *"Start Assigned Protocol"* binds `selectedAssignment`, automatically pre-selecting the prescribed exercise in the assessment view.
 
 ### Step 4: Camera Check & Kinetic Assessment
-- **Frontend Component:** [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx).
+- **Frontend Component:** [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx).
 - **Browser Permission:** `navigator.mediaDevices.getUserMedia({ video: true, audio: false })`.
 - **Engine Initialization:** MediaPipe FilesetResolver loads `/mediapipe/wasm` and builds `PoseLandmarker` from `/models/pose_landmarker_lite.task`.
 - **Execution Loop:** `requestAnimationFrame` continuously executes `detectForVideo()` and `drawSkeleton()`.
 
 ### Step 5: Session Submission & Persistence
-- **Client Validation:** [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L26-L37) verifies `score > 0` and `duration >= 3`.
+- **Client Validation:** [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx#L26-L37) verifies `score > 0` and `duration >= 3`.
 - **API Request:** `POST /api/assessments` sending metrics `{ score, duration, metrics, assignmentId, trackingQuality }`.
-- **Backend Verification:** [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L540-L545) verifies `validFrames >= 5`.
+- **Backend Verification:** [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L540-L545) verifies `validFrames >= 5`.
 - **Database Persistence:** Inserts document into MongoDB `Assessment` collection (or `store.js`). If `assignmentId` is present, it transitions the assignment status to `completed`.
 
 ### Step 6: Post-Session AI Summary

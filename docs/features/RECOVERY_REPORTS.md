@@ -8,7 +8,7 @@
 ---
 
 ## 2. What is this feature?
-This feature enables the automated compilation of a patient’s longitudinal assessment history into a standardized **Clinical Recovery Report** ([reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js)). Patients can preview the compiled data and explicitly authorize sharing with a specific attending doctor for in-person consultation review. Access is revocable at any time and protected by an immutable access audit trail.
+This feature enables the automated compilation of a patient’s longitudinal assessment history into a standardized **Clinical Recovery Report** ([reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/reportSharingService.js)). Patients can preview the compiled data and explicitly authorize sharing with a specific attending doctor for in-person consultation review. Access is revocable at any time and protected by an immutable access audit trail.
 
 ---
 
@@ -26,38 +26,38 @@ This feature enables the automated compilation of a patient’s longitudinal ass
 ---
 
 ## 5. How does this feature work?
-1. The patient opens their appointment list on [AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx) and clicks *"Share Report"*.
-2. [ShareReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/ShareReportModal.jsx) calls `GET /api/reports/preview?patientId=:id`.
+1. The patient opens their appointment list on [AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AppointmentsPage.jsx) and clicks *"Share Report"*.
+2. [ShareReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/ShareReportModal.jsx) calls `GET /api/reports/preview?patientId=:id`.
 3. The backend compiles the report directly from recorded sessions, computing baseline scores, longitudinal trends, exercise breakdowns, and active alerts.
 4. The patient reviews the preview, checks the mandatory consent box (*"I explicitly authorize Dr. Priya Nair to view my recovery metrics..."*), and submits.
 5. `POST /api/reports/share` persists the record with `status: 'active'`, attaches the initial `'shared'` audit entry, links the share ID to the appointment, and sends a notification to the doctor.
-6. The doctor views the report in [RecoveryReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx). The backend appends a `'viewed'` entry to the `accessAuditLog`.
+6. The doctor views the report in [RecoveryReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/RecoveryReportModal.jsx). The backend appends a `'viewed'` entry to the `accessAuditLog`.
 7. If the patient clicks *"Revoke Access"*, the backend updates status to `'revoked'`, logs `'revoked'` in the audit trail, notifies the doctor, and blocks all future viewing attempts.
 
 ---
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [ShareReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/ShareReportModal.jsx): Interactive sharing modal displaying report preview snapshot, doctor recipient header, mandatory consent checkbox, and authorization submit button.
-  - [RecoveryReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx): Modal viewing interface displaying the clinical disclaimer, summary KPI strip, protocol distribution tags, genuine assessment session table, and access audit log list.
-  - [AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx#L127-L149): Manages the *"Shared Reports"* tab, showing active shares with *"Revoke Access"* and *"View Report"* actions.
+  - [ShareReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/ShareReportModal.jsx): Interactive sharing modal displaying report preview snapshot, doctor recipient header, mandatory consent checkbox, and authorization submit button.
+  - [RecoveryReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/RecoveryReportModal.jsx): Modal viewing interface displaying the clinical disclaimer, summary KPI strip, protocol distribution tags, genuine assessment session table, and access audit log list.
+  - [AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AppointmentsPage.jsx#L127-L149): Manages the *"Shared Reports"* tab, showing active shares with *"Revoke Access"* and *"View Report"* actions.
 
 ---
 
 ## 7. Backend implementation
 - **Source Files:**
-  - [services/reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js):
+  - [services/reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/reportSharingService.js):
     - `compilePatientRecoveryReport()`: Aggregates genuine data from MongoDB/store.js.
     - `shareRecoveryReport()`: Persists share record and registers initial audit entry.
     - `getSharedReport()`: Verifies authorization, blocks revoked access, and logs `'viewed'` audit entries.
     - `revokeReportAccess()`: Sets `status: 'revoked'` and logs audit entry.
     - `getReportsSharedWithDoctor()` & `getReportsSharedByPatient()`.
-  - [routes/reportRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/reportRoutes.js): REST route handlers mounting endpoints.
+  - [routes/reportRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/reportRoutes.js): REST route handlers mounting endpoints.
 
 ---
 
 ## 8. Database implementation
-- Uses [SharedRecoveryReport.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/SharedRecoveryReport.js):
+- Uses [SharedRecoveryReport.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/SharedRecoveryReport.js):
   ```javascript
   const AccessAuditSchema = new mongoose.Schema({
     doctorId: { type: String, required: true },
@@ -88,7 +88,7 @@ This feature enables the automated compilation of a patient’s longitudinal ass
 ## 9. Algorithms and technical logic
 1. **Dynamic Report Assembly Algorithm:**
    $$\text{Report} = \{ \text{PatientProfile}, \text{DashboardSummary}, \text{BaselineScore}, \text{Trends}_{1..N}, \text{Breakdown}, \text{Sessions}_{1..10}, \text{Disclaimer} \}$$
-2. **Access Control Verification Logic ([reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L235-L257)):**
+2. **Access Control Verification Logic ([reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/reportSharingService.js#L235-L257)):**
    $$\text{Allowed} \iff (\text{IsPatientOwner}) \lor (\text{IsRecipientDoctor} \land \text{Status} \ne \text{'revoked'})$$
 
 ---
@@ -144,25 +144,25 @@ Patient Clicks "Share Report"
 ## 15. Important technical interview questions
 
 #### Q1: What happens if Doctor B attempts to view a report shared with Doctor A?
-**Answer:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L241-L249), the service verifies that `actingUser.userId` matches `record.doctorId` or `record.doctorUserId`. For Doctor B, this evaluates to `false`, and the request returns HTTP 403 Forbidden: *"Forbidden: You do not have permission to view this recovery report."*
+**Answer:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/reportSharingService.js#L241-L249), the service verifies that `actingUser.userId` matches `record.doctorId` or `record.doctorUserId`. For Doctor B, this evaluates to `false`, and the request returns HTTP 403 Forbidden: *"Forbidden: You do not have permission to view this recovery report."*
 
 #### Q2: What happens when a doctor attempts to view a report whose access was revoked?
-**Answer:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L252-L257), the service checks `if (record.status === 'revoked')`. It immediately throws an HTTP 403 error: *"Forbidden: Access to this recovery report has been revoked by the patient."*
+**Answer:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/reportSharingService.js#L252-L257), the service checks `if (record.status === 'revoked')`. It immediately throws an HTTP 403 error: *"Forbidden: Access to this recovery report has been revoked by the patient."*
 
 #### Q3: Does revoking a report delete the historical audit trail?
 **Answer:** No. The `accessAuditLog` array is preserved. Revoking appends an additional entry with `action: 'revoked'` and records `revokedAt`, ensuring an immutable historical log of all sharing and revocation events.
 
 #### Q4: What data is contained within the compiled recovery report?
-**Answer:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L64-L95), it includes patient demographic summaries, clinical disclaimers, overall recovery score, moving-window baseline score, baseline delta percentage, total completed sessions, protocol breakdown counts, longitudinal trend arrays, recent alerts, and the 10 most recent assessment sessions with tracking quality indicators.
+**Answer:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/reportSharingService.js#L64-L95), it includes patient demographic summaries, clinical disclaimers, overall recovery score, moving-window baseline score, baseline delta percentage, total completed sessions, protocol breakdown counts, longitudinal trend arrays, recent alerts, and the 10 most recent assessment sessions with tracking quality indicators.
 
 #### Q6: How is the client IP and User-Agent captured for the audit trail?
-**Answer:** In [reportRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/reportRoutes.js#L51-L52), the route handler extracts `req.ip || req.headers['x-forwarded-for']` and `req.headers['user-agent']` and passes them to `shareRecoveryReport()` and `getSharedReport()`.
+**Answer:** In [reportRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/reportRoutes.js#L51-L52), the route handler extracts `req.ip || req.headers['x-forwarded-for']` and `req.headers['user-agent']` and passes them to `shareRecoveryReport()` and `getSharedReport()`.
 
 #### Q7: Does cancelling an appointment automatically revoke the shared report?
 **Answer:** No. Report authorization is an independent consent relationship. A patient may want the doctor to retain access to review historical trends even if an appointment date was rescheduled or cancelled. The patient can manually revoke access at any time via the *"Shared Reports"* tab.
 
 #### Q8: Where is the clinical disclaimer displayed in the report?
-**Answer:** It is prominently rendered at the top of [RecoveryReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx#L30-L36) in an amber notice banner: *"Non-Diagnostic Rehabilitation Documentation. NeuroGuard AI functional monitoring report provided for clinical oversight. Does not replace professional clinical diagnosis."*
+**Answer:** It is prominently rendered at the top of [RecoveryReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/RecoveryReportModal.jsx#L30-L36) in an amber notice banner: *"Non-Diagnostic Rehabilitation Documentation. NeuroGuard AI functional monitoring report provided for clinical oversight. Does not replace professional clinical diagnosis."*
 
 #### Q9: How are assessment sessions ordered in the report?
 **Answer:** Descending by timestamp (`new Date(b.timestamp) - new Date(a.timestamp)`), so the clinician sees the most recent recovery sessions at the top of the table.

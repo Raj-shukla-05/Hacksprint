@@ -94,15 +94,15 @@ docs/
 
 | Layer | Technologies Used | Primary Implementation Files |
 | :--- | :--- | :--- |
-| **Frontend UI** | React 19, Vite 6, Vanilla CSS Modules | [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx), [app.css](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/styles/app.css) |
-| **Computer Vision** | MediaPipe Tasks-Vision 0.10.22, WebAssembly | [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js), [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx) |
-| **Kinematic Scoring** | Vector trigonometry, 2D angle dot products | [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js) |
-| **Data Visualizations** | Recharts 2.15 (SVG LineCharts, ResponsiveContainers) | [TrendChart.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/TrendChart.jsx), [ScoreRing.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/ScoreRing.jsx) |
-| **Backend API** | Node.js (v20+), Express 4.21, CORS, Helmet | [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js) |
-| **Database Persistence** | MongoDB, Mongoose 8.9 (with fallback in-memory store) | [db.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/db.js), [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js), [models/](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/) |
-| **Authentication** | JSON Web Tokens (jsonwebtoken 9.0), bcryptjs 3.0 | [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js) |
-| **AI Explanations** | Google Gemini API (v1beta `gemini-3.5-flash-lite`) | [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js) |
-| **Statistical Engine** | Moving-window baseline averages, relative delta deltas | [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js) |
+| **Frontend UI** | React 19, Vite 6, Vanilla CSS Modules | [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/App.jsx), [app.css](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/styles/app.css) |
+| **Computer Vision** | MediaPipe Tasks-Vision 0.10.22, WebAssembly | [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js), [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx) |
+| **Kinematic Scoring** | Vector trigonometry, 2D angle dot products | [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js) |
+| **Data Visualizations** | Recharts 2.15 (SVG LineCharts, ResponsiveContainers) | [TrendChart.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/TrendChart.jsx), [ScoreRing.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/ScoreRing.jsx) |
+| **Backend API** | Node.js (v20+), Express 4.21, CORS, Helmet | [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js) |
+| **Database Persistence** | MongoDB, Mongoose 8.9 (with fallback in-memory store) | [db.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/db.js), [store.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/store.js), [models/](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/) |
+| **Authentication** | JSON Web Tokens (jsonwebtoken 9.0), bcryptjs 3.0 | [auth.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/auth.js) |
+| **AI Explanations** | Google Gemini API (v1beta `gemini-3.5-flash-lite`) | [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/geminiService.js) |
+| **Statistical Engine** | Moving-window baseline averages, relative delta deltas | [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js) |
 
 ---
 

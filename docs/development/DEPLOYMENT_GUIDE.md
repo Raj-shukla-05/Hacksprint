@@ -90,5 +90,5 @@ docker run -p 5000:5000 \
 - [ ] Strong random 256-bit `JWT_SECRET` generated (e.g., `openssl rand -hex 32`).
 - [ ] Production `MONGODB_URI` pointing to a replicated MongoDB Atlas cluster with TLS enabled.
 - [ ] Gemini API key configured with quota alerts and budget limits in Google Cloud Console.
-- [ ] CORS origin restricted in [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L32) to your actual frontend domain (`https://app.neuroguard.ai`).
+- [ ] CORS origin restricted in [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L32) to your actual frontend domain (`https://app.neuroguard.ai`).
 - [ ] HTTPS / SSL certificates enforced across both frontend and backend (required for browser webcam access).
