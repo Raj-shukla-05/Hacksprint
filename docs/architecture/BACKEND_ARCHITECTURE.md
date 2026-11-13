@@ -97,7 +97,7 @@ Requests passing through `backend/src/server.js` execute through a strict, order
    Ensures browser clients can download and execute local WebAssembly binaries without being blocked by restrictive CSP script-src directives.
 3. **CORS Validation:** `cors({ origin: true })` allows cross-origin requests from the Vite development server (port 5173).
 4. **Body Size Limiting:** `express.json({ limit: '256kb' })` prevents memory exhaustion and denial-of-service via oversized JSON payloads.
-5. **JWT Authentication (`authenticateToken` in [auth.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/auth.js#L13-L27)):**
+5. **JWT Authentication (`authenticateToken` in [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js#L13-L27)):**
    - Parses the `Authorization: Bearer <TOKEN>` header.
    - Verifies the cryptographic signature using `JWT_SECRET`.
    - Attaches decoded `{ userId, role, name, email }` to `req.user`.
@@ -115,7 +115,7 @@ Requests passing through `backend/src/server.js` execute through a strict, order
 
 ## 4. Routing Architecture & Sub-Routers
 
-The main Express application mounts five modular sub-routers in [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L811-L817):
+The main Express application mounts five modular sub-routers in [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L811-L817):
 
 ```javascript
 app.use('/api/doctors', doctorRoutes);

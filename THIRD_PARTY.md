@@ -1,6 +1,6 @@
 # Third-party / reference notes
 
-This project was assembled for a hackathon from original implementation plus architecture/algorithm references to public repositories.
+This project was built from original implementation plus architecture/algorithm references to public repositories.
 
 ## MIT-licensed references
 

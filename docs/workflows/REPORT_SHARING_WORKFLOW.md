@@ -70,9 +70,9 @@ sequenceDiagram
 ## 2. Step-by-Step Technical Execution
 
 ### Step 1: Report Preview Compilation
-- **Frontend Action:** Patient clicks *"Share Report"* on an appointment card in [AppointmentsPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AppointmentsPage.jsx).
+- **Frontend Action:** Patient clicks *"Share Report"* on an appointment card in [AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx).
 - **API Request:** `GET /api/reports/preview?patientId=:id`.
-- **Backend Function:** In [reportSharingService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js#L14-L95), `compilePatientRecoveryReport()`:
+- **Backend Function:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L14-L95), `compilePatientRecoveryReport()`:
   - Gathers real assessment records for the patient from MongoDB and the active session store.
   - Sorts sessions descending by timestamp (`recentSessions = patientAssessments.slice(0, 10)`).
   - Computes personal baseline score: `personalBaseline(scores)`.
@@ -81,7 +81,7 @@ sequenceDiagram
   - Attaches the clinical non-diagnostic disclaimer.
 
 ### Step 2: Informed Patient Consent Verification
-- **Frontend Interface:** [ShareReportModal.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/ShareReportModal.jsx#L98-L115).
+- **Frontend Interface:** [ShareReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/ShareReportModal.jsx#L98-L115).
 - **Mandatory Consent Checkbox:** The submit button remains disabled until the patient checks the authorization checkbox:
   ```html
   <input type="checkbox" id="report-consent" checked={consentChecked} onChange={(e) => setConsentChecked(e.target.checked)} required />
@@ -90,7 +90,7 @@ sequenceDiagram
 
 ### Step 3: Authorization Persistence & Linkage
 - **API Request:** `POST /api/reports/share` with `{ doctorId, appointmentId, patientId }`.
-- **Backend Processing:** In [reportSharingService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js#L142-L211):
+- **Backend Processing:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L142-L211):
   - Captures `clientIp` and `userAgent` from request headers.
   - Creates document in `SharedRecoveryReport` collection with `status: 'active'`.
   - Initializes `accessAuditLog` with action `'shared'`.
@@ -98,9 +98,9 @@ sequenceDiagram
   - Calls `createNotification()` to alert the doctor.
 
 ### Step 4: Doctor Access & Audit Logging
-- **Doctor Action:** Doctor clicks *"View Full Report"* in [DoctorAppointmentsPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/DoctorAppointmentsPage.jsx).
+- **Doctor Action:** Doctor clicks *"View Full Report"* in [DoctorAppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorAppointmentsPage.jsx).
 - **API Request:** `GET /api/reports/shared/:shareId`.
-- **Authorization Check:** In [reportSharingService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js#L241-L250), verifies caller is the designated doctor recipient.
+- **Authorization Check:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L241-L250), verifies caller is the designated doctor recipient.
 - **Revocation Check:** Verifies `record.status !== 'revoked'`.
 - **Audit Logging:** Appends a new entry to `accessAuditLog`:
   ```javascript
@@ -113,13 +113,13 @@ sequenceDiagram
     userAgent
   }
   ```
-- **Modal Display:** [RecoveryReportModal.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/RecoveryReportModal.jsx) renders the full profile and displays the audit log history.
+- **Modal Display:** [RecoveryReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx) renders the full profile and displays the audit log history.
 
 ### Step 5: Patient Access Revocation
 - **Patient Action:** In the *"Shared Reports"* tab, patient clicks *"Revoke Access"*.
 - **Confirmation:** Browser displays confirmation prompt: *"Are you sure you want to revoke this doctor’s access to your recovery report?"*
 - **API Request:** `DELETE /api/reports/shares/:shareId`.
-- **Backend Processing:** In [reportSharingService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js#L315-L355):
+- **Backend Processing:** In [reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L315-L355):
   - Sets `record.status = 'revoked'`.
   - Sets `record.revokedAt = new Date().toISOString()`.
   - Appends audit entry: `{ action: 'revoked', ip, userAgent }`.

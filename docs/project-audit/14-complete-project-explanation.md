@@ -1,6 +1,6 @@
 # 14 — Complete Plain-English Project Walkthrough
 
-This document is a comprehensive, end-to-end technical narrative of NeuroGuard AI. It is written for onboarding engineers, hackathon judges, project vivas, and technical interview preparation. It explains how every component connects, how data moves across boundaries, what is real versus synthetic, and how the platform solves a genuine healthcare challenge.
+This document is a comprehensive, end-to-end technical narrative of NeuroGuard AI. It is written for onboarding engineers, project reviewers, project vivas, and technical interview preparation. It explains how every component connects, how data moves across boundaries, what is real versus synthetic, and how the platform solves a genuine healthcare challenge.
 
 ---
 
@@ -74,9 +74,9 @@ Dr. Priya opens her portal. Raj's protocol status has transitioned to **Complete
 
 ---
 
-## 3. Real vs. Synthetic Data: What Judges Need to Know
+## 3. Real vs. Synthetic Data: What Reviewers Need to Know
 
-When presenting to judges or technical interviewers, transparency builds trust. Here is the exact provenance of data in NeuroGuard AI:
+When presenting to reviewers or technical interviewers, transparency builds trust. Here is the exact provenance of data in NeuroGuard AI:
 
 | What is 100% REAL | What is DERIVED | What is SYNTHETIC / DEMO |
 |---|---|---|
@@ -87,7 +87,7 @@ When presenting to judges or technical interviewers, transparency builds trust. 
 ## 4. Key Architectural Trade-Offs
 
 1. **Why In-Memory Primary with Asynchronous MongoDB?**  
-   *Decision:* In hackathon and demo environments, database connection dropouts or missing credentials frequently break live demos. By maintaining a synchronous in-memory store (`store.js`) as the primary query source and using MongoDB as an asynchronous write-behind archive, NeuroGuard is 100% crash-resilient even if MongoDB is completely offline.
+   *Decision:* In demo environments, database connection dropouts or missing credentials frequently break live demos. By maintaining a synchronous in-memory store (`store.js`) as the primary query source and using MongoDB as an asynchronous write-behind archive, NeuroGuard is 100% crash-resilient even if MongoDB is completely offline.
 2. **Why Browser-Side Pose Tracking instead of Server-Side Video Streaming?**  
    *Decision:* Streaming raw video from patient homes introduces massive privacy vulnerabilities (HIPAA/GDPR compliance risks), requires high patient upload bandwidth, and incurs heavy server GPU costs. By running `@mediapipe/tasks-vision` on the client's WebGL GPU/WASM runtime, zero video leaves the device, guaranteeing absolute patient privacy.
 3. **Why Deterministic Fallback instead of Pure LLM?**  

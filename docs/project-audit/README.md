@@ -51,8 +51,8 @@ The audit has been documented across 15 dedicated, cross-referenced technical re
 | [**11-testing-and-verification-report.md**](./11-testing-and-verification-report.md) | **Testing & Verification Report** | Test suite execution audit (66 tests), mocked vs live external testing, build results, and unverified edge cases. |
 | [**12-configuration-and-deployment.md**](./12-configuration-and-deployment.md) | **Configuration & Deployment Guide** | Environment variables table, local run instructions, Vite build configuration, and deployment prerequisites. |
 | [**13-known-limitations-and-roadmap.md**](./13-known-limitations-and-roadmap.md) | **Known Limitations & Technical Roadmap** | Prioritized technical debt, architectural bottlenecks, clinical constraints, and remediation items (P0 to P3). |
-| [**14-complete-project-explanation.md**](./14-complete-project-explanation.md) | **Complete Plain-English Project Walkthrough** | Comprehensive guide suitable for onboarding engineers, hackathon judges, technical vivas, and presentation prep. |
-| [**15-demo-readiness-checklist.md**](./15-demo-readiness-checklist.md) | **Demo Readiness Checklist** | Actionable pre-flight checklist covering setup, patient assessment, doctor review, judge flows, and risk mitigation. |
+| [**14-complete-project-explanation.md**](./14-complete-project-explanation.md) | **Complete Plain-English Project Walkthrough** | Comprehensive guide suitable for onboarding engineers, reviewers, technical vivas, and presentation prep. |
+| [**15-demo-readiness-checklist.md**](./15-demo-readiness-checklist.md) | **Demo Readiness Checklist** | Actionable pre-flight checklist covering setup, patient assessment, doctor review, reviewer flows, and risk mitigation. |
 
 ---
 
@@ -69,6 +69,6 @@ The audit has been documented across 15 dedicated, cross-referenced technical re
 ## Prioritized Action Summary
 
 - **P0 (Critical):** Fix repetition counter loop bug in `frontend/src/lib/scoring.js` (`Date.now()` evaluation inside post-session loop causes arm raise reps to cap at 1).
-- **P1 (Hackathon High):** Add `authenticateToken` middleware to `POST /api/users/:id/demo-decline` and `POST /api/explanation` to prevent unauthorized resource mutation and LLM quota consumption.
-- **P1 (Hackathon High):** Prevent unmeasured metrics on `PatientDashboard.jsx` from falling back to arbitrary numbers (`82`, `71`, `76`, `84`) via nullish coalescing.
+- **P1 (High):** Add `authenticateToken` middleware to `POST /api/users/:id/demo-decline` and `POST /api/explanation` to prevent unauthorized resource mutation and LLM quota consumption.
+- **P1 (High):** Prevent unmeasured metrics on `PatientDashboard.jsx` from falling back to arbitrary numbers (`82`, `71`, `76`, `84`) via nullish coalescing.
 - **P2 (Architecture):** Migrate backend read paths to query MongoDB when connected rather than exclusively reading from in-memory arrays in `store.js`.

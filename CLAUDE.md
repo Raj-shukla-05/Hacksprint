@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-NeuroGuard AI is a hackathon prototype for stroke-recovery functional monitoring. Two independent npm projects (no root package.json, no tests, no linter configured):
+NeuroGuard AI is a prototype for stroke-recovery functional monitoring. Two independent npm projects (no root package.json, no tests, no linter configured):
 
 - `backend/` — Express 4 API (CommonJS), port 5000
 - `frontend/` — React 19 + Vite 6 SPA (ESM), port 5173 (`strictPort: true`)
@@ -23,7 +23,7 @@ Frontend talks to `http://localhost:5000/api` unless `VITE_API_BASE_URL` is set.
 - `detectPersistentDecline`: last 3 sessions all below baseline and mean < 95% of it → "review" alert
 - `buildDashboard` / `buildTrend` / `createAlert` derive everything on request from the assessments array.
 - `POST /api/assessments` normalizes `arm_raise` metrics into the `movement/balance/coordination/speech` shape the engine reads (speech defaults to 84).
-- `POST /api/users/:id/demo-decline` injects 5 declining sessions and mutates `patients`/`alerts` for the judge demo. `POST /api/explanation` uses OpenAI if `OPENAI_API_KEY` is set, otherwise (or on error) a deterministic local text.
+- `POST /api/users/:id/demo-decline` injects 5 declining sessions and mutates `patients`/`alerts` for the demo. `POST /api/explanation` uses OpenAI if `OPENAI_API_KEY` is set, otherwise (or on error) a deterministic local text.
 
 **UI design ("Motion Lab").** Warm paper/ink/volt-lime palette, tokens in `styles/base.css` (Geist, Geist Mono, Instrument Serif from Google Fonts in `index.html`); one stylesheet per area (`shell`, `motion`, `dashboard`, `auth`, `check`, `doctor`, `appointments`), all imported in `main.jsx`. The shell is a sticky top nav in `components/Topbar.jsx` (profile menu holds Settings, the patient "Load decline demo" and Sign out) plus a bottom dock under 860px. `components/MotionFigure.jsx` renders an animated 3D stick-figure skeleton from `lib/motion.js` (joint-angle rig → perspective projection, one looping keyframe motion per exercise id plus `speech`/`idle`); it is used on the dashboard Motion Lab, the login hero and the test preview/camera side panel.
 

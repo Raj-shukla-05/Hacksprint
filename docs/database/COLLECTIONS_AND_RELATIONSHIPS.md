@@ -32,7 +32,7 @@ This document details the relational architecture, cross-collection references, 
 ### 1. User $\leftrightarrow$ Doctor
 - **Primary Link:** `Doctor.userId` references `User.id` ($1:1$).
 - **Relationship:** When a user registers with `role: 'doctor'`, `User.id` (e.g. `'doctor-priya'`) is created, and the seed/signup pipeline creates `Doctor.id` (`'doc-priya'`) with `Doctor.userId = 'doctor-priya'`.
-- **Integrity Rule:** `findDoctor(doctorIdOrUserId)` in [appointmentService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/appointmentService.js#L15-L34) dynamically queries either `id` or `userId`, ensuring seamless cross-referencing.
+- **Integrity Rule:** `findDoctor(doctorIdOrUserId)` in [appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/appointmentService.js#L15-L34) dynamically queries either `id` or `userId`, ensuring seamless cross-referencing.
 
 ### 2. Doctor $\leftrightarrow$ DoctorAvailability
 - **Primary Link:** `DoctorAvailability.doctorId` references `Doctor.id` ($1:1$).

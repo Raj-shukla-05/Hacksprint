@@ -8,10 +8,10 @@ This document provides a comprehensive inventory of all source files, configurat
 
 | Path | Type | Purpose | Key Exports / Contents | Dependencies | Relationship & Usage |
 |---|---|---|---|---|---|
-| `README.md` | Documentation | Hackathon project overview, architecture diagram, and quickstart commands. | Project mission, architecture diagram, run commands. | None | Developer onboarding documentation. Outdated in parts (mentions OpenAI; current code uses Gemini). |
+| `README.md` | Documentation | Project overview, architecture diagram, and quickstart commands. | Project mission, architecture diagram, run commands. | None | Developer onboarding documentation. Outdated in parts (mentions OpenAI; current code uses Gemini). |
 | `CLAUDE.md` | Documentation | Historical instructions and notes for Claude Code. | Commands, in-memory state summary, seeded accounts. | None | Contextual developer notes. References older unauthenticated architecture before commit `8370fe2`. |
 | `AGENTS.md` | Documentation / Rules | Comprehensive rules and behavioral constraints for AI coding agents. | Core mission, safety rules, Gemini rules, Git rules. | None | High-priority agent instructions defining development boundaries. |
-| `START_HERE.md` | Documentation | Hackathon quickstart checklist for judges and developers. | Step-by-step startup instructions. | None | Fast manual verification guide. |
+| `START_HERE.md` | Documentation | Quickstart checklist. | Step-by-step startup instructions. | None | Fast manual verification guide. |
 | `THIRD_PARTY.md` | Documentation | Attribution and license notes for open-source reference projects. | MIT references (sumitsahoo, RomeoCoding). | None | Compliance and intellectual property documentation. |
 | `.gitignore` | Configuration | Git exclusion rules. | Excludes `node_modules/`, `dist/`, `.env`, logs, etc. | Git | Working tree hygiene. Preserves `.env.example`. |
 | `.agents/rules/` | Configuration / Rules | Specialized agent instructions for sub-domains. | `backend.md`, `frontend.md`, `security.md`, `testing.md`. | None | Granular rule specifications for backend, frontend, security, and tests. |

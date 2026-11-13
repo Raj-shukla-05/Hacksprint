@@ -106,19 +106,19 @@ frontend/
 
 Rather than introducing heavy third-party state managers like Redux or Zustand for a prototype, state is managed through a pragmatic combination of React functional hooks and web storage:
 
-1. **Authentication Session State:** Stored in `sessionStorage` under `neuroguard.user` (JSON serialized user object) and `neuroguard.token` (raw JWT). Initialized lazily via `useState(() => loadSession())` in [App.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/App.jsx#L21-L28).
+1. **Authentication Session State:** Stored in `sessionStorage` under `neuroguard.user` (JSON serialized user object) and `neuroguard.token` (raw JWT). Initialized lazily via `useState(() => loadSession())` in [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L21-L28).
 2. **Global View Routing:** Controlled by `view` (`'dashboard'`, `'assessment'`, `'progress'`, `'doctor'`, `'appointments'`, `'settings'`). When a user logs in, `homeView(role)` routes doctors to `'doctor'` and patients to `'dashboard'`.
-3. **Session Expiration Event Dispatcher:** If any authenticated fetch request receives an HTTP 401 Unauthorized, [api.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/api.js#L42-L45) dispatches a custom window event:
+3. **Session Expiration Event Dispatcher:** If any authenticated fetch request receives an HTTP 401 Unauthorized, [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js#L42-L45) dispatches a custom window event:
    ```javascript
    window.dispatchEvent(new CustomEvent('neuroguard:unauthorized'));
    ```
-   [App.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/App.jsx#L67-L74) listens for this event, gracefully clears the session, redirects the user to the login view, and displays an informative toast notification.
+   [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L67-L74) listens for this event, gracefully clears the session, redirects the user to the login view, and displays an informative toast notification.
 
 ---
 
 ## 4. API Client Integration Architecture
 
-All HTTP communications are encapsulated within the `api` singleton in [frontend/src/lib/api.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/api.js).
+All HTTP communications are encapsulated within the `api` singleton in [frontend/src/lib/api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js).
 
 ```javascript
 // Generic request wrapper with automatic Bearer token injection

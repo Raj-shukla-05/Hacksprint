@@ -1,6 +1,6 @@
 # 15 — Demo Readiness Checklist & Pre-Flight Runbook
 
-This runbook contains actionable, evidence-based pre-flight checklists for demonstrating NeuroGuard AI to hackathon judges, clinicians, or technical evaluators.
+This runbook contains actionable, evidence-based pre-flight checklists for demonstrating NeuroGuard AI to reviewers, clinicians, or technical evaluators.
 
 ---
 
@@ -45,10 +45,10 @@ npm run dev
 ### Act I: The Patient Experience (Raj Kumar)
 - [ ] **Step 1: Patient Login**
   - Click quick-login button: *"Patient — Raj Kumar"* (or enter `raj@neuroguard.demo` / `patient123`).
-  - Point out to judges: Authentication uses bcrypt-hashed credentials and issues a signed JWT.
+  - Point out to reviewers: Authentication uses bcrypt-hashed credentials and issues a signed JWT.
 - [ ] **Step 2: Patient Dashboard & Baseline**
   - Highlight the **Functional Performance Score Ring** (`79/100`, `+9.7% vs baseline`).
-  - Explain to judges: *"NeuroGuard compares Raj against his own rolling 5-session baseline, not a population average."*
+  - Explain to reviewers: *"NeuroGuard compares Raj against his own rolling 5-session baseline, not a population average."*
   - Point out the **AI Rehabilitation Insights** card showing Gemini observations with the `Gemini AI` badge.
   - Point out the **Clinician Care Plan** card showing the assigned protocol from Dr. Priya.
 - [ ] **Step 3: Live Camera Assessment**
@@ -56,7 +56,7 @@ npm run dev
   - Click *"Start camera check"* and allow browser webcam permissions.
   - Step back so head, shoulders, and wrists are visible.
   - Perform 3 to 5 bilateral arm raises.
-  - Point out to judges:
+  - Point out to reviewers:
     - Real-time skeleton overlay running at 30 fps via WebGL.
     - Zero pixels leave the laptop; privacy is preserved on-device.
     - Live repetition counter and movement quality signals.
@@ -80,7 +80,7 @@ npm run dev
   - Select exercise type (e.g., *Arm Raise*), target reps (5), due date (next week).
   - Enter custom clinical guidance: *"Focus on keeping shoulders level at the peak."*
   - Click *"Assign Protocol"*.
-  - Point out to judges: The protocol is validated server-side, linked to Raj Kumar, and saved.
+  - Point out to reviewers: The protocol is validated server-side, linked to Raj Kumar, and saved.
 - [ ] **Step 8: Review Completed Session**
   - Locate Raj's completed protocol $\rightarrow$ Click *"Review Session"*.
   - Enter clinical notes: *"Good symmetry improvement noted. Approved."*
@@ -92,7 +92,7 @@ npm run dev
 ### Act III: The "Decline Scenario" (Showcasing the Safety Alert Engine)
 - [ ] **Step 9: Trigger Decline Scenario**
   - Switch profile to patient (or use the sidebar link *"Load decline demo"*).
-  - Point out to judges: In a hackathon demo, you cannot wait 3 weeks to see deterioration.
+  - Point out to reviewers: In a demo, you cannot wait 3 weeks to see deterioration.
   - Click *"Load decline demo"*.
   - Switch to Doctor panel.
   - Show that Raj Kumar has automatically moved to **"Review Recommended"** with an amber/red alert:  
@@ -107,9 +107,9 @@ npm run dev
 |---|---|---|
 | **Webcam Permission Blocked** | Browser permissions denied or camera in use by Zoom / Teams | Close Zoom or other apps using the camera. Click the camera icon in Chrome's URL address bar and select *"Always allow"*. |
 | **Low Arm Raise Score** | Patient standing too close to camera | Stand 5–7 feet back so both wrists, elbows, and shoulders remain in the frame throughout full elevation. |
-| **Gemini AI Badge Says "Local Fallback"** | `GEMINI_API_KEY` is unset or network has strict proxy | Explain to judges: *"NeuroGuard is built with enterprise resilience. Because the external API timed out or is unconfigured, our deterministic personal baseline engine seamlessly took over without crashing."* |
-| **MongoDB Mode Warning** | `MONGODB_URI` unset | The Topbar displays: *"Session mode · In-memory (DB offline)"*. Explain to judges: *"NeuroGuard has dual storage modes. It runs completely self-contained in memory for zero-dependency demos."* |
-| **Arm Raise Final Reps Shows 1** | Known post-session loop timing quirk (`ALG-01`) | Direct judge attention to the **live rep counter** on screen (`Repetitions: 5/5`), which accurately counts reps during active motion. |
+| **Gemini AI Badge Says "Local Fallback"** | `GEMINI_API_KEY` is unset or network has strict proxy | Explain to reviewers: *"NeuroGuard is built with enterprise resilience. Because the external API timed out or is unconfigured, our deterministic personal baseline engine seamlessly took over without crashing."* |
+| **MongoDB Mode Warning** | `MONGODB_URI` unset | The Topbar displays: *"Session mode · In-memory (DB offline)"*. Explain to reviewers: *"NeuroGuard has dual storage modes. It runs completely self-contained in memory for zero-dependency demos."* |
+| **Arm Raise Final Reps Shows 1** | Known post-session loop timing quirk (`ALG-01`) | Direct attention to the **live rep counter** on screen (`Repetitions: 5/5`), which accurately counts reps during active motion. |
 
 ---
 

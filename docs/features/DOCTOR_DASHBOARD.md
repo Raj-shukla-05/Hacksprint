@@ -8,7 +8,7 @@
 ---
 
 ## 2. What is this feature?
-The Doctor Dashboard is a clinical oversight interface ([DoctorPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/DoctorPage.jsx) and [DoctorProgressPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/DoctorProgressPage.jsx)) designed for attending neurologists, physiatrists, and physical therapists. It provides an automated triage patient roster sorted by clinical priority, detailed patient kinematic histories, a protocol prescription engine for assigning structured home exercises, and a clinical review module for attaching feedback notes to completed sessions.
+The Doctor Dashboard is a clinical oversight interface ([DoctorPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorPage.jsx) and [DoctorProgressPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorProgressPage.jsx)) designed for attending neurologists, physiatrists, and physical therapists. It provides an automated triage patient roster sorted by clinical priority, detailed patient kinematic histories, a protocol prescription engine for assigning structured home exercises, and a clinical review module for attaching feedback notes to completed sessions.
 
 ---
 
@@ -26,8 +26,8 @@ The Doctor Dashboard is a clinical oversight interface ([DoctorPage.jsx](file://
 ---
 
 ## 5. How does this feature work?
-1. The doctor signs in and is routed to the `'doctor'` view in [App.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/App.jsx#L18).
-2. [DoctorPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/DoctorPage.jsx) calls `GET /api/doctors/:id/patients`.
+1. The doctor signs in and is routed to the `'doctor'` view in [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L18).
+2. [DoctorPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorPage.jsx) calls `GET /api/doctors/:id/patients`.
 3. The server filters patients assigned to this doctor and calculates active assignments and total sessions.
 4. The client sorts patients using `STATUS_ORDER`: `Review recommended` $\rightarrow$ `Monitor` $\rightarrow$ `Stable`.
 5. The doctor clicks *"View"* on a patient, opening the `PatientDetail` view.
@@ -39,8 +39,8 @@ The Doctor Dashboard is a clinical oversight interface ([DoctorPage.jsx](file://
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [DoctorPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/DoctorPage.jsx): Main triage roster, search filter toolbar, summary KPI tiles, patient detail view, protocol creation form, and review form.
-  - [DoctorProgressPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/DoctorProgressPage.jsx): Longitudinal multi-domain review page with patient selector dropdown, Recharts 4-domain line chart, and historical session table.
+  - [DoctorPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorPage.jsx): Main triage roster, search filter toolbar, summary KPI tiles, patient detail view, protocol creation form, and review form.
+  - [DoctorProgressPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorProgressPage.jsx): Longitudinal multi-domain review page with patient selector dropdown, Recharts 4-domain line chart, and historical session table.
 - **State Management:**
   - `patients`: Array of patient roster objects.
   - `selectedId`: ID of currently selected patient in detail view.
@@ -52,7 +52,7 @@ The Doctor Dashboard is a clinical oversight interface ([DoctorPage.jsx](file://
 
 ## 7. Backend implementation
 - **Source Files:**
-  - [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L264-L520):
+  - [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L264-L520):
     - `GET /api/doctors/:id/patients`: Returns authorized patient roster.
     - `POST /api/assignments`: Creates an exercise protocol for a patient.
     - `GET /api/patients/:patientId/assignments`: Retrieves assignments.
@@ -62,7 +62,7 @@ The Doctor Dashboard is a clinical oversight interface ([DoctorPage.jsx](file://
 ---
 
 ## 8. Database implementation
-- Uses [Assignment.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Assignment.js), [User.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/User.js), and [Assessment.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Assessment.js).
+- Uses [Assignment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Assignment.js), [User.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/User.js), and [Assessment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Assessment.js).
 - When an assignment is created:
   ```javascript
   const assignment = {
@@ -78,7 +78,7 @@ The Doctor Dashboard is a clinical oversight interface ([DoctorPage.jsx](file://
 1. **Automated Triage Sorting:**
    $$\text{Rank}(p) = \text{STATUS\_ORDER}[p.\text{status}] \times 1000 + p.\text{name.localeCompare}()$$
    *Where `review = 0`, `monitor = 1`, `stable = 2`.*
-2. **Assignment Status Dynamic Expiration ([server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L56-L62)):**
+2. **Assignment Status Dynamic Expiration ([server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L56-L62)):**
    $$\text{Status}(A) = \begin{cases} \text{'expired'} & \text{if } A.\text{status} \in \{\text{'assigned'}, \text{'in\_progress'}\} \land \text{Now} > A.\text{dueDate} \\ A.\text{status} & \text{otherwise} \end{cases}$$
 
 ---
@@ -131,10 +131,10 @@ Doctor signs in
 ## 15. Important technical interview questions
 
 #### Q1: What prevents Doctor A from viewing Doctor B's patient roster?
-**Answer:** In [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L265-L267), the endpoint verifies `if (req.user.userId !== req.params.id) return res.status(403).json({ message: "Forbidden: you cannot view another doctor's patient roster" });`.
+**Answer:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L265-L267), the endpoint verifies `if (req.user.userId !== req.params.id) return res.status(403).json({ message: "Forbidden: you cannot view another doctor's patient roster" });`.
 
 #### Q2: Can a patient arbitrarily mark an assignment as "completed"?
-**Answer:** No. In [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L477-L480), `PATCH /api/assignments/:id/status` explicitly rejects any direct status patch to `'completed'`: *"Assignments are completed through recording a valid assessment session"*. Only `POST /api/assessments` with valid tracking frames can mark an assignment complete.
+**Answer:** No. In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L477-L480), `PATCH /api/assignments/:id/status` explicitly rejects any direct status patch to `'completed'`: *"Assignments are completed through recording a valid assessment session"*. Only `POST /api/assessments` with valid tracking frames can mark an assignment complete.
 
 #### Q3: What state transitions are permitted for an assignment?
 **Answer:**
@@ -145,10 +145,10 @@ Doctor signs in
 - Any other transition is rejected with HTTP 400 Bad Request.
 
 #### Q4: What happens if an assignment passes its due date without completion?
-**Answer:** In [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L56-L62), `resolveAssignmentStatus()` dynamically checks `new Date() > new Date(assignment.dueDate)`. If past due and still in `assigned` or `in_progress`, it is resolved and returned as `'expired'`.
+**Answer:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L56-L62), `resolveAssignmentStatus()` dynamically checks `new Date() > new Date(assignment.dueDate)`. If past due and still in `assigned` or `in_progress`, it is resolved and returned as `'expired'`.
 
 #### Q5: Can a doctor review an assignment created by another doctor?
-**Answer:** No. In [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L467-L469), the backend checks `if (req.user.role !== 'doctor' || assignment.doctorId !== req.user.userId) return res.status(403);`.
+**Answer:** No. In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L467-L469), the backend checks `if (req.user.role !== 'doctor' || assignment.doctorId !== req.user.userId) return res.status(403);`.
 
 #### Q6: How are repetition targets validated during protocol creation?
 **Answer:** Target repetitions must be an integer between 1 and 30: `if (isNaN(reps) || reps < 1 || reps > 30) return res.status(400);`.
@@ -160,7 +160,7 @@ Doctor signs in
 **Answer:** The completed assignment object includes `completedSession`, containing the exact functional score, duration, tracking quality ratio, and joint metrics (`rangeOfMotion`, `symmetry`, `movementQuality`) recorded by MediaPipe.
 
 #### Q9: How are new patients assigned to doctors in the prototype?
-**Answer:** When patients sign up or in the demo seed data, patients default to `doctorId: 'doctor-priya'`. When another doctor creates an assignment for an unassigned patient, [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L329-L334) links that patient to the prescribing doctor.
+**Answer:** When patients sign up or in the demo seed data, patients default to `doctorId: 'doctor-priya'`. When another doctor creates an assignment for an unassigned patient, [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L329-L334) links that patient to the prescribing doctor.
 
 #### Q10: How does the doctor dashboard distinguish between real assessments and demo decliners?
 **Answer:** Each assessment record includes a `source` tag: `'live'` for real webcam sessions, `'demo'` for simulation injected sessions, and `'seed'` for initial baseline sessions.

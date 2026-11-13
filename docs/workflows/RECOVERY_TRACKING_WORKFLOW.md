@@ -37,7 +37,7 @@ flowchart TD
 ## 2. Step-by-Step Computational Workflow
 
 ### Step 1: Historical Ingestion & Chronological Sorting
-When `buildDashboard(user, assessments)` is called in [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L51-L92):
+When `buildDashboard(user, assessments)` is called in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L51-L92):
 - The array is shallow-copied and sorted:
   ```javascript
   const ordered = assessments.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -74,7 +74,7 @@ When `buildDashboard(user, assessments)` is called in [trendEngine.js](file:///h
 - This ensures unmeasured dimensions are not erroneously assumed to be zero.
 
 ### Step 5: Persistent Decline Anomaly Detection
-In [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L42-L49), `detectPersistentDecline()` detects downward trends:
+In [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L42-L49), `detectPersistentDecline()` detects downward trends:
 ```javascript
 function detectPersistentDecline(assessments, field = 'score') {
   if (assessments.length < 3) return false;
@@ -87,7 +87,7 @@ function detectPersistentDecline(assessments, field = 'score') {
 ```
 
 ### Step 6: Alert Generation & Severity Assignment
-In [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L94-L116), `createAlert()` assigns alert properties:
+In [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L94-L116), `createAlert()` assigns alert properties:
 - If `detectPersistentDecline` is `true`:
   - `severity = 'review'`
   - `type = 'Persistent deviation'`
@@ -99,7 +99,7 @@ In [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trend
   - If `significant` ($10\text{--}15\%$) or `review` ($> 15\%$), returns an amber/red alert.
 
 ### Step 7: Dashboard Assembly & UI Propagation
-- The compiled object `{ user, summary, metrics, baseline }` is returned to [PatientDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/PatientDashboard.jsx).
+- The compiled object `{ user, summary, metrics, baseline }` is returned to [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/PatientDashboard.jsx).
 - The dashboard renders:
   1. Primary ScoreRing with baseline delta.
   2. Four domain MetricCards with individual relative changes.

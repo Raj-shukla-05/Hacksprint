@@ -72,7 +72,7 @@ flowchart TD
 ### Backend Technology Stack
 - **Runtime Environment:** Node.js v20.x+ (utilizing native ECMAScript modules and native `fetch` with `AbortController`)
 - **Web Framework:** Express 4.21.2
-- **Database Object Modeling:** Mongoose 8.9.5 connecting to MongoDB (with zero-configuration automatic fallback to in-memory store in [store.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/store.js))
+- **Database Object Modeling:** Mongoose 8.9.5 connecting to MongoDB (with zero-configuration automatic fallback to in-memory store in [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js))
 - **Security & Hardening:**
   - `helmet` 8.3.0 for HTTP header hardening
   - `cors` 2.8.5 for origin validation
@@ -84,8 +84,8 @@ flowchart TD
 
 ## 4. Key Architectural Highlights
 
-- **Dual-Storage Resilience Architecture:** The backend features a resilient data layer. If `MONGODB_URI` is provided, all entities (Users, Doctors, Appointments, Reports, Notifications, Assignments, Assessments) are stored in MongoDB. If MongoDB is unavailable or unconfigured, the application runs without disruption using memory maps and seed arrays in [store.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/store.js).
-- **GPU-to-CPU Fallback Pipeline:** In [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js), MediaPipe initialization attempts hardware-accelerated WebGL GPU delegation first. If the host machine lacks WebGL 2.0 or throws a shader compilation error, it falls back to a CPU delegate.
+- **Dual-Storage Resilience Architecture:** The backend features a resilient data layer. If `MONGODB_URI` is provided, all entities (Users, Doctors, Appointments, Reports, Notifications, Assignments, Assessments) are stored in MongoDB. If MongoDB is unavailable or unconfigured, the application runs without disruption using memory maps and seed arrays in [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js).
+- **GPU-to-CPU Fallback Pipeline:** In [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js), MediaPipe initialization attempts hardware-accelerated WebGL GPU delegation first. If the host machine lacks WebGL 2.0 or throws a shader compilation error, it falls back to a CPU delegate.
 - **Atomic Concurrency Protection:** Appointment booking implements double-booking prevention utilizing both an in-memory active lock mutex (`activeBookingLocks = new Set()`) and a MongoDB partial unique index on `{ doctorId: 1, date: 1, startTime: 1 }` filtered on active statuses.
 - **Audit-Logged Data Sharing:** Patient reports are not exposed publicly. Access requires explicit patient consent, can be revoked at any time, and logs every view event (timestamp, doctor ID, IP, user agent) in an immutable access audit trail.
 

@@ -84,7 +84,6 @@ docs/
 └── learning/
     ├── COMPLETE_FEATURE_QA.md             <- 360-degree technical Q&A across every core system feature
     ├── TECHNICAL_INTERVIEW_QUESTIONS.md   <- Deep engineering interview questions & answers
-    ├── HACKATHON_JUDGE_QUESTIONS.md       <- 23 judge defense questions with 30s & deep-dive responses
     ├── ARCHITECTURE_DECISIONS.md          <- ADR records (ADR-001 through ADR-010) explaining trade-offs
     └── DEVELOPER_GLOSSARY.md              <- Domain glossary spanning clinical, CV, and web concepts
 ```
@@ -95,15 +94,15 @@ docs/
 
 | Layer | Technologies Used | Primary Implementation Files |
 | :--- | :--- | :--- |
-| **Frontend UI** | React 19, Vite 6, Vanilla CSS Modules | [App.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/App.jsx), [app.css](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/styles/app.css) |
-| **Computer Vision** | MediaPipe Tasks-Vision 0.10.22, WebAssembly | [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js), [CameraAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx) |
-| **Kinematic Scoring** | Vector trigonometry, 2D angle dot products | [scoring.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/scoring.js) |
-| **Data Visualizations** | Recharts 2.15 (SVG LineCharts, ResponsiveContainers) | [TrendChart.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/TrendChart.jsx), [ScoreRing.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/ScoreRing.jsx) |
-| **Backend API** | Node.js (v20+), Express 4.21, CORS, Helmet | [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js) |
-| **Database Persistence** | MongoDB, Mongoose 8.9 (with fallback in-memory store) | [db.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/db.js), [store.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/store.js), [models/](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/) |
-| **Authentication** | JSON Web Tokens (jsonwebtoken 9.0), bcryptjs 3.0 | [auth.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/auth.js) |
-| **AI Explanations** | Google Gemini API (v1beta `gemini-3.5-flash-lite`) | [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js) |
-| **Statistical Engine** | Moving-window baseline averages, relative delta deltas | [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js) |
+| **Frontend UI** | React 19, Vite 6, Vanilla CSS Modules | [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx), [app.css](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/styles/app.css) |
+| **Computer Vision** | MediaPipe Tasks-Vision 0.10.22, WebAssembly | [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js), [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx) |
+| **Kinematic Scoring** | Vector trigonometry, 2D angle dot products | [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js) |
+| **Data Visualizations** | Recharts 2.15 (SVG LineCharts, ResponsiveContainers) | [TrendChart.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/TrendChart.jsx), [ScoreRing.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/ScoreRing.jsx) |
+| **Backend API** | Node.js (v20+), Express 4.21, CORS, Helmet | [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js) |
+| **Database Persistence** | MongoDB, Mongoose 8.9 (with fallback in-memory store) | [db.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/db.js), [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js), [models/](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/) |
+| **Authentication** | JSON Web Tokens (jsonwebtoken 9.0), bcryptjs 3.0 | [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js) |
+| **AI Explanations** | Google Gemini API (v1beta `gemini-3.5-flash-lite`) | [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js) |
+| **Statistical Engine** | Moving-window baseline averages, relative delta deltas | [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js) |
 
 ---
 
