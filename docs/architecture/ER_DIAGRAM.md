@@ -188,6 +188,6 @@ erDiagram
 2. **Assessment User & Date Index:**
    - `{ userId: 1, timestamp: -1 }`: Optimizes longitudinal trend queries and moving-window calculations.
 3. **Doctor Discovery Compound Index:**
-   - `{ isActive: 1, specialization: 1, 'clinic.city': 1 }`: Supports multi-filter search queries in [doctorRoutes.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/doctorRoutes.js).
+   - `{ isActive: 1, specialization: 1, 'clinic.city': 1 }`: Supports multi-filter search queries in [doctorRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/doctorRoutes.js).
 4. **Notification User Unread Index:**
    - `{ userId: 1, read: 1, createdAt: -1 }`: Optimizes the 15-second polling query for unread badges.

@@ -25,20 +25,20 @@ This feature implements real-time, browser-side computer vision tracking using G
 ---
 
 ## 5. How does this feature work?
-1. The user clicks *"Start camera check"*. [CameraAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx) requests webcam access via `navigator.mediaDevices.getUserMedia()`.
+1. The user clicks *"Start camera check"*. [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx) requests webcam access via `navigator.mediaDevices.getUserMedia()`.
 2. The browser loads local MediaPipe WASM binaries from `/mediapipe/wasm` using `FilesetResolver.forVisionTasks()`.
-3. `createPoseLandmarker()` in [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js) initializes the `PoseLandmarker` using the local model asset `/models/pose_landmarker_lite.task`.
+3. `createPoseLandmarker()` in [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js) initializes the `PoseLandmarker` using the local model asset `/models/pose_landmarker_lite.task`.
 4. It attempts GPU delegation (`delegate: 'GPU'`); if WebGL initialization throws an error, it falls back to CPU delegation.
 5. A continuous `requestAnimationFrame(processFrame)` loop feeds video frames to `landmarker.detectForVideo(video, timestamp)`.
-6. MediaPipe returns 33 landmarks. [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js#L106-L140) renders the skeletal connections to an HTML5 overlay canvas.
+6. MediaPipe returns 33 landmarks. [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L106-L140) renders the skeletal connections to an HTML5 overlay canvas.
 7. Kinematic assessment functions (`armRaiseFrame`, `sitToStandFrame`, `seatedReachFrame`) extract specific landmark subsets to calculate joint angles and reps.
 
 ---
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js): Model initialization, landmark index mapping, trigonometry helpers (`angle`, `midpoint`, `visiblePoint`), and canvas rendering (`drawSkeleton`).
-  - [CameraAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx): Video stream lifecycle, frame loop, camera permissions, live metrics, and session completion.
+  - [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js): Model initialization, landmark index mapping, trigonometry helpers (`angle`, `midpoint`, `visiblePoint`), and canvas rendering (`drawSkeleton`).
+  - [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx): Video stream lifecycle, frame loop, camera permissions, live metrics, and session completion.
 - **Local Assets in `frontend/public/`:**
   - `mediapipe/wasm/vision_wasm_internal.wasm`
   - `mediapipe/wasm/vision_wasm_internal.js`
@@ -55,7 +55,7 @@ This feature implements real-time, browser-side computer vision tracking using G
 ## 7. Backend implementation
 - The backend has **zero involvement** in video frame processing or landmark detection.
 - It receives only aggregated numerical metrics and tracking quality summaries via `POST /api/assessments`.
-- [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L540-L546) enforces a strict validation rule:
+- [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L540-L546) enforces a strict validation rule:
   ```javascript
   const quality = trackingQuality || {};
   if (quality.isValid === false || (quality.validFrames !== undefined && quality.validFrames < 5)) {
@@ -68,7 +68,7 @@ This feature implements real-time, browser-side computer vision tracking using G
 ---
 
 ## 8. Database implementation
-- The `Assessment` schema in [Assessment.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Assessment.js) stores tracking metadata:
+- The `Assessment` schema in [Assessment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Assessment.js) stores tracking metadata:
   ```javascript
   trackingQuality: {
     validFrames: { type: Number, default: 0 },
@@ -90,7 +90,7 @@ MediaPipe outputs coordinates normalized between $0.0$ and $1.0$:
 - $z$: Relative depth coordinate (smaller values represent points closer to camera).
 - $\text{visibility}$: Confidence score ($0.0 \text{ to } 1.0$) indicating whether the landmark is in frame and not occluded.
 
-### 2. Landmark Indices Used ([pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js#L57-L71))
+### 2. Landmark Indices Used ([pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L57-L71))
 ```javascript
 export const LANDMARKS = {
   nose: 0,
@@ -167,22 +167,22 @@ Webcam
 **Answer:** The GPU delegate compiles WebAssembly shaders that execute matrix operations on the device's graphics card via WebGL 2.0, achieving 60fps with low CPU load. The CPU delegate executes compiled x86/ARM WebAssembly on the processor (optionally using SIMD instructions), which is slightly slower (25–35fps) but works reliably on machines without WebGL support.
 
 #### Q4: How does `requestAnimationFrame` pass timestamps to `detectForVideo`?
-**Answer:** MediaPipe's `detectForVideo(videoElement, timestamp)` requires a monotonically increasing integer timestamp in milliseconds. [CameraAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx#L70-L80) passes the DOMHighResTimeStamp provided by `requestAnimationFrame`, ensuring accurate internal Kalman smoothing across successive frames.
+**Answer:** MediaPipe's `detectForVideo(videoElement, timestamp)` requires a monotonically increasing integer timestamp in milliseconds. [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx#L70-L80) passes the DOMHighResTimeStamp provided by `requestAnimationFrame`, ensuring accurate internal Kalman smoothing across successive frames.
 
 #### Q5: How does the system handle poor lighting or occluded limbs?
-**Answer:** Every landmark includes a `visibility` property (0.0 to 1.0). In [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js#L102-L104), `visiblePoint(point, threshold = 0.5)` verifies that visibility is at least 0.5. If required landmarks drop below this threshold, the frame is marked `{ ready: false }` and excluded from scoring.
+**Answer:** Every landmark includes a `visibility` property (0.0 to 1.0). In [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L102-L104), `visiblePoint(point, threshold = 0.5)` verifies that visibility is at least 0.5. If required landmarks drop below this threshold, the frame is marked `{ ready: false }` and excluded from scoring.
 
 #### Q6: Does MediaPipe perform the clinical assessment scoring?
-**Answer:** **No.** MediaPipe is solely an edge computer vision feature extractor that outputs 3D coordinates. All repetition state machines, range-of-motion calculations, symmetry metrics, and clinical scoring formulas are implemented independently in [scoring.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/scoring.js).
+**Answer:** **No.** MediaPipe is solely an edge computer vision feature extractor that outputs 3D coordinates. All repetition state machines, range-of-motion calculations, symmetry metrics, and clinical scoring formulas are implemented independently in [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js).
 
 #### Q7: How does NeuroGuard prevent memory leaks during prolonged camera tracking?
-**Answer:** [CameraAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx#L37-L40) implements an unmount cleanup effect that cancels the active animation frame (`cancelAnimationFrame`) and stops all tracks on the active `MediaStream` (`track.stop()`). Furthermore, the frame buffer (`framesRef.current`) is capped at 450 frames via a sliding window (`frames.shift()`).
+**Answer:** [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx#L37-L40) implements an unmount cleanup effect that cancels the active animation frame (`cancelAnimationFrame`) and stops all tracks on the active `MediaStream` (`track.stop()`). Furthermore, the frame buffer (`framesRef.current`) is capped at 450 frames via a sliding window (`frames.shift()`).
 
 #### Q8: What coordinate system does MediaPipe use for landmarks?
 **Answer:** Normalized coordinates where $(0,0)$ is the top-left corner and $(1,1)$ is the bottom-right corner. The $z$-axis represents depth relative to the midpoint of the hips, with negative values being closer to the camera.
 
 #### Q9: What happens if camera permission is denied by the user?
-**Answer:** The `navigator.mediaDevices.getUserMedia` promise rejects with a `NotAllowedError`. [CameraAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx#L63-L67) catches this error and displays an informative banner: *"Camera permission was blocked. Allow camera access and try again."*
+**Answer:** The `navigator.mediaDevices.getUserMedia` promise rejects with a `NotAllowedError`. [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx#L63-L67) catches this error and displays an informative banner: *"Camera permission was blocked. Allow camera access and try again."*
 
 #### Q10: Why does the system reject assessment submissions with fewer than 5 valid frames?
-**Answer:** To prevent users from gaming the system or submitting invalid sessions caused by a malfunctioning webcam. In [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L540-L545), sessions with `validFrames < 5` are rejected with HTTP 400 Bad Request to protect baseline integrity.
+**Answer:** To prevent users from gaming the system or submitting invalid sessions caused by a malfunctioning webcam. In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L540-L545), sessions with `validFrames < 5` are rejected with HTTP 400 Bad Request to protect baseline integrity.

@@ -37,8 +37,8 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* Absolute video privacy compliance by design; zero video cloud hosting costs; $<20\text{ms}$ local visual feedback latency.
   - *Negative:* Performance depends on the client device's CPU/GPU capabilities. Very old low-end smartphones may experience frame drops.
 * **Implementation References:**
-  - [CameraFeed.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx)
-  - [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js)
+  - [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx)
+  - [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js)
 
 ---
 
@@ -60,7 +60,7 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* 33 landmarks enable clinical-grade joint angle tracking; 3D metric coordinates prevent perspective foreshortening distortion.
   - *Negative:* Model weight asset (`pose_landmarker_lite.task`, ~9MB) and WASM binaries must be loaded on initial assessment mount.
 * **Implementation References:**
-  - [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js#L15-L45)
+  - [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L15-L45)
   - Asset directory: `/public/models/pose_landmarker_lite.task`
 
 ---
@@ -83,8 +83,8 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* 100% explainable, deterministic, and auditable; zero inference compute overhead; directly maps to clinical physical therapy metrics.
   - *Negative:* Formulas must be carefully tuned per exercise to handle morphological diversity and camera angles.
 * **Implementation References:**
-  - [scoring.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/scoring.js#L13-L167)
-  - [ALGORITHMS_AND_FORMULAS.md](file:///home/piyush/Team Matrix/Hacksprint/docs/technical/ALGORITHMS_AND_FORMULAS.md)
+  - [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L13-L167)
+  - [ALGORITHMS_AND_FORMULAS.md](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/docs/technical/ALGORITHMS_AND_FORMULAS.md)
 
 ---
 
@@ -105,8 +105,8 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* Clinically appropriate; motivates incremental recovery; prevents alarm fatigue by requiring 3 consecutive declining sessions.
   - *Negative:* Requires at least 3 historical sessions before baseline trends can be established (`baseline_establishment` phase).
 * **Implementation References:**
-  - [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L30-L95)
-  - [BASELINE_AND_TREND_ENGINE.md](file:///home/piyush/Team Matrix/Hacksprint/docs/features/BASELINE_AND_TREND_ENGINE.md)
+  - [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L30-L95)
+  - [BASELINE_AND_TREND_ENGINE.md](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/docs/features/BASELINE_AND_TREND_ENGINE.md)
 
 ---
 
@@ -118,7 +118,7 @@ This document records the foundational architectural decisions made during the d
 * **Decision Drivers:**
   1. Horizontal scalability: Backend services should be able to scale without sharing session memory.
   2. Cross-client versatility: Support web SPAs and future native mobile apps using standard HTTP headers.
-  3. Architectural simplicity for hackathon deployment without mandatory Redis infrastructure.
+  3. Architectural simplicity for simple deployment without mandatory Redis infrastructure.
 * **Considered Alternatives:**
   - *Alternative A: Stateful Server-Side Sessions with Redis*: Requires a dedicated Redis instance; complicates deployment and memory management.
   - *Alternative B: Stateless Bearer JWTs (Selected)*: Signed with HMAC-SHA256 (`JWT_SECRET`), containing user ID and role, valid for 7 days.
@@ -128,8 +128,8 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* Zero database overhead for auth verification; horizontally scalable across multiple server instances; simple deployment.
   - *Negative:* Instant token revocation before the 7-day expiration requires token blocklisting; client stores token in `localStorage`.
 * **Implementation References:**
-  - [auth.js middleware](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/auth.js#L11-L60)
-  - [auth.js routes](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L26-L100)
+  - [auth.js middleware](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js#L11-L60)
+  - [auth.js routes](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L26-L100)
 
 ---
 
@@ -153,8 +153,8 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* 100% mathematical guarantee against double-booking; zero external dependencies (no Redis required for single node).
   - *Negative:* In-memory lock is node-local; scaling to a multi-instance Kubernetes cluster requires transitioning the mutex to Redis Redlock.
 * **Implementation References:**
-  - [appointments.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/appointmentRoutes.js#L40-L75)
-  - [Appointment.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Appointment.js#L55-L65)
+  - [appointments.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/appointmentRoutes.js#L40-L75)
+  - [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Appointment.js#L55-L65)
 
 ---
 
@@ -175,8 +175,8 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* Highest clinical safety standard; ensures appropriate medical physical triage when patients experience regression.
   - *Negative:* Patients living in remote rural areas must travel to the clinic.
 * **Implementation References:**
-  - [Appointment.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Appointment.js#L1-L75)
-  - [AppointmentBookingModal.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/BookingModal.jsx)
+  - [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Appointment.js#L1-L75)
+  - [AppointmentBookingModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/BookingModal.jsx)
 
 ---
 
@@ -198,8 +198,8 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* 100% uptime resilience; private keys remain secure; strictly eliminates diagnostic hallucination risks.
   - *Negative:* Adds minor network round-trip latency to the assessment write endpoint.
 * **Implementation References:**
-  - [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js#L1-L120)
-  - [GEMINI_AI_INTEGRATION.md](file:///home/piyush/Team Matrix/Hacksprint/docs/features/GEMINI_AI_INTEGRATION.md)
+  - [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L1-L120)
+  - [GEMINI_AI_INTEGRATION.md](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/docs/features/GEMINI_AI_INTEGRATION.md)
 
 ---
 
@@ -207,21 +207,21 @@ This document records the foundational architectural decisions made during the d
 
 * **Status:** Accepted
 * **Context:**
-  During development, hackathons, and offline presentations, cloud database connectivity (MongoDB Atlas) may be unavailable due to firewall restrictions, missing environment variables, or internet drops.
+  During development and offline demos, cloud database connectivity (MongoDB Atlas) may be unavailable due to firewall restrictions, missing environment variables, or internet drops.
 * **Decision Drivers:**
   1. Demonstration reliability: Reviewers and evaluators must be able to boot the project with zero setup and test all features even without a live MongoDB connection string.
   2. Clean degradation: Switching to in-memory mode must happen automatically without throwing unhandled exceptions.
 * **Considered Alternatives:**
-  - *Alternative A: Fail-Fast (Halt process on DB error)*: Standard for production, but brittle for hackathon demonstrations and local developer testing.
+  - *Alternative A: Fail-Fast (Halt process on DB error)*: Standard for production, but brittle for demonstrations and local developer testing.
   - *Alternative B: Dual-Persistence with Transparent In-Memory Fallback (Selected)*: `connectDB()` attempts MongoDB connection with 5s timeout; falls back to `store.js` in-memory repository on failure.
 * **Decision Outcome:**
   We implemented **Dual-Persistence with Transparent In-Memory Fallback**. If `MONGODB_URI` is missing or connection fails, the server seeds initial demo records into memory Maps and logs an informative warning banner. All routes operate seamlessly against the in-memory store.
 * **Consequences & Trade-offs:**
-  - *Positive:* Flawless developer onboarding and offline hackathon demonstration capability; 100% test reliability.
+  - *Positive:* Flawless developer onboarding and offline demonstration capability; 100% test reliability.
   - *Negative:* In-memory mutations are lost upon server restart. Production deployments must configure a persistent database.
 * **Implementation References:**
-  - [db.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/db.js#L1-L45)
-  - [store.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/store.js#L1-L150)
+  - [db.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/db.js#L1-L45)
+  - [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js#L1-L150)
 
 ---
 
@@ -243,5 +243,5 @@ This document records the foundational architectural decisions made during the d
   - *Positive:* Clean declarative React code; responsive resizing; accessible SVG nodes; rich custom tooltips.
   - *Negative:* SVG DOM nodes have higher memory overhead than canvas for massive datasets ($>10,000$ points), but longitudinal rehabilitation charts typically display 10–30 points, where SVG performance is optimal.
 * **Implementation References:**
-  - [TrendChart.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/TrendChart.jsx)
-  - [FRONTEND_ARCHITECTURE.md](file:///home/piyush/Team Matrix/Hacksprint/docs/architecture/FRONTEND_ARCHITECTURE.md)
+  - [TrendChart.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/TrendChart.jsx)
+  - [FRONTEND_ARCHITECTURE.md](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/docs/architecture/FRONTEND_ARCHITECTURE.md)

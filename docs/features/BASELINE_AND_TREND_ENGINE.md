@@ -8,7 +8,7 @@
 ---
 
 ## 2. What is this feature?
-The Personal Baseline and Trend Engine is the core statistical intelligence module of NeuroGuard AI ([trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js)). Instead of comparing stroke survivors against generic population averages, it builds a dynamic, personalized baseline for each patient using a 5-session moving window, computes relative percentage deltas, classifies recovery into clinical monitoring tiers, and automatically detects persistent functional decline across consecutive sessions.
+The Personal Baseline and Trend Engine is the core statistical intelligence module of NeuroGuard AI ([trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js)). Instead of comparing stroke survivors against generic population averages, it builds a dynamic, personalized baseline for each patient using a 5-session moving window, computes relative percentage deltas, classifies recovery into clinical monitoring tiers, and automatically detects persistent functional decline across consecutive sessions.
 
 ---
 
@@ -41,16 +41,16 @@ The Personal Baseline and Trend Engine is the core statistical intelligence modu
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [TrendChart.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/TrendChart.jsx): Visualizes longitudinal progress using Recharts SVG LineChart with reference bands and tooltip formatting.
-  - [ProgressPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/ProgressPage.jsx): Displays overall progress since Day 1, current score, baseline window size, and historical cards.
-  - [AlertCard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/AlertCard.jsx): Renders color-coded alert notifications (`Review recommended` with red badge or `Monitor` with amber badge).
+  - [TrendChart.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/TrendChart.jsx): Visualizes longitudinal progress using Recharts SVG LineChart with reference bands and tooltip formatting.
+  - [ProgressPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/ProgressPage.jsx): Displays overall progress since Day 1, current score, baseline window size, and historical cards.
+  - [AlertCard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/AlertCard.jsx): Renders color-coded alert notifications (`Review recommended` with red badge or `Monitor` with amber badge).
 
 ---
 
 ## 7. Backend implementation
 - **Source Files:**
-  - [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js): Core calculation algorithms.
-  - [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L247-L260): `GET /api/users/:id/trends` and `GET /api/alerts/:id`.
+  - [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js): Core calculation algorithms.
+  - [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L247-L260): `GET /api/users/:id/trends` and `GET /api/alerts/:id`.
 - **Exported Functions in `trendEngine.js`:**
   - `mean(values)`
   - `deviation(current, baseline)`
@@ -65,7 +65,7 @@ The Personal Baseline and Trend Engine is the core statistical intelligence modu
 
 ## 8. Database implementation
 - Aggregates records from the `Assessment` collection.
-- Persists alerts in the `Alert` collection ([Alert.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Alert.js)) or stores them in the `alerts` Map in [store.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/store.js).
+- Persists alerts in the `Alert` collection ([Alert.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Alert.js)) or stores them in the `alerts` Map in [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js).
 
 ---
 
@@ -140,13 +140,13 @@ MongoDB Assessments / store.js
 **Answer:** A 5-session window balances sensitivity and stability. A smaller window (e.g., 2 sessions) overreacts to transient daily fatigue, while a larger window (e.g., 20 sessions) adapts too slowly to real functional changes.
 
 #### Q2: What exact conditions trigger a "Persistent deviation" alert?
-**Answer:** In [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L42-L49), three conditions must be met: (1) at least 3 historical sessions exist, (2) all 3 recent sessions are lower than the baseline of previous sessions, and (3) the average of those 3 sessions is strictly less than 95% of baseline ($< 0.95 \times \text{baseline}$).
+**Answer:** In [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L42-L49), three conditions must be met: (1) at least 3 historical sessions exist, (2) all 3 recent sessions are lower than the baseline of previous sessions, and (3) the average of those 3 sessions is strictly less than 95% of baseline ($< 0.95 \times \text{baseline}$).
 
 #### Q3: What happens if a patient's baseline is zero?
-**Answer:** In [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L6-L9), `deviation(current, baseline)` checks `if (!baseline) return 0;`. This avoids `DivideByZero` errors returning `Infinity` or `NaN`.
+**Answer:** In [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L6-L9), `deviation(current, baseline)` checks `if (!baseline) return 0;`. This avoids `DivideByZero` errors returning `Infinity` or `NaN`.
 
 #### Q4: How does the trend engine distinguish between improving, declining, and stable trends?
-**Answer:** In [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L76), trend classification uses:
+**Answer:** In [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L76), trend classification uses:
 - $\text{change} \ge 0.03$ (+3%): **Improving**
 - $\text{change} \le -0.05$ (-5%): **Declining**
 - Between -5% and +3%: **Stable**
@@ -155,16 +155,16 @@ MongoDB Assessments / store.js
 **Answer:** The roster sorts patients by clinical severity using `STATUS_ORDER`: `review` (0) $\rightarrow$ `monitor` (1) $\rightarrow$ `stable` (2). Patients flagged with persistent decline appear at the top of the clinician's list.
 
 #### Q6: How does the engine handle missing metrics in a session?
-**Answer:** In [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L61-L69), `metric(name)` checks `if (raw === undefined || raw === null) return null;`. It returns `null` for uncollected metrics rather than defaulting to zero, preventing false drops in baseline calculations.
+**Answer:** In [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L61-L69), `metric(name)` checks `if (raw === undefined || raw === null) return null;`. It returns `null` for uncollected metrics rather than defaulting to zero, preventing false drops in baseline calculations.
 
 #### Q7: Does the trend engine use any non-deterministic machine learning?
 **Answer:** No. The trend engine is **100% deterministic mathematical code**. Given the identical array of assessment records, it always produces the identical baseline, delta, and alert classifications.
 
 #### Q8: How is the trend chart in Recharts formatted?
-**Answer:** [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L19-L32) formats assessment records into `{ day: 'D1', date: 'Sep 01', score: 70, movement: 68, balance: 64, ... }`, which Recharts renders into continuous SVG paths.
+**Answer:** [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L19-L32) formats assessment records into `{ day: 'D1', date: 'Sep 01', score: 70, movement: 68, balance: 64, ... }`, which Recharts renders into continuous SVG paths.
 
 #### Q9: What happens when the "Load decline demo" button is clicked?
-**Answer:** In [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L650-L695), `POST /api/users/:id/demo-decline` injects 5 declining sessions (`[81, 79, 75, 71, 68]`) and sets the patient's alert to `severity: 'review'`, demonstrating real-time alert triggering.
+**Answer:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L650-L695), `POST /api/users/:id/demo-decline` injects 5 declining sessions (`[81, 79, 75, 71, 68]`) and sets the patient's alert to `severity: 'review'`, demonstrating real-time alert triggering.
 
 #### Q10: How are rounding errors handled in percentage calculations?
 **Answer:** Percentage changes are rounded to one decimal place using `Math.round(change * 1000) / 10`, ensuring clean display values like `+9.7%` without floating-point artifacts (e.g. `9.700000000000003%`).

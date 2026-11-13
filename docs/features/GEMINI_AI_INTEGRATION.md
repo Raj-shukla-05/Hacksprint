@@ -8,7 +8,7 @@
 ---
 
 ## 2. What is this feature?
-This feature integrates Google's **Gemini API** (`gemini-3.5-flash-lite`) via backend service [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js). It takes pre-computed, deterministic functional observations and baseline deltas and translates them into 2–3 concise, empathetic, plain-language sentences for patients. The integration enforces strict guardrails, prompt sanitization, timeout management, and a deterministic local fallback engine.
+This feature integrates Google's **Gemini API** (`gemini-3.5-flash-lite`) via backend service [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js). It takes pre-computed, deterministic functional observations and baseline deltas and translates them into 2–3 concise, empathetic, plain-language sentences for patients. The integration enforces strict guardrails, prompt sanitization, timeout management, and a deterministic local fallback engine.
 
 ---
 
@@ -27,11 +27,11 @@ This feature integrates Google's **Gemini API** (`gemini-3.5-flash-lite`) via ba
 
 ## 5. How does this feature work?
 1. The client sends pre-computed dashboard findings to `POST /api/explanation`.
-2. [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L736-L799) executes `sanitizeFindings()`:
+2. [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L736-L799) executes `sanitizeFindings()`:
    - Validates the `trend` string.
    - Filters metrics using the `measured_metrics` whitelist (stripping uncollected domains).
    - Truncates user details to 500 characters to prevent prompt injection.
-3. [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js) checks `process.env.GEMINI_API_KEY`:
+3. [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js) checks `process.env.GEMINI_API_KEY`:
    - If missing, it immediately executes `buildLocalExplanation()` and returns `{ source: 'local', text }`.
 4. If configured, it formats a prompt with strict system instructions (low temperature: 0.2) and queries the Gemini endpoint.
 5. An `AbortController` enforces a 15-second timeout (`GEMINI_TIMEOUT_MS`).
@@ -41,15 +41,15 @@ This feature integrates Google's **Gemini API** (`gemini-3.5-flash-lite`) via ba
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [PatientDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/PatientDashboard.jsx#L35-L78): `useEffect` calling `api.explanation()`, with loading spinner and source badge (`Gemini AI`, `Local Fallback`, `Personal Baseline Engine`, or `Unavailable`).
-  - [DoctorPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/DoctorPage.jsx#L137-L165): Fetches and displays explanations in the patient detail drawer.
+  - [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/PatientDashboard.jsx#L35-L78): `useEffect` calling `api.explanation()`, with loading spinner and source badge (`Gemini AI`, `Local Fallback`, `Personal Baseline Engine`, or `Unavailable`).
+  - [DoctorPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorPage.jsx#L137-L165): Fetches and displays explanations in the patient detail drawer.
 
 ---
 
 ## 7. Backend implementation
 - **Source Files:**
-  - [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js): `generateExplanation()`, `buildLocalExplanation()`, and `formatDiagnosticMessage()`.
-  - [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L727-L806): `sanitizeFindings()` and `POST /api/explanation`.
+  - [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js): `generateExplanation()`, `buildLocalExplanation()`, and `formatDiagnosticMessage()`.
+  - [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L727-L806): `sanitizeFindings()` and `POST /api/explanation`.
 - **System Instructions Enforced in Prompt:**
   ```text
   You are an assistive explanation system for NeuroGuard AI, a non-diagnostic functional rehabilitation monitoring platform.
@@ -75,7 +75,7 @@ This feature integrates Google's **Gemini API** (`gemini-3.5-flash-lite`) via ba
 1. **Model Endpoint Configuration:**
    $$M = \text{process.env.GEMINI\_MODEL} \text{ (default: 'gemini-3.5-flash-lite')}$$
    $$\text{URL} = \text{https://generativelanguage.googleapis.com/v1beta/models/} + M + \text{:generateContent}$$
-2. **Deterministic Local Fallback Engine ([geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js#L15-L64)):**
+2. **Deterministic Local Fallback Engine ([geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L15-L64)):**
    - **Initial Reference Session ($N=0$):**
      > *"This session has been recorded as your initial reference point. NeuroGuard will begin tracking meaningful changes once more comparable sessions are available."*
    - **Single Prior Session ($N=1$):**
@@ -151,10 +151,10 @@ Dashboard Metrics
 **Answer:** The API key is stored strictly on the server in `process.env.GEMINI_API_KEY`. The frontend communicates only with the backend endpoint `POST /api/explanation`. The browser never interacts with Google's servers directly.
 
 #### Q3: What happens if the Gemini API key is missing or invalid?
-**Answer:** In [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js#L123-L125), if `!apiKey`, the service immediately calls `buildLocalExplanation()` and returns `{ source: 'local', text }`. If an invalid key returns HTTP 401, it logs a sanitized diagnostic and returns `{ source: 'local-fallback', text }`.
+**Answer:** In [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L123-L125), if `!apiKey`, the service immediately calls `buildLocalExplanation()` and returns `{ source: 'local', text }`. If an invalid key returns HTTP 401, it logs a sanitized diagnostic and returns `{ source: 'local-fallback', text }`.
 
 #### Q4: How are prompt injection attacks mitigated?
-**Answer:** In [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L794-L796), `sanitizeFindings()` truncates any caller-supplied `details` string to 500 characters. Numerical fields are cast using `Number()`, and the system instructions explicitly forbid the model from following external instructions.
+**Answer:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L794-L796), `sanitizeFindings()` truncates any caller-supplied `details` string to 500 characters. Numerical fields are cast using `Number()`, and the system instructions explicitly forbid the model from following external instructions.
 
 #### Q5: Why is `AbortController` used with a 15-second timeout?
 **Answer:** If the Gemini API experiences network hanging or slow responses, a 15-second abort prevents Node.js HTTP worker threads from remaining blocked. When aborted, the catch block catches the `AbortError` and immediately returns the local fallback.
@@ -166,10 +166,10 @@ Dashboard Metrics
 **Answer:** In Node.js environments (v18–v22), dual-stack IPv4/IPv6 DNS resolution can cause intermittent 5-second connection delays when resolving `generativelanguage.googleapis.com`. Forcing IPv4-first eliminates these lookup timeouts.
 
 #### Q8: What does the client UI display if the source is `local-fallback`?
-**Answer:** The UI badge in [PatientDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/PatientDashboard.jsx#L240-L247) displays *"Local Fallback"*, ensuring total transparency about whether the explanation came from Gemini or the local rule engine.
+**Answer:** The UI badge in [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/PatientDashboard.jsx#L240-L247) displays *"Local Fallback"*, ensuring total transparency about whether the explanation came from Gemini or the local rule engine.
 
 #### Q9: Why does `sanitizeFindings()` filter by `measured_metrics`?
 **Answer:** If an Arm Raise was performed, balance and speech were not collected. If the client accidentally sent stale balance metrics, `sanitizeFindings()` deletes them, ensuring Gemini only discusses metrics that were actually measured in that session.
 
 #### Q10: Does Gemini calculate the scores or percentages?
-**Answer:** **No.** All mathematical scores, deviations, and baseline windows are calculated beforehand by [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js). Gemini only acts as a plain-language translator of pre-computed numbers.
+**Answer:** **No.** All mathematical scores, deviations, and baseline windows are calculated beforehand by [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js). Gemini only acts as a plain-language translator of pre-computed numbers.

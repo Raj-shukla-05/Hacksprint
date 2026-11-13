@@ -41,11 +41,11 @@ NeuroGuard processes 100% of raw video streams inside the browser's volatile gra
 The camera stream is never initiated automatically. The patient must explicitly click *"Start camera check"* on the assessment page, triggering the browser's native permission dialog (`navigator.mediaDevices.getUserMedia`).
 
 ### 2. Clinical Report Sharing Consent
-A patient’s historical recovery data is never shared with a doctor by default. In [ShareReportModal.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/ShareReportModal.jsx), the patient must review a preview snapshot and check a legally framed authorization checkbox:
+A patient’s historical recovery data is never shared with a doctor by default. In [ShareReportModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/ShareReportModal.jsx), the patient must review a preview snapshot and check a legally framed authorization checkbox:
 > *"I explicitly authorize Dr. Priya Nair to view my NeuroGuard assessment history, movement scores, and baseline trends for in-person clinical review. I can revoke access at any time."*
 
 ### 3. Immediate Revocation Capability
-Patients retain absolute sovereignty over their data. By navigating to the *"Shared Reports"* tab on [AppointmentsPage.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AppointmentsPage.jsx), the patient can click *"Revoke Access"* at any moment. The backend updates the record status to `'revoked'` and immediately cuts off doctor access.
+Patients retain absolute sovereignty over their data. By navigating to the *"Shared Reports"* tab on [AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx), the patient can click *"Revoke Access"* at any moment. The backend updates the record status to `'revoked'` and immediately cuts off doctor access.
 
 ---
 

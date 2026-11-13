@@ -1,6 +1,6 @@
 # Known Security Limitations & Production Hardening Roadmap
 
-While NeuroGuard AI implements defense-in-depth protections suitable for a functional prototype and hackathon presentation, several known architectural limitations exist that must be hardened prior to clinical trial deployment or commercial healthcare launch.
+While NeuroGuard AI implements defense-in-depth protections suitable for a functional prototype, several known architectural limitations exist that must be hardened prior to clinical trial deployment or commercial healthcare launch.
 
 ---
 
@@ -22,12 +22,12 @@ While NeuroGuard AI implements defense-in-depth protections suitable for a funct
 - **Hardening Plan:** Restrict doctor signup to an administrative approval pipeline requiring medical registration number verification (e.g., National Medical Commission / General Medical Council API verification) and clinical credential review before profile activation.
 
 ### 4. In-Memory Sliding-Window Rate Limiter
-- **Current State:** [rateLimiter.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/rateLimiter.js) manages request counters in an in-memory `Map`.
+- **Current State:** [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/rateLimiter.js) manages request counters in an in-memory `Map`.
 - **Risk:** If the Express backend is scaled horizontally across multiple instances or serverless containers, rate limiting counts are not synchronized across nodes.
 - **Hardening Plan:** Migrate rate limiting to an external distributed cache such as Redis (`ioredis` + `express-rate-limit-redis`).
 
 ### 5. Content Security Policy (CSP) Disabling
-- **Current State:** In [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L30), Helmet's `contentSecurityPolicy` is disabled (`contentSecurityPolicy: false`) to allow Vite and MediaPipe WebAssembly to execute without restrictive script-src evaluation blocking.
+- **Current State:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L30), Helmet's `contentSecurityPolicy` is disabled (`contentSecurityPolicy: false`) to allow Vite and MediaPipe WebAssembly to execute without restrictive script-src evaluation blocking.
 - **Risk:** Leaves the application vulnerable to malicious script injections if an XSS vector is introduced.
 - **Hardening Plan:** Define a strict CSP policy explicitly whitelisting `'wasm-unsafe-eval'`, `'self'`, and trusted Google Gemini endpoints.
 

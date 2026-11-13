@@ -41,13 +41,13 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Client state is maintained in [App.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/App.jsx#L42-L68) (`user`, `token`), initialized from browser `localStorage`. API calls are executed by [api.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/api.js#L23-L45) (`authAPI.login`, `authAPI.register`, `authAPI.me`).
+  Client state is maintained in [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L42-L68) (`user`, `token`), initialized from browser `localStorage`. API calls are executed by [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js#L23-L45) (`authAPI.login`, `authAPI.register`, `authAPI.me`).
 * **Which frontend component handles it?**
-  [LoginModal.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/LoginPage.jsx#L1-L120) displays modal tabs for login, registration, and demo-user fast switching. Protected views are gated inside `App.jsx` using ternary guards (`token ? <Dashboard /> : <LandingPage />`).
+  [LoginModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/LoginPage.jsx#L1-L120) displays modal tabs for login, registration, and demo-user fast switching. Protected views are gated inside `App.jsx` using ternary guards (`token ? <Dashboard /> : <LandingPage />`).
 * **Which API is called?**
   `POST /api/auth/login`, `POST /api/auth/register`, and `GET /api/auth/me`.
 * **Which backend function processes it?**
-  [auth.js routes](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L26-L100). Validated against Mongoose User model [User.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/User.js#L1-L76).
+  [auth.js routes](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L26-L100). Validated against Mongoose User model [User.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/User.js#L1-L76).
 * **Which database model stores its data?**
   The `User` collection. Schema stores `name`, lowercase indexed `email`, hashed `password` (select: false), `role`, `status`, `assignedDoctorId`, and timestamps.
 * **What algorithms are involved?**
@@ -70,13 +70,13 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **What alternatives could have been used?**
   HttpOnly SameSite secure cookies. While cookies offer superior mitigation against XSS token exfiltration, bearer tokens simplify hybrid cross-platform clients (mobile apps, desktop clients) and multi-domain API hosting.
 * **How does the feature communicate with other modules?**
-  The [auth middleware](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/auth.js#L11-L60) (`authenticateToken`, `requireRole`) intercepts every inbound request to `/api/assessments`, `/api/patients`, `/api/doctors`, `/api/appointments`, and `/api/reports`, populating `req.user` with decoded token claims.
+  The [auth middleware](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js#L11-L60) (`authenticateToken`, `requireRole`) intercepts every inbound request to `/api/assessments`, `/api/patients`, `/api/doctors`, `/api/appointments`, and `/api/reports`, populating `req.user` with decoded token claims.
 * **What dependencies does it have?**
   Backend: `jsonwebtoken`, `bcryptjs`, `mongoose`. Frontend: Native `fetch` with authorization header injection.
 
 ### Security Understanding
 * **How is this feature protected?**
-  Protected by express rate limiting [rateLimiter.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/middleware/rateLimiter.js#L1-L40) (`authLimiter` limits brute-force attempts to 5 requests per 15 minutes per IP).
+  Protected by express rate limiting [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/rateLimiter.js#L1-L40) (`authLimiter` limits brute-force attempts to 5 requests per 15 minutes per IP).
 * **What happens when an unauthorized user attempts access?**
   Missing or invalid token triggers `401 Unauthorized`. Valid token with insufficient role (e.g. `patient` requesting `/api/doctors/dashboard`) triggers `403 Forbidden` (`{ message: 'Forbidden: Insufficient role permissions' }`).
 * **How is sensitive data protected?**
@@ -88,7 +88,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **What are the biggest technical challenges?**
   Handling token invalidation upon role change or account deactivation before the 7-day JWT expiration without maintaining a centralized redis blacklist.
 * **What are the possible failure scenarios?**
-  Database connection drop causes auth endpoints to fall back to in-memory store [store.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/store.js#L1-L24), creating divergence if nodes restart.
+  Database connection drop causes auth endpoints to fall back to in-memory store [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js#L1-L24), creating divergence if nodes restart.
 * **What are the performance bottlenecks?**
   `bcrypt.hash` with cost factor 10 is intentionally CPU-intensive. High registration bursts can starve the Node.js libuv thread pool if unthrottled.
 * **What happens with concurrent requests?**
@@ -114,27 +114,27 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  [PatientDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/PatientDashboard.jsx#L1-L320) acts as the primary coordinator view. It loads data concurrently via `Promise.all` fetching `/api/assessments/stats`, `/api/assessments/history`, and appointments.
+  [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/PatientDashboard.jsx#L1-L320) acts as the primary coordinator view. It loads data concurrently via `Promise.all` fetching `/api/assessments/stats`, `/api/assessments/history`, and appointments.
 * **Which frontend component handles it?**
   `PatientDashboard.jsx` orchestrates child presentation components:
-  - [StatCard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/MetricCard.jsx#L1-L40) for top KPI cards.
-  - [TrendChart.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/TrendChart.jsx#L1-L85) rendering Recharts SVG line graphs.
-  - [RecentSessions.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/MetricCard.jsx#L1-L75) displaying session logs.
-  - [AppointmentsCard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/BookingModal.jsx#L1-L90) for clinical consults.
+  - [StatCard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/MetricCard.jsx#L1-L40) for top KPI cards.
+  - [TrendChart.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/TrendChart.jsx#L1-L85) rendering Recharts SVG line graphs.
+  - [RecentSessions.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/MetricCard.jsx#L1-L75) displaying session logs.
+  - [AppointmentsCard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/BookingModal.jsx#L1-L90) for clinical consults.
 * **Which API is called?**
   - `GET /api/assessments/history?limit=10`
   - `GET /api/assessments/stats`
   - `GET /api/appointments/my`
 * **Which backend function processes it?**
-  [assessment.js routes](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L50-L125) executing Mongoose aggregate pipelines and trend engine calculations.
+  [assessment.js routes](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L50-L125) executing Mongoose aggregate pipelines and trend engine calculations.
 * **Which database model stores its data?**
-  `Assessment` collection [Assessment.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Assessment.js#L1-L80) and `Appointment` collection.
+  `Assessment` collection [Assessment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Assessment.js#L1-L80) and `Appointment` collection.
 * **What algorithms are involved?**
   Rolling adherence calculation: $\text{Adherence Rate} = (\text{Completed Sessions} / \text{Prescribed Target}) \times 100$. Recovery score trajectory interpolation for Recharts SVG rendering.
 * **How is the result calculated?**
-  Backend computes session counts, average recovery scores, and trend status (`improving`, `stable`, `declining`) by feeding historical sessions into `evaluateRecoveryTrend()` in [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L10-L100).
+  Backend computes session counts, average recovery scores, and trend status (`improving`, `stable`, `declining`) by feeding historical sessions into `evaluateRecoveryTrend()` in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L10-L100).
 * **What happens if something fails?**
-  If network or backend is unreachable, `PatientDashboard.jsx` catches the exception and falls back to deterministic client mock data in [demoData.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/demoData.js#L1-L85), rendering amber status banners to indicate offline/simulated mode.
+  If network or backend is unreachable, `PatientDashboard.jsx` catches the exception and falls back to deterministic client mock data in [demoData.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/demoData.js#L1-L85), rendering amber status banners to indicate offline/simulated mode.
 
 ### Architecture Understanding
 * **Why did we choose this technology?**
@@ -144,7 +144,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **What alternatives could have been used?**
   Server-Side Rendered (SSR) HTML charts or Chart.js canvas elements. Recharts was selected for seamless declarative React component integration.
 * **How does the feature communicate with other modules?**
-  Deep links navigate directly to [AssessmentRunner.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AssessmentPage.jsx#L1-L240), [AppointmentList.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AppointmentsPage.jsx#L1-L200), and [ReportViewer.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/RecoveryReportModal.jsx#L1-L150).
+  Deep links navigate directly to [AssessmentRunner.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L1-L240), [AppointmentList.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx#L1-L200), and [ReportViewer.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx#L1-L150).
 * **What dependencies does it have?**
   `recharts`, `lucide-react` icons, Tailwind CSS classes.
 
@@ -188,9 +188,9 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Encapsulated in [pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js#L1-L115) (`createPoseLandmarker`, `detectPoseFromVideo`).
+  Encapsulated in [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L1-L115) (`createPoseLandmarker`, `detectPoseFromVideo`).
 * **Which frontend component handles it?**
-  [CameraFeed.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx#L1-L140) manages the `<video>` and `<canvas>` elements and coordinates the `requestAnimationFrame` loop.
+  [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx#L1-L140) manages the `<video>` and `<canvas>` elements and coordinates the `requestAnimationFrame` loop.
 * **Which API is called?**
   Zero backend APIs during video inference. Everything runs client-side via WebAssembly (`@mediapipe/tasks-vision`).
 * **Which backend function processes it?**
@@ -214,7 +214,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **What alternatives could have been used?**
   TensorFlow.js PoseNet / MoveNet. MediaPipe Pose was selected because it tracks 33 full-body landmarks (including hands and feet) with superior occlusion resilience and lower runtime memory overhead.
 * **How does the feature communicate with other modules?**
-  Passes normalized landmark arrays `landmarks[33]` to [scoring.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/scoring.js#L1-L170) on every animation frame.
+  Passes normalized landmark arrays `landmarks[33]` to [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L1-L170) on every animation frame.
 * **What dependencies does it have?**
   `@mediapipe/tasks-vision` npm package, `/public/mediapipe/wasm` binaries, `/public/models/pose_landmarker_lite.task` model file.
 
@@ -259,13 +259,13 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Pure mathematical vector kinematics implemented in [scoring.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/scoring.js#L1-L170). Orchestrated in [AssessmentRunner.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AssessmentPage.jsx#L1-L240).
+  Pure mathematical vector kinematics implemented in [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L1-L170). Orchestrated in [AssessmentRunner.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L1-L240).
 * **Which frontend component handles it?**
   `AssessmentRunner.jsx` mounts `CameraFeed.jsx`, evaluates frames via `calculateMovementScore(type, landmarks, state)`, updates real-time HUD widgets, and posts completed session payloads to backend.
 * **Which API is called?**
   `POST /api/assessments` upon exercise completion.
 * **Which backend function processes it?**
-  [assessments.js route](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L15-L48) saves session, calls `trendEngine.evaluateRecoveryTrend(patientId, session)` in [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L10-L100), and requests AI insights from [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js#L20-L85).
+  [assessments.js route](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L15-L48) saves session, calls `trendEngine.evaluateRecoveryTrend(patientId, session)` in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L10-L100), and requests AI insights from [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L20-L85).
 * **Which database model stores its data?**
   `Assessment` collection (`type`, `score`, `metrics`, `trend`, `aiExplanation`).
 * **What algorithms are involved?**
@@ -332,13 +332,13 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Audio capture via HTML5 `MediaRecorder` API and Web Audio API (`AudioContext`, `AnalyserNode`) in [SpeechAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AssessmentPage.jsx#L1-L150).
+  Audio capture via HTML5 `MediaRecorder` API and Web Audio API (`AudioContext`, `AnalyserNode`) in [SpeechAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L1-L150).
 * **Which frontend component handles it?**
   `SpeechAssessment.jsx` records audio chunks into a `Blob`, executes client-side volume and pause duration analysis, and prepares the assessment payload.
 * **Which API is called?**
   `POST /api/assessments` with `{ type: 'speech', metrics: { clarity, pace, sustainedPhonation, pauseCount }, score }`.
 * **Which backend function processes it?**
-  [assessments.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L15-L48) processes the speech metrics and triggers Gemini contextual speech explanation generation.
+  [assessments.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L15-L48) processes the speech metrics and triggers Gemini contextual speech explanation generation.
 * **Which database model stores its data?**
   `Assessment` collection with `type: 'speech'`.
 * **What algorithms are involved?**
@@ -404,7 +404,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Core mathematical module in [trendEngine.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/trendEngine.js#L1-L100).
+  Core mathematical module in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L1-L100).
 * **Which frontend component handles it?**
   Displays in `PatientDashboard.jsx`, `TrendChart.jsx`, and `DoctorDashboard.jsx`.
 * **Which API is called?**
@@ -439,7 +439,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **What alternatives could have been used?**
   ARIMA time-series models, Kalman filters, or recurrent neural networks. Rejected because clinical rehabilitation requires explainable, auditable deterministic thresholds that clinicians can verify.
 * **How does the feature communicate with other modules?**
-  Sends trend status to [notificationService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/notificationService.js#L1-L80) when persistent decline is detected.
+  Sends trend status to [notificationService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/notificationService.js#L1-L80) when persistent decline is detected.
 * **What dependencies does it have?**
   Zero external dependencies; built using native JavaScript arrays and math.
 
@@ -483,9 +483,9 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Backend service implemented in [geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js#L1-L120).
+  Backend service implemented in [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L1-L120).
 * **Which frontend component handles it?**
-  Displayed in [AssessmentResult.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AssessmentPage.jsx#L1-L140) and [ReportViewer.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/RecoveryReportModal.jsx#L1-L150).
+  Displayed in [AssessmentResult.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L1-L140) and [ReportViewer.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx#L1-L150).
 * **Which API is called?**
   Invoked internally by `POST /api/assessments` and `POST /api/reports/generate`.
 * **Which backend function processes it?**
@@ -556,7 +556,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  [DoctorDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/DoctorPage.jsx#L1-L310) acts as the primary clinical view.
+  [DoctorDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorPage.jsx#L1-L310) acts as the primary clinical view.
 * **Which frontend component handles it?**
   Renders clinical summary stats, an alert banner for patients requiring clinical review, a filterable patient roster table, and a deep-dive modal for inspecting specific session kinematics.
 * **Which API is called?**
@@ -564,7 +564,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
   - `GET /api/doctors/patients`
   - `GET /api/doctors/patients/:patientId/assessments`
 * **Which backend function processes it?**
-  [doctors.js routes](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/doctorRoutes.js#L20-L115) querying assigned patients, aggregating recent assessments, and flagging decline alerts.
+  [doctors.js routes](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/doctorRoutes.js#L20-L115) querying assigned patients, aggregating recent assessments, and flagging decline alerts.
 * **Which database model stores its data?**
   `User` collection (`role: 'doctor'`), `User` (`role: 'patient'`, `assignedDoctorId`), and `Assessment` collection.
 * **What algorithms are involved?**
@@ -583,7 +583,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **What alternatives could have been used?**
   Traditional multi-page enterprise EHR portal (e.g. Epic/Cerner web plugins). NeuroGuard AI provides a lightweight, focused modern web dashboard tailored specifically for tele-rehabilitation.
 * **How does the feature communicate with other modules?**
-  Links to [AppointmentList.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AppointmentsPage.jsx) to review appointments and [ReportViewer.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/RecoveryReportModal.jsx) to view shared reports.
+  Links to [AppointmentList.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx) to review appointments and [ReportViewer.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx) to view shared reports.
 * **What dependencies does it have?**
   `lucide-react` icons, Recharts visualization components.
 
@@ -627,7 +627,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Frontend in [AppointmentBookingModal.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/BookingModal.jsx#L1-L150) and [AppointmentList.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/AppointmentsPage.jsx#L1-L200). Backend in [appointments.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/appointmentRoutes.js#L1-L180).
+  Frontend in [AppointmentBookingModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/BookingModal.jsx#L1-L150) and [AppointmentList.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx#L1-L200). Backend in [appointments.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/appointmentRoutes.js#L1-L180).
 * **Which frontend component handles it?**
   `AppointmentBookingModal.jsx` handles date selection, slot filtering, and submission. `AppointmentList.jsx` displays booked cards with status pills and cancellation controls.
 * **Which API is called?**
@@ -637,7 +637,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **Which backend function processes it?**
   Route controllers in `appointments.js` verifying doctor clinic hours, generating 30-minute intervals, acquiring concurrency locks, and writing to database.
 * **Which database model stores its data?**
-  `Appointment` collection [Appointment.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Appointment.js#L1-L75).
+  `Appointment` collection [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Appointment.js#L1-L75).
 * **What algorithms are involved?**
   - **Slot Generator**: Iterates in 30-minute steps from `workingHours.start` (default `09:00`) to `workingHours.end` (default `17:00`), excluding existing booked appointments matching `{ doctorId, date, status: { $in: ['pending', 'confirmed'] } }`.
   - **In-Memory Concurrency Mutex**:
@@ -709,9 +709,9 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Frontend in [NotificationCenter.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/Topbar.jsx#L1-L120). Backend in [notifications.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/notificationRoutes.js#L1-L90) and [notificationService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/notificationService.js#L1-L80).
+  Frontend in [NotificationCenter.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/Topbar.jsx#L1-L120). Backend in [notifications.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/notificationRoutes.js#L1-L90) and [notificationService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/notificationService.js#L1-L80).
 * **Which frontend component handles it?**
-  `NotificationCenter.jsx` mounts in the top navbar [Header.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/Topbar.jsx), polls `/api/notifications/unread-count`, and renders alert cards.
+  `NotificationCenter.jsx` mounts in the top navbar [Header.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/Topbar.jsx), polls `/api/notifications/unread-count`, and renders alert cards.
 * **Which API is called?**
   - `GET /api/notifications`
   - `PATCH /api/notifications/:id/read`
@@ -719,7 +719,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **Which backend function processes it?**
   `notificationService.sendNotification({ recipientId, type, title, message, priority, metadata })`.
 * **Which database model stores its data?**
-  `Notification` collection [Notification.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/Notification.js#L1-L60).
+  `Notification` collection [Notification.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Notification.js#L1-L60).
 * **What algorithms are involved?**
   Priority-based routing: `urgent` notifications (persistent decline) trigger immediate high-priority UI badges, whereas `info` notifications (exercise completed) post standard updates.
 * **How is the result calculated?**
@@ -779,7 +779,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 
 ### Implementation Understanding
 * **How is it implemented?**
-  Frontend in [ReportViewer.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/RecoveryReportModal.jsx#L1-L150). Backend in [reports.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/routes/reportRoutes.js#L1-L120) and [reportService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/reportSharingService.js#L1-L90).
+  Frontend in [ReportViewer.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx#L1-L150). Backend in [reports.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/reportRoutes.js#L1-L120) and [reportService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js#L1-L90).
 * **Which frontend component handles it?**
   `ReportViewer.jsx` renders print-ready clinical report formatting, PDF export button, and doctor sharing controls.
 * **Which API is called?**
@@ -789,7 +789,7 @@ This knowledge base provides an exhaustive 360-degree technical architectural an
 * **Which backend function processes it?**
   `reportService.compilePatientReport(patientId, timeframe)` aggregating assessments, calculating trend averages, and generating clinical synthesis via Gemini.
 * **Which database model stores its data?**
-  `Report` collection [Report.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/models/SharedRecoveryReport.js#L1-L65).
+  `Report` collection [Report.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/SharedRecoveryReport.js#L1-L65).
 * **What algorithms are involved?**
   - Timeframe metric aggregation (mean, median, standard deviation of exercise scores).
   - Secure unguessable sharing token generation (`crypto.randomBytes(24).toString('base64url')`) with configurable expiration (7 days).

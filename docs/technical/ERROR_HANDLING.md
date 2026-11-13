@@ -27,20 +27,20 @@ When an error is triggered, the appropriate HTTP status code is set:
 
 ## 2. Multi-Tier Error Resilience Patterns
 
-### 1. Database Connection Resilience ([db.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/db.js))
+### 1. Database Connection Resilience ([db.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/db.js))
 - The server does **not crash** if MongoDB is offline or `MONGODB_URI` is missing.
 - `connectDB()` catches connection failures, logs a warning, and sets `mongoConnected = false`.
-- All database write operations attach `.catch()` handlers that log warnings to `console.warn` while falling back to in-memory state in [store.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/store.js).
+- All database write operations attach `.catch()` handlers that log warnings to `console.warn` while falling back to in-memory state in [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js).
 
-### 2. Camera & Computer Vision Resilience ([pose.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/pose.js))
+### 2. Camera & Computer Vision Resilience ([pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js))
 - **GPU Failure Catch:** If `PoseLandmarker.createFromOptions` with `delegate: 'GPU'` fails (e.g., unsupported shader extension), it logs a warning and automatically re-initializes with `delegate: 'CPU'`.
-- **Per-Frame Isolation:** In [CameraAssessment.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/components/CameraAssessment.jsx#L103-L105), a `try...catch` block surrounds `detectForVideo()`. Individual dropped or corrupt frames are silently ignored so the assessment loop stays alive.
+- **Per-Frame Isolation:** In [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx#L103-L105), a `try...catch` block surrounds `detectForVideo()`. Individual dropped or corrupt frames are silently ignored so the assessment loop stays alive.
 
-### 3. Gemini API Network & Quota Resilience ([geminiService.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/services/geminiService.js))
+### 3. Gemini API Network & Quota Resilience ([geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js))
 - **Timeout Management:** An `AbortController` aborts hanging requests after 15 seconds.
 - **Error Diagnostics:** `formatDiagnosticMessage(status, errorData, modelName)` maps HTTP 400, 401, 403, 404, 429, and 5xx responses into sanitized diagnostic logs without exposing private keys.
 - **Seamless Local Fallback:** On any API failure, the service automatically invokes `buildLocalExplanation()` and returns `{ source: 'local-fallback', text }`.
 
-### 4. Client Session Expiration Resilience ([api.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/api.js))
+### 4. Client Session Expiration Resilience ([api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js))
 - If any API request encounters an HTTP 401, the client dispatches a custom window event (`neuroguard:unauthorized`).
-- [App.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/App.jsx#L67-L74) catches this event, executes `handleLogout()`, clears `sessionStorage`, and notifies the patient with a toast: *"Your session has expired. Please sign in again."*
+- [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L67-L74) catches this event, executes `handleLogout()`, clears `sessionStorage`, and notifies the patient with a toast: *"Your session has expired. Please sign in again."*

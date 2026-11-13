@@ -23,7 +23,7 @@ This catalog documents every feature and capability discovered in the NeuroGuard
 | **F-13** | Gemini AI Recovery Explanation | Patient, Doctor | `PatientDashboard.jsx`, `DoctorPage.jsx` | `POST /api/explanation`, `geminiService.js` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/geminiService.test.js` (34 tests) |
 | **F-14** | Deterministic Local Explanation Fallback | Patient, Doctor | `PatientDashboard.jsx`, `DoctorPage.jsx` | `geminiService.buildLocalExplanation` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/geminiService.test.js` (9 tests) |
 | **F-15** | Doctor Patient Roster Prioritization | Doctor | `DoctorPage.jsx` | `GET /api/doctors/:id/patients` | **IMPLEMENTED AND VERIFIED BY TEST** | `backend/test/auth.test.js`, `assignments.test.js` |
-| **F-17** | Hackathon Demo Decline Scenario | Judge / Presenter | `Sidebar.jsx` ("Load decline demo") | `POST /api/users/:id/demo-decline` | **MOCKED OR SIMULATED** | Working simulation, injects synthetic assessments |
+| **F-17** | Demo Decline Scenario | Presenter | `Sidebar.jsx` ("Load decline demo") | `POST /api/users/:id/demo-decline` | **MOCKED OR SIMULATED** | Working simulation, injects synthetic assessments |
 | **F-18** | Storage Mode Health & Topbar Indicator | All Roles | `Topbar.jsx` | `GET /api/health` | **IMPLEMENTED AND VERIFIED BY TEST** | Verified via test assertion & build |
 | **F-19** | Speech Analysis Endpoint | Disconnected | None (Checklist shows "Optional") | `POST /api/speech/analyze` | **DISCONNECTED OR UNUSED** | Route works in backend; zero frontend callers |
 
@@ -121,9 +121,9 @@ This catalog documents every feature and capability discovered in the NeuroGuard
 
 ---
 
-### F-17: Hackathon Demo Decline Scenario
-- **User Problem:** Demonstrating persistent decline alerts to hackathon judges without waiting 3 weeks for a patient to decline.
-- **Intended Role:** Judge / Presenter.
+### F-17: Demo Decline Scenario
+- **User Problem:** Demonstrating persistent decline alerts to reviewers without waiting 3 weeks for a patient to decline.
+- **Intended Role:** Presenter.
 - **UI Location:** `frontend/src/components/Sidebar.jsx` ("Load decline demo" button).
 - **Backend Implementation:** `backend/src/server.js` (`POST /api/users/:id/demo-decline` lines 570-615).
 - **Operation:** Injects 5 synthetic declining sessions (`score: 81, 79, 75, 71, 68`), creates a persistent deviation alert, and sets patient status to `review`.

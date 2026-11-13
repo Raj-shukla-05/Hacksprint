@@ -37,15 +37,15 @@ This feature provides automated linguistic and acoustic analysis of a patient's 
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [PatientDashboard.jsx](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/pages/PatientDashboard.jsx#L111): Displays the Speech metric card (value: 84, change: 0%) and checklist item (*"Speech assessment · Optional · ~30 sec"*).
-  - [api.js](file:///home/piyush/Team Matrix/Hacksprint/frontend/src/lib/api.js#L77): Client method `api.speechAnalyze(payload)`.
+  - [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/PatientDashboard.jsx#L111): Displays the Speech metric card (value: 84, change: 0%) and checklist item (*"Speech assessment · Optional · ~30 sec"*).
+  - [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js#L77): Client method `api.speechAnalyze(payload)`.
 - **Status:** **PARTIALLY IMPLEMENTED**. The backend analysis engine is fully operational, while browser microphone streaming via the Web Speech API is currently marked as an optional check in the patient UI.
 
 ---
 
 ## 7. Backend implementation
 - **Source Files:**
-  - [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L699-L724): Endpoint `POST /api/speech/analyze` and helper `tokenSimilarity(a, b)`.
+  - [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L699-L724): Endpoint `POST /api/speech/analyze` and helper `tokenSimilarity(a, b)`.
   ```javascript
   app.post('/api/speech/analyze', (req, res) => {
     const { transcript = '', expectedText = '', duration = 0, pauseCount = 0 } = req.body || {};
@@ -75,7 +75,7 @@ This feature provides automated linguistic and acoustic analysis of a patient's 
 ---
 
 ## 9. Algorithms and technical logic
-1. **Jaccard Token Similarity Formula ([server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L717-L723)):**
+1. **Jaccard Token Similarity Formula ([server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L717-L723)):**
    $$A = \text{UniqueTokens}(\text{transcript}), \quad B = \text{UniqueTokens}(\text{expectedText})$$
    $$\text{Similarity} = \frac{|A \cap B|}{|A \cup B|} \times 100$$
 2. **Speech Cadence Rate (Words Per Minute):**
@@ -168,4 +168,4 @@ POST /api/speech/analyze
 **Answer:** By incorporating acoustic feature extraction (jitter, shimmer, fundamental frequency variation) and phoneme-level alignment via Kaldi or Whisper on-device models.
 
 #### Q10: How does the system distinguish a valid zero speech score from an unmeasured session?
-**Answer:** If speech was not assessed, the `speech` key is deleted from the `metrics` object in [server.js](file:///home/piyush/Team Matrix/Hacksprint/backend/src/server.js#L575). The frontend treats `undefined` as unmeasured, whereas `0` represents an attempted session with zero score.
+**Answer:** If speech was not assessed, the `speech` key is deleted from the `metrics` object in [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L575). The frontend treats `undefined` as unmeasured, whereas `0` represents an attempted session with zero score.
