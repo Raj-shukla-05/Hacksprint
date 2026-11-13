@@ -21,7 +21,7 @@ In local development, the backend listens on port `5000`:
 ```
 http://localhost:5000/api
 ```
-The frontend configures this base URL via `VITE_API_BASE_URL` in [frontend/src/lib/api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js#L1).
+The frontend configures this base URL via `VITE_API_BASE_URL` in [frontend/src/lib/api.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/api.js#L1).
 
 ---
 

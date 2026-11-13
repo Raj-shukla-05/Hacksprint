@@ -21,7 +21,7 @@ Before starting, ensure your local development machine has:
 ### Step 1: Clone Repository
 ```bash
 git clone <repository-url>
-cd "NeuroGuard"
+cd "NeuroGuard-AI"
 ```
 
 ### Step 2: Configure & Start Backend Service

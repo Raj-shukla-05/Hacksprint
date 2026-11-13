@@ -28,7 +28,7 @@ This feature provides secure user registration, credential validation, cryptogra
 ---
 
 ## 5. How does this feature work?
-1. The user visits the application. If `sessionStorage` lacks valid credentials, [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L174) renders [LoginPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/LoginPage.jsx).
+1. The user visits the application. If `sessionStorage` lacks valid credentials, [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/App.jsx#L174) renders [LoginPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/LoginPage.jsx).
 2. The user toggles between **Sign In** and **Create Account**. During registration, they select their role (`Patient` or `Doctor`).
 3. For doctors, registration exposes clinical input fields: specialization, clinic name, city, consultation fee, and years of experience.
 4. On submission, the client calls `POST /api/auth/signup` or `POST /api/auth/login`.
@@ -41,9 +41,9 @@ This feature provides secure user registration, credential validation, cryptogra
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [LoginPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/LoginPage.jsx): Sign-in/Sign-up forms, role toggle radio group, demo account autofill buttons (`fillDemo`).
-  - [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js): `api.login()`, `api.signup()`, `setAuthToken()`, `getAuthToken()`, `clearAuthToken()`.
-  - [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx): Session restoration hook `loadSession()`, `handleLogin()`, `handleLogout()`, and `neuroguard:unauthorized` event listener.
+  - [LoginPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/LoginPage.jsx): Sign-in/Sign-up forms, role toggle radio group, demo account autofill buttons (`fillDemo`).
+  - [api.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/api.js): `api.login()`, `api.signup()`, `setAuthToken()`, `getAuthToken()`, `clearAuthToken()`.
+  - [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/App.jsx): Session restoration hook `loadSession()`, `handleLogin()`, `handleLogout()`, and `neuroguard:unauthorized` event listener.
 - **State Management:**
   - `mode`: `'signin'` vs `'signup'`.
   - `role`: `'patient'` or `'doctor'`.
@@ -55,8 +55,8 @@ This feature provides secure user registration, credential validation, cryptogra
 
 ## 7. Backend implementation
 - **Source Files:**
-  - [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L66-L230): Route handlers for `POST /api/auth/login` and `POST /api/auth/signup`.
-  - [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js):
+  - [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L66-L230): Route handlers for `POST /api/auth/login` and `POST /api/auth/signup`.
+  - [auth.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/auth.js):
     - `generateToken(payload)`: Signs JWT using `JWT_SECRET`.
     - `verifyToken(token)`: Verifies signature and expiration.
     - `authenticateToken(req, res, next)`: Express middleware extracting Bearer token.
@@ -75,13 +75,13 @@ This feature provides secure user registration, credential validation, cryptogra
 ---
 
 ## 8. Database implementation
-- **Models Used:** [User.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/User.js), [Doctor.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Doctor.js), [DoctorAvailability.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/DoctorAvailability.js).
+- **Models Used:** [User.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/User.js), [Doctor.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Doctor.js), [DoctorAvailability.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/DoctorAvailability.js).
 - **User Schema Fields:**
   - `id` (String, unique, indexed): `user-<id>` or `doctor-<id>`.
   - `email` (String, unique, lowercase, indexed).
   - `passwordHash` (String, required).
   - `role` (String, enum: `['patient', 'doctor']`).
-- **In-Memory Store:** `credentials` array in [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js#L118-L125) holds pre-hashed bcrypt credentials for offline operation.
+- **In-Memory Store:** `credentials` array in [store.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/store.js#L118-L125) holds pre-hashed bcrypt credentials for offline operation.
 
 ---
 
@@ -148,22 +148,22 @@ User Enters Credentials
 **Answer:** It is stored in `window.sessionStorage`. The trade-off: `sessionStorage` is isolated per browser tab and automatically clears when the tab closes, which is safer on shared medical devices than `localStorage`. However, like `localStorage`, it is accessible to JavaScript running in the same origin, meaning protection against Cross-Site Scripting (XSS) is paramount.
 
 #### Q3: How does NeuroGuard prevent Insecure Direct Object References (IDOR)?
-**Answer:** Via the `requireSelfOrDoctor` middleware in [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js#L63-L97). It inspects `req.user.userId` from the verified JWT and compares it to `req.params.id`. If a patient attempts to query another patient's ID, the request is rejected with HTTP 403 Forbidden.
+**Answer:** Via the `requireSelfOrDoctor` middleware in [auth.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/auth.js#L63-L97). It inspects `req.user.userId` from the verified JWT and compares it to `req.params.id`. If a patient attempts to query another patient's ID, the request is rejected with HTTP 403 Forbidden.
 
 #### Q4: What happens if a doctor attempts to query a patient who is assigned to a different doctor?
-**Answer:** In [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js#L87-L94), the middleware checks `patient.doctorId !== req.user.userId`. If the patient is assigned to another clinician, the server returns HTTP 403 Forbidden: *"patient is assigned to another clinician"*.
+**Answer:** In [auth.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/auth.js#L87-L94), the middleware checks `patient.doctorId !== req.user.userId`. If the patient is assigned to another clinician, the server returns HTTP 403 Forbidden: *"patient is assigned to another clinician"*.
 
 #### Q6: How does the application handle expired authentication tokens?
-**Answer:** When any API request fails with HTTP 401, [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js#L42-L45) dispatches a `neuroguard:unauthorized` custom DOM event. [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L67-L74) catches this event, executes `handleLogout()`, clears `sessionStorage`, and notifies the user with a session expiration toast.
+**Answer:** When any API request fails with HTTP 401, [api.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/api.js#L42-L45) dispatches a `neuroguard:unauthorized` custom DOM event. [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/App.jsx#L67-L74) catches this event, executes `handleLogout()`, clears `sessionStorage`, and notifies the user with a session expiration toast.
 
 #### Q7: Why are doctors automatically provisioned a clinic profile upon signup?
-**Answer:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L151-L201), when a user signs up with `role: 'doctor'`, the backend immediately creates their associated `Doctor` and `DoctorAvailability` records. This ensures new clinicians immediately appear in patient discovery searches with active booking slots.
+**Answer:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L151-L201), when a user signs up with `role: 'doctor'`, the backend immediately creates their associated `Doctor` and `DoctorAvailability` records. This ensures new clinicians immediately appear in patient discovery searches with active booking slots.
 
 #### Q8: Can a user arbitrarily escalate their privileges to doctor during signup?
 **Answer:** The signup route validates `role` against `['patient', 'doctor']`. In the current prototype, doctor signup is open for testing. In an enterprise release, doctor accounts would require medical license number verification (e.g., MCI/NMC registration) and clinical admin approval before activation.
 
 #### Q9: What happens to credentials during the in-memory fallback mode?
-**Answer:** The backend uses the `credentials` array in [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js), where all default passwords (`patient123`, `doctor123`) are pre-hashed using `bcrypt.hashSync()`. New registrations push into this array in memory.
+**Answer:** The backend uses the `credentials` array in [store.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/store.js), where all default passwords (`patient123`, `doctor123`) are pre-hashed using `bcrypt.hashSync()`. New registrations push into this array in memory.
 
 #### Q10: How are JWT secrets managed across development and production?
-**Answer:** The backend checks `process.env.JWT_SECRET`. If undefined in development, it falls back to a development string with a warning in [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js#L3). In production, an environment variable must be provided.
+**Answer:** The backend checks `process.env.JWT_SECRET`. If undefined in development, it falls back to a development string with a warning in [auth.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/auth.js#L3). In production, an environment variable must be provided.

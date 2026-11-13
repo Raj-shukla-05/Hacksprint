@@ -56,25 +56,25 @@ graph TD
 
 ### A. Presentation & Client Execution Layer (Frontend)
 - **Framework & Reactivity:** Built with React 19 functional components, hooks (`useState`, `useEffect`, `useRef`, `useMemo`), and Vite 6.
-- **Client Routing Architecture:** Uses a stateful single-page view router orchestrated by `view` in [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx). Views are conditionally rendered (`dashboard`, `assessment`, `progress`, `doctor`, `appointments`, `settings`) without requiring full page reloads.
+- **Client Routing Architecture:** Uses a stateful single-page view router orchestrated by `view` in [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/App.jsx). Views are conditionally rendered (`dashboard`, `assessment`, `progress`, `doctor`, `appointments`, `settings`) without requiring full page reloads.
 - **Session State:** Session tokens and user profiles are held in `sessionStorage` (`neuroguard.user` and `neuroguard.token`), preventing cross-tab pollution and ensuring credentials clear when the browser window closes.
 
 ### B. Kinematic Computer Vision Engine
 - **Local WASM Delivery:** The MediaPipe runtime (`vision_wasm_internal.wasm`, `vision_wasm_internal.js`, and SIMD variants) is hosted directly in `frontend/public/mediapipe/wasm/`. This eliminates external CDN dependencies, ensures offline capability, and guarantees predictable latency.
-- **Dual Delegate Strategy:** Automatically detects WebGL support in [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L18-L47). It initializes the GPU delegate first for 60fps tracking; if WebGL fails or context is lost, it smoothly falls back to CPU execution.
+- **Dual Delegate Strategy:** Automatically detects WebGL support in [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js#L18-L47). It initializes the GPU delegate first for 60fps tracking; if WebGL fails or context is lost, it smoothly falls back to CPU execution.
 - **Data Minimization Gateway:** The camera stream connects exclusively to an unmounted HTML `<video>` element. MediaPipe outputs coordinate points $(x, y, z, \text{visibility})$. The video element is never serialized, recorded, or sent to any server.
 
 ### C. Application Middleware & Gateways
-- **Header Hardening:** Configured in [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L28-L33) using `helmet` with custom cross-origin resource policies and disabled CSP for WASM binary execution.
+- **Header Hardening:** Configured in [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L28-L33) using `helmet` with custom cross-origin resource policies and disabled CSP for WASM binary execution.
 - **JWT Authentication:** Cryptographically validates tokens using `jsonwebtoken` with 7-day lifespans and extracts `{ userId, role, name, email }` into `req.user`.
 - **Role-Based Authorization:** `requireRole('patient', 'doctor')` and `requireSelfOrDoctor` protect endpoints from vertical and horizontal privilege escalation (IDOR).
-- **Rate Limiting:** Sliding-window rate limiters in [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/rateLimiter.js) protect sensitive endpoints (e.g., appointment booking is capped at 15 requests per minute per IP/user).
+- **Rate Limiting:** Sliding-window rate limiters in [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/rateLimiter.js) protect sensitive endpoints (e.g., appointment booking is capped at 15 requests per minute per IP/user).
 
 ### D. Core Business & Domain Services
-- **Longitudinal Trend Engine ([trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js)):** Calculates personal baselines, computes percentage deltas, classifies recovery bands, and triggers alerts for 3-session persistent decline.
-- **Appointment & Schedule Service ([appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/appointmentService.js)):** Generates discrete clinic slots, manages mutex lock keys (`activeBookingLocks`), and enforces state machine transitions.
-- **Report Compilation & Sharing Service ([reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/reportSharingService.js)):** Aggregates genuine historical assessment records, generates clinical previews, verifies explicit patient consent, and maintains an immutable access audit trail.
-- **AI Explanation Service ([geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js)):** Orchestrates prompts to Gemini, enforces timeout aborts, and provides an offline local explanation fallback.
+- **Longitudinal Trend Engine ([trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js)):** Calculates personal baselines, computes percentage deltas, classifies recovery bands, and triggers alerts for 3-session persistent decline.
+- **Appointment & Schedule Service ([appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/appointmentService.js)):** Generates discrete clinic slots, manages mutex lock keys (`activeBookingLocks`), and enforces state machine transitions.
+- **Report Compilation & Sharing Service ([reportSharingService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/reportSharingService.js)):** Aggregates genuine historical assessment records, generates clinical previews, verifies explicit patient consent, and maintains an immutable access audit trail.
+- **AI Explanation Service ([geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/geminiService.js)):** Orchestrates prompts to Gemini, enforces timeout aborts, and provides an offline local explanation fallback.
 
 ---
 

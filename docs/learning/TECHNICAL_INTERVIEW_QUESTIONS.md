@@ -17,7 +17,7 @@ It is structured across seven core engineering disciplines:
 
 ### Q1: How does NeuroGuard AI manage global authentication state and role gating without introducing an external state management library like Redux or Zustand?
 **Deep-Dive Answer:**
-NeuroGuard AI utilizes a hoisted state pattern inside the root [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L42-L68). On application bootstrap, `App.jsx` initializes two primary state hooks: `user` and `token`, reading synchronously from browser `localStorage`:
+NeuroGuard AI utilizes a hoisted state pattern inside the root [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/App.jsx#L42-L68). On application bootstrap, `App.jsx` initializes two primary state hooks: `user` and `token`, reading synchronously from browser `localStorage`:
 ```javascript
 const [token, setToken] = useState(() => localStorage.getItem('neuroguard_token') || null);
 const [user, setUser] = useState(() => {
@@ -25,10 +25,10 @@ const [user, setUser] = useState(() => {
   return cached ? JSON.parse(cached) : null;
 });
 ```
-When `token` is present, a `useEffect` triggers a background verification call to `GET /api/auth/me` via [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js#L35-L42). If the token is expired or tampered with, `handleLogout()` clears storage and resets state to `null`.
+When `token` is present, a `useEffect` triggers a background verification call to `GET /api/auth/me` via [api.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/api.js#L35-L42). If the token is expired or tampered with, `handleLogout()` clears storage and resets state to `null`.
 Role-based route guarding is executed declaratively in the render tree using a centralized `currentView` router switch. If a user with `role: 'patient'` attempts to switch `currentView` to `'doctor-dashboard'`, a guard evaluates `user.role === 'doctor'`. If false, the view falls back immediately to `'patient-dashboard'`.
 
-*Code Grounding:* [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx#L85-L160) and [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js#L23-L45).  
+*Code Grounding:* [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/App.jsx#L85-L160) and [api.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/api.js#L23-L45).  
 *Gotcha/Follow-up:* Storing JWTs in `localStorage` exposes tokens to Cross-Site Scripting (XSS) vectors. In a production healthcare tier, tokens should be migrated to `HttpOnly`, `SameSite=Strict`, `Secure` cookies, eliminating JavaScript memory access entirely.
 
 ---
@@ -36,20 +36,20 @@ Role-based route guarding is executed declaratively in the render tree using a c
 ### Q2: How does the application avoid layout thrashing and maintain 60 FPS performance when continuously rendering video, canvas skeleton overlays, and kinematic graphs simultaneously?
 **Deep-Dive Answer:**
 The rendering pipeline separates the high-frequency 60 FPS computer vision loop from the low-frequency React reconciliation cycle:
-1. **Unmanaged DOM Canvas**: In [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx#L45-L95), the HTML5 `<canvas>` element is updated directly inside `requestAnimationFrame` using raw 2D context methods (`ctx.clearRect`, `ctx.beginPath`, `ctx.arc`, `ctx.stroke`). React is completely bypassed during skeleton drawing—no React `useState` triggers on landmark changes.
-2. **Throttled State Propagation**: Kinematic metrics (such as current elevation angle and rep counts) are calculated in [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js). The callback to the React state (`onMetricsUpdate`) is throttled or only triggered when integer state transitions occur (e.g. rep increment or form warning state change).
+1. **Unmanaged DOM Canvas**: In [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx#L45-L95), the HTML5 `<canvas>` element is updated directly inside `requestAnimationFrame` using raw 2D context methods (`ctx.clearRect`, `ctx.beginPath`, `ctx.arc`, `ctx.stroke`). React is completely bypassed during skeleton drawing—no React `useState` triggers on landmark changes.
+2. **Throttled State Propagation**: Kinematic metrics (such as current elevation angle and rep counts) are calculated in [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js). The callback to the React state (`onMetricsUpdate`) is throttled or only triggered when integer state transitions occur (e.g. rep increment or form warning state change).
 3. **Hardware Acceleration**: Video and canvas layers use CSS `will-change: transform` and `transform: translateZ(0)` to force browser GPU layer promotion, avoiding main-thread composite invalidation.
 
-*Code Grounding:* [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx#L60-L115).  
+*Code Grounding:* [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx#L60-L115).  
 *Gotcha/Follow-up:* If a developer naively puts `landmarks` into React state (`setLandmarks(results.landmarks)`), React would execute 60 component re-renders per second, dropping frame rates below 15 FPS on mobile hardware.
 
 ---
 
 ### Q3: Explain how the frontend handles network resilience and API downtime without crashing the user interface.
 **Deep-Dive Answer:**
-NeuroGuard AI implements an active **Graceful Degradation Pattern** in its API client layer [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js) and consuming pages:
-Every API call is wrapped in try/catch blocks. When `fetch` throws a `TypeError: Failed to fetch` (server down, CORS failure, or offline mode), or returns a non-200 HTTP status, the page components catch the error and fallback to deterministic local mock data from [demoData.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/demoData.js).
-For example, in [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/PatientDashboard.jsx#L45-L75):
+NeuroGuard AI implements an active **Graceful Degradation Pattern** in its API client layer [api.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/api.js) and consuming pages:
+Every API call is wrapped in try/catch blocks. When `fetch` throws a `TypeError: Failed to fetch` (server down, CORS failure, or offline mode), or returns a non-200 HTTP status, the page components catch the error and fallback to deterministic local mock data from [demoData.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/demoData.js).
+For example, in [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/PatientDashboard.jsx#L45-L75):
 ```javascript
 try {
   const [statsRes, historyRes] = await Promise.all([
@@ -67,7 +67,7 @@ try {
 ```
 An amber status pill displays to the user: *"Offline / Demo Mode Active"*, allowing full UI exploration without blocking interface interactions.
 
-*Code Grounding:* [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/PatientDashboard.jsx#L50-L80) and [demoData.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/demoData.js#L1-L120).  
+*Code Grounding:* [PatientDashboard.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/PatientDashboard.jsx#L50-L80) and [demoData.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/demoData.js#L1-L120).  
 *Gotcha/Follow-up:* How do you prevent offline mock data from accidentally overwriting live database records? The fallback is strictly read-only; mutation endpoints (`POST`, `PATCH`) detect offline mode and abort submission with a clear network error toast.
 
 ---
@@ -78,7 +78,7 @@ An amber status pill displays to the user: *"Offline / Demo Mode Active"*, allow
 2. **DOM-Level Accessibility & Tooltips**: Because Recharts uses SVG elements rather than an opaque HTML5 `<canvas>` (used by Chart.js), individual chart elements exist in the DOM, making them accessible to screen readers and enabling custom React components to serve as rich, interactive tooltips.
 3. **Zero Canvas Sizing Bugs**: Chart.js frequently suffers from canvas resize calculation bugs inside responsive flex/grid layouts. Recharts' `ResponsiveContainer` handles window resize events seamlessly via ResizeObserver.
 
-*Code Grounding:* [TrendChart.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/TrendChart.jsx#L1-L85).  
+*Code Grounding:* [TrendChart.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/TrendChart.jsx#L1-L85).  
 *Gotcha/Follow-up:* What is the trade-off? For datasets with $>10,000$ points, SVG DOM nodes cause memory overhead. However, in NeuroGuard, longitudinal trend charts display 10 to 30 aggregate data points, making SVG the ideal high-performance choice.
 
 ---
@@ -87,7 +87,7 @@ An amber status pill displays to the user: *"Offline / Demo Mode Active"*, allow
 
 ### Q5: Walk through the exact initialization lifecycle of Google MediaPipe Tasks Vision inside the browser.
 **Deep-Dive Answer:**
-MediaPipe initialization is orchestrated in [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L12-L48) via `initPoseLandmarker()`:
+MediaPipe initialization is orchestrated in [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js#L12-L48) via `initPoseLandmarker()`:
 1. **WASM Module Loading**: The `FilesetResolver.forVisionTasks()` helper loads the WebAssembly binary and companion JavaScript glue files from `/mediapipe/wasm`:
    ```javascript
    const vision = await FilesetResolver.forVisionTasks('/mediapipe/wasm');
@@ -108,7 +108,7 @@ MediaPipe initialization is orchestrated in [pose.js](https://github.com/Raj-shu
    ```
 3. **Singleton Export**: The initialized `PoseLandmarker` instance is stored in module scope, ensuring subsequent assessment views reuse the compiled WASM runtime without re-allocating memory.
 
-*Code Grounding:* [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L15-L45).  
+*Code Grounding:* [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js#L15-L45).  
 *Gotcha/Follow-up:* What happens if `/mediapipe/wasm` returns HTTP 404? The promise rejects. `initPoseLandmarker()` catches the error, logs a diagnostic warning, and returns `null`. Consuming components detect this and switch to interactive simulation mode.
 
 ---
@@ -120,7 +120,7 @@ In MediaPipe's `VIDEO` running mode, the inference engine requires a monotonical
 MediaPipe uses this timestamp internally to run temporal tracking filters (Kalman filtering / optical flow tracking) across frames.
 **The Exception Hazard:** If `detectForVideo` is called twice with the same timestamp or a timestamp lower than the previous frame (which can happen if a browser frame drops or `performance.now()` is cached across animation frames), MediaPipe throws a fatal WebAssembly abort:
 `RuntimeError: Timestamp must be monotonically increasing`.
-In [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L55-L75), NeuroGuard protects against this by tracking `lastVideoTime`:
+In [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js#L55-L75), NeuroGuard protects against this by tracking `lastVideoTime`:
 ```javascript
 let lastTimestamp = -1;
 export function detectPoseFromVideo(video, timestamp) {
@@ -132,7 +132,7 @@ export function detectPoseFromVideo(video, timestamp) {
 }
 ```
 
-*Code Grounding:* [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L60-L80).  
+*Code Grounding:* [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js#L60-L80).  
 *Gotcha/Follow-up:* Always verify `video.readyState >= 2` (HAVE_CURRENT_DATA) before calling `detectForVideo`. Calling it on an uninitialized video element causes a WebGL texture binding error.
 
 ---
@@ -150,9 +150,9 @@ MediaPipe Pose outputs two distinct coordinate arrays for all 33 anatomical land
    - Free from perspective foreshortening and independent of camera aspect ratio or user distance from the lens.
    - *Primary Use:* 3D joint angle kinematics and biomechanical degree calculations.
 
-In [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js), 3D dot product formulas calculate angles using metric coordinates, ensuring that when a patient stands 1.5 meters vs 3.0 meters away from the camera, their calculated knee joint angle ($\theta$) remains mathematically identical.
+In [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js), 3D dot product formulas calculate angles using metric coordinates, ensuring that when a patient stands 1.5 meters vs 3.0 meters away from the camera, their calculated knee joint angle ($\theta$) remains mathematically identical.
 
-*Code Grounding:* [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L95-L115) and [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L85-L110).  
+*Code Grounding:* [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js#L95-L115) and [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js#L85-L110).  
 *Gotcha/Follow-up:* If you calculate angles using normalized $x, y$ coordinates on a 16:9 widescreen video, an arm raised at a $45^\circ$ physical angle will project distorted degrees because the $x$ and $y$ axes have unequal pixel scales ($1920 \times 1080$).
 
 ---
@@ -176,7 +176,7 @@ $$\vec{BA} \cdot \vec{BC} = \|\vec{BA}\| \|\vec{BC}\| \cos(\theta)$$
 Solving for $\theta$ in degrees:
 $$\theta = \arccos\left(\frac{\vec{BA} \cdot \vec{BC}}{\|\vec{BA}\| \|\vec{BC}\|}\right) \times \frac{180}{\pi}$$
 
-In [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L100-L115):
+In [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js#L100-L115):
 ```javascript
 const dot = vBA.x * vBC.x + vBA.y * vBC.y + vBA.z * vBC.z;
 const magBA = Math.sqrt(vBA.x ** 2 + vBA.y ** 2 + vBA.z ** 2);
@@ -185,14 +185,14 @@ const cosTheta = Math.min(Math.max(dot / (magBA * magBC), -1), 1); // Clamp to p
 const angleDegrees = Math.acos(cosTheta) * (180 / Math.PI);
 ```
 
-*Code Grounding:* [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L105-L125).  
+*Code Grounding:* [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js#L105-L125).  
 *Gotcha/Follow-up:* Always clamp `dot / (magBA * magBC)` to the interval $[-1.0, 1.0]$. Floating-point inaccuracies can produce `1.0000000000000002`, causing `Math.acos()` to return `NaN` and breaking the rep state machine.
 
 ---
 
 ### Q9: How does the Sit-to-Stand repetition state machine prevent false double-counting caused by tremors or hesitation?
 **Deep-Dive Answer:**
-The repetition counter uses a **Hysteresis Finite State Machine (FSM)** with a frame-based refractory cooldown period in [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L118-L140):
+The repetition counter uses a **Hysteresis Finite State Machine (FSM)** with a frame-based refractory cooldown period in [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js#L118-L140):
 1. **Separated Threshold Boundaries (Hysteresis)**:
    - State `SITTING`: Triggered only when knee angle drops below $105^\circ$.
    - State `STANDING`: Triggered only when knee angle exceeds $155^\circ$.
@@ -201,7 +201,7 @@ The repetition counter uses a **Hysteresis Finite State Machine (FSM)** with a f
    - When a transition to `STANDING` completes a repetition, `cooldownCounter` is set to `20` frames (~660ms at 30 FPS).
    - During cooldown frames, state transitions are locked, preventing rapid artifactual increments.
 
-*Code Grounding:* [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L125-L145).  
+*Code Grounding:* [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js#L125-L145).  
 *Gotcha/Follow-up:* What if a patient cannot reach full extension ($155^\circ$)? In future clinical calibration modes, threshold parameters should be configurable per patient based on baseline physical therapist assessment.
 
 ---
@@ -209,7 +209,7 @@ The repetition counter uses a **Hysteresis Finite State Machine (FSM)** with a f
 ### Q10: Explain the bilateral symmetry formula for the Arm Raise assessment and its clinical significance.
 **Deep-Dive Answer:**
 In hemiparetic stroke recovery, patients often have unilateral weakness (e.g. left arm paresis). Even if one arm reaches full height, asymmetrical elevation indicates incomplete motor unit recruitment.
-In [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L40-L65), elevation for each arm is calculated from shoulder and wrist vertical coordinates:
+In [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js#L40-L65), elevation for each arm is calculated from shoulder and wrist vertical coordinates:
 $$\text{Elev}_L = \text{clamp}((\text{ShoulderY}_L - \text{WristY}_L) \times 120 + 50, 0, 100)$$
 $$\text{Elev}_R = \text{clamp}((\text{ShoulderY}_R - \text{WristY}_R) \times 120 + 50, 0, 100)$$
 
@@ -218,7 +218,7 @@ $$\text{Symmetry} = \text{clamp}(100 - |\text{Elev}_L - \text{Elev}_R| \times 1.
 
 If both arms elevate equally (e.g., $85\%$ and $85\%$), difference is 0 and symmetry is $100\%$. If the paretic arm reaches only $40\%$ while the healthy arm reaches $90\%$, difference is 50, reducing symmetry to $100 - 60 = 40\%$.
 
-*Code Grounding:* [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L45-L68).  
+*Code Grounding:* [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js#L45-L68).  
 *Gotcha/Follow-up:* Note the coordinate inversion in video feeds: screen $y$ runs downward ($y=0$ at top). Therefore, when wrist is raised above shoulder, $\text{ShoulderY} - \text{WristY} > 0$.
 
 ---
@@ -229,7 +229,7 @@ If both arms elevate equally (e.g., $85\%$ and $85\%$), difference is 0 and symm
 **Deep-Dive Answer:**
 NeuroGuard AI employs a defense-in-depth concurrency control architecture combining an **In-Memory Mutex Lock** with a **MongoDB Compound Partial Unique Index**:
 1. **Application-Level Mutex (Fast Rejection)**:
-   In [appointments.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/appointmentRoutes.js#L40-L75), an active locks set tracks currently executing reservations:
+   In [appointments.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/appointmentRoutes.js#L40-L75), an active locks set tracks currently executing reservations:
    ```javascript
    const lockKey = `${doctorId}_${date}_${startTime}`;
    if (activeBookingLocks.has(lockKey)) {
@@ -243,7 +243,7 @@ NeuroGuard AI employs a defense-in-depth concurrency control architecture combin
    }
    ```
 2. **Database Unique Constraint (ACID Guarantee)**:
-   In [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Appointment.js#L55-L65), a compound partial unique index enforces uniqueness at the database engine level:
+   In [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Appointment.js#L55-L65), a compound partial unique index enforces uniqueness at the database engine level:
    ```javascript
    appointmentSchema.index(
      { doctorId: 1, date: 1, startTime: 1 },
@@ -252,14 +252,14 @@ NeuroGuard AI employs a defense-in-depth concurrency control architecture combin
    ```
    If two requests bypass the in-memory lock simultaneously on multi-threaded or multi-instance deployments, MongoDB rejects the second insert with error `E11000 duplicate key error collection`, returning HTTP 409.
 
-*Code Grounding:* [appointments.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/appointmentRoutes.js#L45-L75) and [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Appointment.js#L55-L65).  
+*Code Grounding:* [appointments.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/appointmentRoutes.js#L45-L75) and [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Appointment.js#L55-L65).  
 *Gotcha/Follow-up:* Why is the partial filter expression required? If an appointment is cancelled, its status becomes `'cancelled'`. The partial filter ensures that previously cancelled time slots can be re-booked without violating unique key constraints.
 
 ---
 
 ### Q12: Walk through the Dual-Persistence Database Fallback architecture implemented in `db.js`.
 **Deep-Dive Answer:**
-In [db.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/db.js#L1-L45), NeuroGuard AI implements seamless graceful degradation between cloud MongoDB and an in-memory repository [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js):
+In [db.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/db.js#L1-L45), NeuroGuard AI implements seamless graceful degradation between cloud MongoDB and an in-memory repository [store.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/store.js):
 ```javascript
 export async function connectDB() {
   const uri = process.env.MONGODB_URI;
@@ -276,16 +276,16 @@ export async function connectDB() {
   }
 }
 ```
-If MongoDB is unreachable, the system initializes [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js), which seeds demo users, assessments, and appointments into native JavaScript Maps. Route handlers detect `mongoose.connection.readyState !== 1` and route queries to `store.js` operations, ensuring continuous uptime during offline demonstrations, or cloud outages.
+If MongoDB is unreachable, the system initializes [store.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/store.js), which seeds demo users, assessments, and appointments into native JavaScript Maps. Route handlers detect `mongoose.connection.readyState !== 1` and route queries to `store.js` operations, ensuring continuous uptime during offline demonstrations, or cloud outages.
 
-*Code Grounding:* [db.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/db.js#L1-L40) and [store.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/store.js#L1-L150).  
+*Code Grounding:* [db.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/db.js#L1-L40) and [store.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/store.js#L1-L150).  
 *Gotcha/Follow-up:* In-memory storage is ephemeral. When the Node.js process terminates, new assessments are lost. Production deployments must enforce `process.exit(1)` when MongoDB is unavailable rather than falling back to memory.
 
 ---
 
 ### Q13: Explain the Express rate-limiting strategy used to protect authentication and AI endpoints.
 **Deep-Dive Answer:**
-Implemented in [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/rateLimiter.js#L1-L40) using `express-rate-limit`:
+Implemented in [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/rateLimiter.js#L1-L40) using `express-rate-limit`:
 1. **Authentication Rate Limiting (`authLimiter`)**:
    - Window: 15 minutes (`windowMs = 15 * 60 * 1000`).
    - Max Attempts: 5 requests per IP address.
@@ -297,7 +297,7 @@ Implemented in [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard/blob
 3. **General API Rate Limiting (`apiLimiter`)**:
    - Window: 15 minutes, Max: 100 requests.
 
-*Code Grounding:* [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/rateLimiter.js#L1-L35) mounted in [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L35-L45).  
+*Code Grounding:* [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/rateLimiter.js#L1-L35) mounted in [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L35-L45).  
 *Gotcha/Follow-up:* When running behind a reverse proxy (e.g. Nginx, Cloudflare, AWS ALB), Express must have `app.set('trust proxy', 1)` enabled; otherwise, all clients appear to have the proxy's IP (`127.0.0.1`), causing all users to share the same rate-limit bucket.
 
 ---
@@ -309,9 +309,9 @@ Implemented in [rateLimiter.js](https://github.com/Raj-shukla-05/NeuroGuard/blob
 - **Population Benchmark**: Evaluates a patient against normative data derived from healthy cohorts (e.g. "Normal active range of motion is $180^\circ$"). In acute neurological injury (e.g. ischemic stroke with hemiplegia), holding a patient to an unimpaired population benchmark results in 0% scores, creating psychological despair and offering zero signal regarding whether micro-recovery is occurring.
 - **Personal Baseline**: Evaluates the patient against their own recent empirical capability. If a patient's paretic arm could only raise $30^\circ$ at discharge, reaching $45^\circ$ represents a dramatic $+50\%$ functional gain.
 
-NeuroGuard AI calculates personal baselines in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L30-L55) using a rolling window of prior sessions ($N=5$). This tracks incremental neuroplastic gains relative to the patient's specific physiological envelope.
+NeuroGuard AI calculates personal baselines in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js#L30-L55) using a rolling window of prior sessions ($N=5$). This tracks incremental neuroplastic gains relative to the patient's specific physiological envelope.
 
-*Code Grounding:* [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L35-L55).  
+*Code Grounding:* [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js#L35-L55).  
 *Gotcha/Follow-up:* Why not use the patient's first session as a permanent lifetime baseline? Because as recovery progresses over 6 months, an old baseline creates a ceiling effect. A rolling $N=5$ moving window ensures the baseline evolves dynamically alongside patient rehabilitation.
 
 ---
@@ -319,7 +319,7 @@ NeuroGuard AI calculates personal baselines in [trendEngine.js](https://github.c
 ### Q15: Walk through the algorithm that detects "Persistent Decline" and explain why a single bad session does not trigger a clinical alert.
 **Deep-Dive Answer:**
 In home tele-rehabilitation, transient performance drops are common due to acute muscular fatigue, medication timing, poor ambient lighting, or improper camera angle. Alerting a physician on every isolated drop creates alarm fatigue.
-The `checkPersistentDecline` algorithm in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L60-L95) enforces a strict multi-condition rule:
+The `checkPersistentDecline` algorithm in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js#L60-L95) enforces a strict multi-condition rule:
 1. **Minimum History Requirement**: History must contain $\ge 3$ sessions.
 2. **Consecutive Decline Check**: The last 3 consecutive sessions must all have scores lower than the established baseline:
    $$\text{Score}_t < \text{Baseline} \quad \forall t \in \{0, 1, 2\}$$
@@ -328,7 +328,7 @@ The `checkPersistentDecline` algorithm in [trendEngine.js](https://github.com/Ra
 
 Only when **all three conditions** are met simultaneously does the engine flag `persistentDecline: true` and trigger an automated clinical review alert via `notificationService.js`.
 
-*Code Grounding:* [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js#L65-L95).  
+*Code Grounding:* [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js#L65-L95).  
 *Gotcha/Follow-up:* What if a patient skips sessions for two weeks? The engine tracks session sequence indices, but future iterations should incorporate temporal decay (time delta since last session) into the risk equation.
 
 ---
@@ -337,7 +337,7 @@ Only when **all three conditions** are met simultaneously does the engine flag `
 
 ### Q16: How does `geminiService.js` ensure that Google Gemini does not hallucinate medical diagnoses or contradict deterministic kinematic calculations?
 **Deep-Dive Answer:**
-NeuroGuard AI implements a three-layer AI guardrail pipeline in [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L1-L120):
+NeuroGuard AI implements a three-layer AI guardrail pipeline in [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/geminiService.js#L1-L120):
 1. **Deterministic Data Grounding**: Gemini is never asked to calculate or estimate kinematic scores. All scores, angles, and baselines are computed deterministically in JavaScript before the prompt is formatted. Gemini's role is strictly natural language explanation.
 2. **System Prompt Negative Constraints**:
    ```text
@@ -351,14 +351,14 @@ NeuroGuard AI implements a three-layer AI guardrail pipeline in [geminiService.j
 3. **Whitelisted Finding Sanitization (`sanitizeFindings`)**:
    Before saving Gemini's response, `sanitizeFindings()` inspects the text for blacklisted clinical diagnostic terms ("diagnosed with stroke", "myocardial infarction", "permanent paralysis"). If detected, the response is rejected and replaced by the deterministic local fallback `buildLocalExplanation()`.
 
-*Code Grounding:* [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L25-L90).  
+*Code Grounding:* [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/geminiService.js#L25-L90).  
 *Gotcha/Follow-up:* Temperature is pinned to `0.2`. Higher temperatures ($0.7 - 1.0$) encourage creative writing, which in clinical applications introduces unacceptable hallucination risks.
 
 ---
 
 ### Q17: Explain how the 15-second AbortController timeout and offline fallback engine operate in `geminiService.js`.
 **Deep-Dive Answer:**
-External LLM APIs are subject to unpredictable network latencies, rate limits, and outages. In [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L40-L75), API calls are wrapped in an `AbortController`:
+External LLM APIs are subject to unpredictable network latencies, rate limits, and outages. In [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/geminiService.js#L40-L75), API calls are wrapped in an `AbortController`:
 ```javascript
 const controller = new AbortController();
 const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -380,7 +380,7 @@ try {
 ```
 If the API fails to return within 15 seconds, the request is aborted, and `buildLocalExplanation()` executes immediately, generating an explainable, template-based paragraph (e.g. *"Great effort! Your arm elevation reached 78% with steady form. Continued practice will help build bilateral symmetry."*). The assessment write transaction succeeds with zero user-perceptible delay.
 
-*Code Grounding:* [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js#L45-L80).  
+*Code Grounding:* [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/geminiService.js#L45-L80).  
 *Gotcha/Follow-up:* Always call `clearTimeout(timeoutId)` inside both try and catch blocks; otherwise, the timer reference remains active in Node.js event loop memory, delaying garbage collection.
 
 ---
@@ -390,7 +390,7 @@ If the API fails to return within 15 seconds, the request is aborted, and `build
 ### Q18: Explain how Insecure Direct Object References (IDOR) are prevented in the Assessment and Patient API routes.
 **Deep-Dive Answer:**
 An IDOR vulnerability occurs when an endpoint accepts a database identifier (e.g. `/api/assessments?patientId=12345`) and retrieves records without verifying that the requesting user owns that identifier.
-In [assessments.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L50-L80), queries are scoped strictly by the decoded JWT identity:
+In [assessments.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L50-L80), queries are scoped strictly by the decoded JWT identity:
 ```javascript
 router.get('/history', authenticateToken, async (req, res) => {
   let targetPatientId;
@@ -409,7 +409,7 @@ router.get('/history', authenticateToken, async (req, res) => {
 ```
 Even if an attacker tampers with query parameters or URL paths, `req.user.id` extracted from the cryptographically verified JWT takes absolute precedence.
 
-*Code Grounding:* [assessments.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L55-L85) and [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/middleware/auth.js#L15-L45).  
+*Code Grounding:* [assessments.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L55-L85) and [auth.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/middleware/auth.js#L15-L45).  
 *Gotcha/Follow-up:* Never trust `req.body.patientId` on `POST` creation requests. Always overwrite `req.body.patientId = req.user.id` in server-side controller logic before inserting records.
 
 ---
@@ -423,14 +423,14 @@ NeuroGuard AI satisfies privacy regulations through **Edge-Compute Zero-Transmis
 3. **Scalar-Only Ingestion**: The only payload transmitted across the TLS network to `/api/assessments` is a tiny (~500 byte) JSON object containing anonymous numerical metrics (e.g. `{ elevation: 78.4, symmetry: 82.1, score: 80 }`).
 4. **Decoupled Identity**: Assessment metrics reference internal Mongo ObjectIds without attaching patient names, email addresses, or physical locations.
 
-*Code Grounding:* [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx), [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js), and [AssessmentRunner.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx).  
+*Code Grounding:* [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx), [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js), and [AssessmentRunner.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx).  
 *Gotcha/Follow-up:* What if a doctor requests video verification of an exercise? That would require explicit HIPAA Business Associate Agreements (BAA), end-to-end video encryption, and informed electronic consent. In NeuroGuard's current architecture, zero video transmission eliminates this regulatory surface entirely.
 
 ---
 
 ### Q20: How does the Report Sharing mechanism ensure that shared links cannot be brute-forced or accessed past expiration?
 **Deep-Dive Answer:**
-Implemented in [reports.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/reportRoutes.js#L50-L100):
+Implemented in [reports.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/reportRoutes.js#L50-L100):
 1. **Cryptographically Secure Entropy**:
    Sharing tokens are generated using Node.js native `crypto.randomBytes(24).toString('base64url')`, yielding $2^{192}$ potential combinations. Brute-forcing this token space over the internet is mathematically impossible ($>10^{40}$ years at 1 billion requests/sec).
 2. **TTL Expiration Enforcement**:
@@ -442,9 +442,9 @@ Implemented in [reports.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/mai
    }
    ```
 3. **Instant Revocation Capability**:
-   Patients can click "Revoke Access" in [ReportViewer.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RecoveryReportModal.jsx), which executes `DELETE /api/reports/:id/share`, setting `shareToken = null` and instantly invalidating external links.
+   Patients can click "Revoke Access" in [ReportViewer.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/RecoveryReportModal.jsx), which executes `DELETE /api/reports/:id/share`, setting `shareToken = null` and instantly invalidating external links.
 
-*Code Grounding:* [reports.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/reportRoutes.js#L55-L95) and [Report.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/SharedRecoveryReport.js#L40-L55).  
+*Code Grounding:* [reports.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/reportRoutes.js#L55-L95) and [Report.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/SharedRecoveryReport.js#L40-L55).  
 *Gotcha/Follow-up:* Always return generic error messages for invalid tokens rather than indicating whether the report exists or has expired, preventing token enumeration reconnaissance.
 
 ---
@@ -453,24 +453,24 @@ Implemented in [reports.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/mai
 
 ### Q21: Walk through the entire lifecycle of an Arm Raise assessment from camera initialization to database persistence.
 **Deep-Dive Answer:**
-1. **User Navigation**: Patient navigates to `/assessment/arm-raise` in [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/App.jsx).
-2. **Component Mounting**: [AssessmentRunner.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx) mounts and initializes [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx).
-3. **MediaStream & WASM**: Browser prompts for webcam; MediaPipe loads `/mediapipe/wasm` and `/models/pose_landmarker_lite.task` via [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js).
+1. **User Navigation**: Patient navigates to `/assessment/arm-raise` in [App.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/App.jsx).
+2. **Component Mounting**: [AssessmentRunner.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx) mounts and initializes [CameraFeed.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx).
+3. **MediaStream & WASM**: Browser prompts for webcam; MediaPipe loads `/mediapipe/wasm` and `/models/pose_landmarker_lite.task` via [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js).
 4. **Frame Processing Loop**: `requestAnimationFrame` captures video frames at 30 FPS. `poseLandmarker.detectForVideo()` extracts 33 landmarks.
-5. **Kinematic Scoring**: Landmarks are fed into `calculateMovementScore('arm-raise', landmarks, state)` in [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js). Arm elevations, symmetry penalty, and rep states are evaluated. Canvas overlays the skeleton.
+5. **Kinematic Scoring**: Landmarks are fed into `calculateMovementScore('arm-raise', landmarks, state)` in [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js). Arm elevations, symmetry penalty, and rep states are evaluated. Canvas overlays the skeleton.
 6. **Session Termination**: Timer reaches 0 or user clicks "Complete". Accumulated metrics are averaged.
-7. **API Dispatch**: `POST /api/assessments` is called via [api.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/api.js) with bearer token.
-8. **Server Trend Engine**: [assessments.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js) calls `evaluateRecoveryTrend()` in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js) to compute baseline delta and trend status.
-9. **AI Explanation**: [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/geminiService.js) generates a plain-language summary with fallback safety.
+7. **API Dispatch**: `POST /api/assessments` is called via [api.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/api.js) with bearer token.
+8. **Server Trend Engine**: [assessments.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js) calls `evaluateRecoveryTrend()` in [trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js) to compute baseline delta and trend status.
+9. **AI Explanation**: [geminiService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/geminiService.js) generates a plain-language summary with fallback safety.
 10. **Database Write**: Mongoose writes document to MongoDB `assessments` collection.
-11. **Client Redirect**: UI transitions to [AssessmentResult.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx) displaying final score, radar metrics, and AI coaching.
+11. **Client Redirect**: UI transitions to [AssessmentResult.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx) displaying final score, radar metrics, and AI coaching.
 
 ---
 
 ### Q22: How does the Seated Reach kinematic assessment compute path efficiency?
 **Deep-Dive Answer:**
 In stroke rehabilitation, reaching toward an object often exhibits erratic, ataxia-driven trajectories rather than smooth straight lines.
-In [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js#L145-L165):
+In [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js#L145-L165):
 1. **Extension Distance**: Computed as 2D Euclidean distance from shoulder midpoint to wrist midpoint:
    $$D = \sqrt{(x_W - x_S)^2 + (y_W - y_S)^2} \times 180$$
 2. **Path Efficiency Heuristic**: Evaluates distance stability and deviation from target reach trajectory:
@@ -484,7 +484,7 @@ This rewards patients who reach with smooth, stable limb trajectories while pena
 
 ### Q23: How does the Speech Assessment extract volume and pause features using Web Audio API?
 **Deep-Dive Answer:**
-In [SpeechAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L40-L95):
+In [SpeechAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx#L40-L95):
 1. User clicks "Start Recording"; `navigator.mediaDevices.getUserMedia({ audio: true })` streams microphone input.
 2. An `AudioContext` connects the stream to an `AnalyserNode` with `fftSize = 512`.
 3. Every 50ms, `analyser.getByteTimeDomainData(dataArray)` samples waveform amplitudes.
@@ -497,7 +497,7 @@ In [SpeechAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/
 
 ### Q24: What indexes exist in the MongoDB database, and what queries do they optimize?
 **Deep-Dive Answer:**
-In [database/INDEXES_AND_VALIDATION.md](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/docs/database/INDEXES_AND_VALIDATION.md):
+In [database/INDEXES_AND_VALIDATION.md](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/docs/database/INDEXES_AND_VALIDATION.md):
 1. `User`: `{ email: 1 }` (unique, fast login lookup), `{ assignedDoctorId: 1 }` (doctor patient roster queries).
 2. `Assessment`: `{ patientId: 1, createdAt: -1 }` (optimizes longitudinal dashboard charts and trend engine moving window lookups).
 3. `Appointment`: `{ doctorId: 1, date: 1, startTime: 1 }` (unique partial index preventing double booking), `{ patientId: 1, date: 1 }` (patient appointments view).
@@ -508,7 +508,7 @@ In [database/INDEXES_AND_VALIDATION.md](https://github.com/Raj-shukla-05/NeuroGu
 
 ### Q26: Explain the structure of the JWT payload and token expiration strategy.
 **Deep-Dive Answer:**
-Token creation in [auth.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L55-L70):
+Token creation in [auth.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L55-L70):
 ```javascript
 const token = jwt.sign(
   { id: user._id, role: user.role, email: user.email },
@@ -523,7 +523,7 @@ const token = jwt.sign(
 
 ### Q27: How does the system handle an incomplete or aborted assessment session?
 **Deep-Dive Answer:**
-In [AssessmentRunner.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L180-L210):
+In [AssessmentRunner.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx#L180-L210):
 If a user clicks "Exit" or navigates away before completing the exercise:
 - If zero valid repetitions were detected ($0\text{ reps}$), the runner resets local state and routes back to `/dashboard` without issuing a `POST /api/assessments` request.
 - If $\ge 1$ repetition was completed and user confirms early exit, the system prompts: *"Do you want to save your partial progress?"* If confirmed, it flags the payload with `metadata: { partialSession: true }`, ensuring incomplete efforts do not skew the patient's baseline moving average.

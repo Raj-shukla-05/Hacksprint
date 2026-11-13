@@ -4,7 +4,7 @@ This document catalogs every mathematical formula, kinematic rule, and statistic
 
 ---
 
-## 1. 2D & 3D Vector Trigonometry ([frontend/src/lib/pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js))
+## 1. 2D & 3D Vector Trigonometry ([frontend/src/lib/pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js))
 
 ### Joint Interior Angle Formula
 Calculates the interior 2D angle formed by three landmarks $A$, $B$ (vertex), and $C$:
@@ -18,7 +18,7 @@ $$\text{midpoint}(A, B) = \left( \frac{A_x + B_x}{2}, \frac{A_y + B_y}{2}, \frac
 
 ---
 
-## 2. Exercise Kinematic Formulas ([frontend/src/lib/scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js))
+## 2. Exercise Kinematic Formulas ([frontend/src/lib/scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js))
 
 ### A. Arm Raise Protocol
 1. **Vertical Elevation Metric:**
@@ -64,7 +64,7 @@ $$\text{midpoint}(A, B) = \left( \frac{A_x + B_x}{2}, \frac{A_y + B_y}{2}, \frac
 
 ---
 
-## 3. Longitudinal Statistical Formulas ([backend/src/trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/trendEngine.js))
+## 3. Longitudinal Statistical Formulas ([backend/src/trendEngine.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/trendEngine.js))
 
 ### 1. Arithmetic Moving-Window Baseline
 $$\text{Baseline}(X, W=5) = \frac{1}{|X_{-W}|} \sum_{x \in X_{-W}} x$$
@@ -90,7 +90,7 @@ $$\text{Trend}(\delta) = \begin{cases}
 
 ---
 
-## 4. Acoustic & Speech Formulas ([backend/src/server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js))
+## 4. Acoustic & Speech Formulas ([backend/src/server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js))
 
 ### 1. Jaccard Lexical Similarity
 $$A = \text{Tokens}(\text{transcript}), \quad B = \text{Tokens}(\text{expectedText})$$

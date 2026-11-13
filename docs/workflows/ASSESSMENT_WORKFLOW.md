@@ -48,10 +48,10 @@ flowchart TD
 
 ### Step 1: Camera Permission Acquisition
 - **Method:** `navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false })`.
-- **Error Handling:** If the user denies permission, the promise rejects with a `NotAllowedError`. [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx#L63-L67) catches this error and displays an error message with a *"Try again"* button.
+- **Error Handling:** If the user denies permission, the promise rejects with a `NotAllowedError`. [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx#L63-L67) catches this error and displays an error message with a *"Try again"* button.
 
 ### Step 2: MediaPipe WebAssembly Loading
-- **FilesetResolver:** In [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L12), `FilesetResolver.forVisionTasks('/mediapipe/wasm')` fetches the local binary files (`vision_wasm_internal.wasm` and JS glue code).
+- **FilesetResolver:** In [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js#L12), `FilesetResolver.forVisionTasks('/mediapipe/wasm')` fetches the local binary files (`vision_wasm_internal.wasm` and JS glue code).
 - **Network Resilience:** Loading locally from `/mediapipe/wasm` ensures zero CDN dependencies, consistent MIME types, and offline availability.
 
 ### Step 3: Hardware Delegate Negotiation (GPU $\rightarrow$ CPU Fallback)
@@ -73,7 +73,7 @@ flowchart TD
 - `landmarker.detectForVideo(video, timestamp)` processes the current video frame using the `DOMHighResTimeStamp` provided by `requestAnimationFrame`. This allows MediaPipe's internal temporal tracking and landmark smoothing filters to run accurately.
 
 ### Step 5: Skeletal Canvas Overlay Rendering
-- In [pose.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/pose.js#L106-L140), `drawSkeleton(ctx, video, landmarks)` clears the previous canvas frame and renders:
+- In [pose.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/pose.js#L106-L140), `drawSkeleton(ctx, video, landmarks)` clears the previous canvas frame and renders:
   - 14 anatomical connections with an aqua stroke (`#8fe3d5`, line width 4).
   - 12 joint circles with teal fill (`#0f766e`, radius 5.5px) for every landmark whose `visibility >= 0.4`.
 

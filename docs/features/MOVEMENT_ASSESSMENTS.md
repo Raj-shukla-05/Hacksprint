@@ -42,8 +42,8 @@ Each assessment runs in the browser, tracking key anatomical landmarks, evaluati
 ---
 
 ## 5. How does this feature work?
-1. The patient selects an exercise on [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx) (or it auto-selects from an assigned clinician protocol).
-2. [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx) initializes the camera and MediaPipe tracking loop.
+1. The patient selects an exercise on [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx) (or it auto-selects from an assigned clinician protocol).
+2. [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx) initializes the camera and MediaPipe tracking loop.
 3. For each video frame, landmark coordinates are evaluated by the specific frame calculator: the test's frame function (for example `armRaiseFrame()` or `balanceFrame()`).
 4. Valid frames are pushed to a sliding window buffer (`framesRef.current`).
 5. Real-time feedback displays current repetition counts and movement levels.
@@ -54,15 +54,15 @@ Each assessment runs in the browser, tracking key anatomical landmarks, evaluati
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/lib/scoring.js): Contains frame processors (`armRaiseFrame`, `sitToStandFrame`, `seatedReachFrame`) and session aggregators (`buildArmRaiseSession`, `buildSitToStandSession`, `buildSeatedReachSession`).
-  - [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/CameraAssessment.jsx): Renders live exercise target cards, repetition counters, and phase indicators.
-  - [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx): Wraps the assessment in clinician prescription context and performs client-side quality validation before saving.
+  - [scoring.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/lib/scoring.js): Contains frame processors (`armRaiseFrame`, `sitToStandFrame`, `seatedReachFrame`) and session aggregators (`buildArmRaiseSession`, `buildSitToStandSession`, `buildSeatedReachSession`).
+  - [CameraAssessment.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/CameraAssessment.jsx): Renders live exercise target cards, repetition counters, and phase indicators.
+  - [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx): Wraps the assessment in clinician prescription context and performs client-side quality validation before saving.
 
 ---
 
 ## 7. Backend implementation
 - **Source Files:**
-  - [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L524-L646): `POST /api/assessments`.
+  - [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L524-L646): `POST /api/assessments`.
 - **Backend Metric Normalization:**
   - When saving an `arm_raise` session, the server extracts `movement` (range of motion) and `coordination` (symmetry). Balance is deleted because an arm raise does not measure balance.
   - When saving `sit_to_stand`, the server extracts `movement` (movement quality) and `balance` (stability), and removes speech and coordination.
@@ -72,7 +72,7 @@ Each assessment runs in the browser, tracking key anatomical landmarks, evaluati
 ---
 
 ## 8. Database implementation
-- Stored in the `Assessment` collection in MongoDB ([Assessment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Assessment.js)) with fields: `userId`, `assignmentId`, `exerciseType`, `score`, `duration`, `metrics`, and `trackingQuality`.
+- Stored in the `Assessment` collection in MongoDB ([Assessment.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Assessment.js)) with fields: `userId`, `assignmentId`, `exerciseType`, `score`, `duration`, `metrics`, and `trackingQuality`.
 
 ---
 
@@ -194,10 +194,10 @@ Webcam Frame
 **Answer:** The `RepScore` factor is proportional: $\text{clamp}((3 / 5) \times 100, 0, 100) = 60\%$. The composite score reflects partial completion without failing the session entirely.
 
 #### Q6: Why does the backend remove balance metrics from Arm Raise records?
-**Answer:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/server.js#L567-L579), the backend explicitly normalizes metrics per exercise type. An arm raise measures movement range and coordination symmetry. Storing a dummy balance value would contaminate longitudinal baseline trends with unmeasured data.
+**Answer:** In [server.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/server.js#L567-L579), the backend explicitly normalizes metrics per exercise type. An arm raise measures movement range and coordination symmetry. Storing a dummy balance value would contaminate longitudinal baseline trends with unmeasured data.
 
 #### Q7: How does the frontend validate session quality before saving?
-**Answer:** In [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L26-L37), `isValidSession` requires `result.score > 0` and `result.duration >= 3`. If false, a warning banner is shown, and the backend rejects the submission if valid tracking frames are insufficient.
+**Answer:** In [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx#L26-L37), `isValidSession` requires `result.score > 0` and `result.duration >= 3`. If false, a warning banner is shown, and the backend rejects the submission if valid tracking frames are insufficient.
 
 #### Q8: What coordinate math is used to calculate the knee angle in Sit-to-Stand?
 **Answer:** The system calculates the vector from knee to hip and from knee to ankle, computes their dot product, divides by the product of vector magnitudes, and takes the arc-cosine to obtain the interior angle in degrees.
@@ -206,4 +206,4 @@ Webcam Frame
 **Answer:** Yes. Seated Reach is explicitly designed for seated execution, and Arm Raise can be performed seated or standing. Sit-to-Stand requires a stable chair to measure the transition from sitting to standing.
 
 #### Q10: How are tracking quality warnings displayed to the patient?
-**Answer:** If tracking quality fails (`isValid: false`), [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AssessmentPage.jsx#L117-L133) renders an alert banner: *"Inconsistent body tracking detected. Please ensure your entire upper body is in view and lighting is adequate."*
+**Answer:** If tracking quality fails (`isValid: false`), [AssessmentPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AssessmentPage.jsx#L117-L133) renders an alert banner: *"Inconsistent body tracking detected. Please ensure your entire upper body is in view and lighting is adequate."*

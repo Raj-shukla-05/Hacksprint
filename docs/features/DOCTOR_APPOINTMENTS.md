@@ -29,9 +29,9 @@ This feature provides an end-to-end appointment discovery, availability generati
 ---
 
 ## 5. How does this feature work?
-1. The user navigates to the Doctor Appointments tab ([AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx)).
+1. The user navigates to the Doctor Appointments tab ([AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AppointmentsPage.jsx)).
 2. The user searches for clinicians by name or filters by specialization (Neurology, Neurorehabilitation, Physiotherapy, PM&R) and city.
-3. The user clicks *"Book In-Person Visit"*, opening [BookingModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/BookingModal.jsx).
+3. The user clicks *"Book In-Person Visit"*, opening [BookingModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/BookingModal.jsx).
 4. The client requests `GET /api/doctors/:id/availability?date=YYYY-MM-DD`.
 5. The backend generates discrete 30-minute slots between clinic start and end times, excluding lunch breaks (13:00–14:00), past slots, doctor-blocked slots, and slots already reserved.
 6. The user selects an available slot and submits `POST /api/appointments`.
@@ -44,10 +44,10 @@ This feature provides an end-to-end appointment discovery, availability generati
 
 ## 6. Frontend implementation
 - **Source Files:**
-  - [AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/AppointmentsPage.jsx): Multi-tab patient view (`Find Doctors`, `My Appointments`, `Shared Reports`).
-  - [DoctorAppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/pages/DoctorAppointmentsPage.jsx): Doctor clinic schedule management, status filters, block slot form, confirm/reject/complete action buttons.
-  - [BookingModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/BookingModal.jsx): Date picker, available slot pills, physical clinic location summary, and in-person badge.
-  - [RescheduleModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/RescheduleModal.jsx): Atomic rescheduling dialog to select a new date and available slot.
+  - [AppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/AppointmentsPage.jsx): Multi-tab patient view (`Find Doctors`, `My Appointments`, `Shared Reports`).
+  - [DoctorAppointmentsPage.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/pages/DoctorAppointmentsPage.jsx): Doctor clinic schedule management, status filters, block slot form, confirm/reject/complete action buttons.
+  - [BookingModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/BookingModal.jsx): Date picker, available slot pills, physical clinic location summary, and in-person badge.
+  - [RescheduleModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/RescheduleModal.jsx): Atomic rescheduling dialog to select a new date and available slot.
 - **State Management:**
   - `activeTab`: `'find'`, `'appointments'`, or `'reports'`.
   - `selectedSpecialty`, `selectedCity`, `search`: Search filters.
@@ -57,7 +57,7 @@ This feature provides an end-to-end appointment discovery, availability generati
 
 ## 7. Backend implementation
 - **Source Files:**
-  - [routes/doctorRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/doctorRoutes.js):
+  - [routes/doctorRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/doctorRoutes.js):
     - `GET /api/doctors`: Discovery catalog with search and filters.
     - `GET /api/doctors/:id`: Detailed doctor profile.
     - `GET /api/doctors/:id/availability`: Generates discrete daily slots.
@@ -65,7 +65,7 @@ This feature provides an end-to-end appointment discovery, availability generati
     - `PUT /api/doctors/availability`: Doctor configures working days, hours, and duration.
     - `POST /api/doctors/availability/block`: Doctor blocks specific slot.
     - `DELETE /api/doctors/availability/block/:id`: Doctor removes blocked slot.
-  - [routes/appointmentRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/appointmentRoutes.js):
+  - [routes/appointmentRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/appointmentRoutes.js):
     - `POST /api/appointments`: Books appointment (rate limited).
     - `GET /api/appointments/my`: Patient appointment list.
     - `GET /api/appointments/doctor`: Doctor appointment list.
@@ -75,13 +75,13 @@ This feature provides an end-to-end appointment discovery, availability generati
     - `PATCH /api/appointments/:id/reschedule`: Atomic rescheduling.
     - `PATCH /api/appointments/:id/complete`: Doctor marks visit complete.
     - `PATCH /api/appointments/:id/no-show`: Doctor marks no-show.
-  - [services/appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/appointmentService.js): Slot generation algorithms, mutex locking, and state transitions.
+  - [services/appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/appointmentService.js): Slot generation algorithms, mutex locking, and state transitions.
 
 ---
 
 ## 8. Database implementation
-- **Models Used:** [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Appointment.js), [Doctor.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Doctor.js), [DoctorAvailability.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/DoctorAvailability.js).
-- **Partial Unique Index in MongoDB ([Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Appointment.js#L54-L64)):**
+- **Models Used:** [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Appointment.js), [Doctor.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Doctor.js), [DoctorAvailability.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/DoctorAvailability.js).
+- **Partial Unique Index in MongoDB ([Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Appointment.js#L54-L64)):**
   ```javascript
   AppointmentSchema.index(
     { doctorId: 1, date: 1, startTime: 1 },
@@ -177,19 +177,19 @@ Patient selects slot
 **Answer:** In healthcare scheduling, if an appointment is cancelled or rejected, that slot becomes available again for another patient. A standard unique index would permanently prevent that slot from ever being booked again. A partial unique index applies uniqueness only to active appointments (`status: { $in: ['pending', 'confirmed'] }`).
 
 #### Q3: How does the system enforce that appointments are in-person only?
-**Answer:** The architecture contains no video call URLs, WebRTC signaling servers, or telemedicine flags. In [BookingModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/frontend/src/components/BookingModal.jsx#L70-L103), the UI displays *"IN-PERSON CLINICAL VISIT ONLY"* and renders physical clinic attributes (street address, city, room/suite number, clinic phone).
+**Answer:** The architecture contains no video call URLs, WebRTC signaling servers, or telemedicine flags. In [BookingModal.jsx](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/frontend/src/components/BookingModal.jsx#L70-L103), the UI displays *"IN-PERSON CLINICAL VISIT ONLY"* and renders physical clinic attributes (street address, city, room/suite number, clinic phone).
 
 #### Q4: How does atomic rescheduling work?
-**Answer:** In [appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/appointmentService.js#L602-L665), `rescheduleAppointment()` executes two coordinated steps: (1) it books the new requested slot via `bookAppointment()`, attaching metadata (`rescheduledFromId`, `previousSlot`), and (2) marks the previous appointment as `cancelled` with reason `"Rescheduled to [newDate] at [newStartTime]"`.
+**Answer:** In [appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/appointmentService.js#L602-L665), `rescheduleAppointment()` executes two coordinated steps: (1) it books the new requested slot via `bookAppointment()`, attaching metadata (`rescheduledFromId`, `previousSlot`), and (2) marks the previous appointment as `cancelled` with reason `"Rescheduled to [newDate] at [newStartTime]"`.
 
 #### Q5: Can a patient mark their own visit as completed?
-**Answer:** No. In [appointmentRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/appointmentRoutes.js#L234-L245), `PATCH /api/appointments/:id/complete` requires `requireRole('doctor')` and verifies that the calling user is the attending clinician. Any attempt by a patient returns HTTP 403 Forbidden.
+**Answer:** No. In [appointmentRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/appointmentRoutes.js#L234-L245), `PATCH /api/appointments/:id/complete` requires `requireRole('doctor')` and verifies that the calling user is the attending clinician. Any attempt by a patient returns HTTP 403 Forbidden.
 
 #### Q6: How are clinic lunch breaks excluded from availability?
-**Answer:** In [appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/appointmentService.js#L195-L200), `getAvailableSlots()` converts `breakStartTime` (13:00) and `breakEndTime` (14:00) into minutes. Any slot overlapping this interval is marked with `available: false` and `unavailableReason: 'Clinic Break'`.
+**Answer:** In [appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/appointmentService.js#L195-L200), `getAvailableSlots()` converts `breakStartTime` (13:00) and `breakEndTime` (14:00) into minutes. Any slot overlapping this interval is marked with `available: false` and `unavailableReason: 'Clinic Break'`.
 
 #### Q7: What happens if a patient attempts to book an appointment in the past?
-**Answer:** In [appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/appointmentService.js#L79-L92), `validateDate()` compares the target date against midnight of today. If in the past, or if the time slot has already passed today, the request is rejected with HTTP 400 Bad Request.
+**Answer:** In [appointmentService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/appointmentService.js#L79-L92), `validateDate()` compares the target date against midnight of today. If in the past, or if the time slot has already passed today, the request is rejected with HTTP 400 Bad Request.
 
 #### Q8: How can a doctor block time for personal leave or clinical conferences?
 **Answer:** Doctors can call `POST /api/doctors/availability/block` with `{ date, startTime, endTime, reason }`. The slot generator automatically marks any overlapping slot as unavailable with the doctor's custom reason.
@@ -198,4 +198,4 @@ Patient selects slot
 **Answer:** The status transitions to `'rejected'`. The rejection reason is recorded in the `rejection` subdocument, a notification is sent to the patient, and the slot is instantly freed for other patients.
 
 #### Q10: How does rate limiting protect the appointment service?
-**Answer:** In [appointmentRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/routes/appointmentRoutes.js#L16-L23), `bookingRateLimiter` limits requests to 15 per minute per IP/user, preventing automated bots or malicious scripts from scraping doctor schedules or locking slots.
+**Answer:** In [appointmentRoutes.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/routes/appointmentRoutes.js#L16-L23), `bookingRateLimiter` limits requests to 15 per minute per IP/user, preventing automated bots or malicious scripts from scraping doctor schedules or locking slots.

@@ -23,7 +23,7 @@ NeuroGuard AI implements a robust, dual-storage persistence architecture designe
 +-----------------------------------------------------------------------------------+
 ```
 
-### Connection Management ([db.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/db.js))
+### Connection Management ([db.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/db.js))
 - When the backend starts (`require.main === module`), `connectDB()` inspects `process.env.MONGODB_URI`.
 - If the URI is absent or empty, the server logs a notice and initializes in resilient in-memory mode without crashing.
 - If a URI is present, Mongoose attempts connection with a 4-second timeout (`serverSelectionTimeoutMS: 4000`). If connection fails (e.g., database offline), it logs a warning and automatically falls back to in-memory mode.
@@ -31,7 +31,7 @@ NeuroGuard AI implements a robust, dual-storage persistence architecture designe
 
 ---
 
-## 2. Seed Synchronization Service ([seedService.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/services/seedService.js))
+## 2. Seed Synchronization Service ([seedService.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/services/seedService.js))
 
 When MongoDB connects successfully, `seedDatabaseIfEmpty()` runs automatically to ensure database consistency:
 
@@ -47,7 +47,7 @@ When MongoDB connects successfully, `seedDatabaseIfEmpty()` runs automatically t
 
 The application defines 9 distinct Mongoose schemas in `backend/src/models/`:
 
-### 1. User (`users` collection) — [User.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/User.js)
+### 1. User (`users` collection) — [User.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/User.js)
 Stores authentication credentials, profile data, and relational links across roles.
 - `id` (String, unique, indexed): Unique user identifier (`user-raj`, `doc-priya`).
 - `name` (String, required): Full display name.
@@ -58,7 +58,7 @@ Stores authentication credentials, profile data, and relational links across rol
 - `preferredLanguage` (String, default: `'English'`).
 - `doctorId` (String, indexed): Assigned doctor ID for patients.
 
-### 2. Doctor (`doctors` collection) — [Doctor.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Doctor.js)
+### 2. Doctor (`doctors` collection) — [Doctor.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Doctor.js)
 Stores professional credentials and physical clinic information.
 - `id` (String, unique, indexed): Doctor domain ID (`doc-priya`).
 - `userId` (String, unique, indexed): Corresponding `User.id`.
@@ -73,7 +73,7 @@ Stores professional credentials and physical clinic information.
 - `rating` (Number, min: 1, max: 5): Patient feedback rating.
 - `isActive` (Boolean, default: true).
 
-### 3. DoctorAvailability (`doctoravailabilities` collection) — [DoctorAvailability.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/DoctorAvailability.js)
+### 3. DoctorAvailability (`doctoravailabilities` collection) — [DoctorAvailability.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/DoctorAvailability.js)
 Configures scheduling rules and blocked calendar periods.
 - `doctorId` (String, required, unique, indexed): Target doctor ID.
 - `workingDays` ([Number]): Days of week (0 = Sunday, 1 = Monday ... 6 = Saturday).
@@ -86,7 +86,7 @@ Configures scheduling rules and blocked calendar periods.
 - `blockedSlots` ([Object]): Ad-hoc blocked slots:
   - `id`, `date`, `startTime`, `endTime`, `reason`.
 
-### 4. Appointment (`appointments` collection) — [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Appointment.js)
+### 4. Appointment (`appointments` collection) — [Appointment.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Appointment.js)
 Stores verified in-person clinical encounters.
 - `id` (String, unique, indexed): Format `apt-<timestamp>-<hash>`.
 - `patientId`, `patientName` (String, required).
@@ -103,7 +103,7 @@ Stores verified in-person clinical encounters.
 - `sharedReportId` (String, default: null): Linked recovery report share ID.
 - `rescheduleInfo` (Object: `{ rescheduledFromId, rescheduledAt, previousSlot }`).
 
-### 5. Assessment (`assessments` collection) — [Assessment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Assessment.js)
+### 5. Assessment (`assessments` collection) — [Assessment.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Assessment.js)
 Stores recorded kinematic assessment sessions.
 - `id` (String, unique, indexed): Format `assessment-<timestamp>`.
 - `userId` (String, required, indexed).
@@ -116,7 +116,7 @@ Stores recorded kinematic assessment sessions.
 - `trackingQuality` (Object): `{ validFrames, totalFrames, trackingRatio, qualityWarning, isValid }`.
 - `source` (String, default: `'live'`).
 
-### 6. Assignment (`assignments` collection) — [Assignment.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Assignment.js)
+### 6. Assignment (`assignments` collection) — [Assignment.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Assignment.js)
 Stores clinician-prescribed home exercise protocols.
 - `id` (String, unique, indexed): Format `asgn-<timestamp>-<hash>`.
 - `doctorId` (String, required, indexed).
@@ -131,7 +131,7 @@ Stores clinician-prescribed home exercise protocols.
 - `doctorNotes` (String): Review feedback attached by clinician.
 - `reviewedAt` (Date, nullable).
 
-### 7. SharedRecoveryReport (`sharedrecoveryreports` collection) — [SharedRecoveryReport.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/SharedRecoveryReport.js)
+### 7. SharedRecoveryReport (`sharedrecoveryreports` collection) — [SharedRecoveryReport.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/SharedRecoveryReport.js)
 Stores authorized recovery reports shared between patients and doctors.
 - `id` (String, unique, indexed): Format `share-<timestamp>-<hash>`.
 - `patientId`, `patientName` (String, required, indexed).
@@ -143,7 +143,7 @@ Stores authorized recovery reports shared between patients and doctors.
 - `revokedAt` (Date, nullable).
 - `accessAuditLog` ([AccessAuditSchema]): Array of `{ doctorId, action, accessedAt, ip, userAgent }`.
 
-### 8. Notification (`notifications` collection) — [Notification.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Notification.js)
+### 8. Notification (`notifications` collection) — [Notification.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Notification.js)
 Stores in-app notifications.
 - `id` (String, unique, indexed): Format `notif-<timestamp>-<hash>`.
 - `userId` (String, required, indexed).
@@ -152,7 +152,7 @@ Stores in-app notifications.
 - `appointmentId` (String, nullable).
 - `read` (Boolean, default: false, indexed).
 
-### 9. Alert (`alerts` collection) — [Alert.js](https://github.com/Raj-shukla-05/NeuroGuard/blob/main/backend/src/models/Alert.js)
+### 9. Alert (`alerts` collection) — [Alert.js](https://github.com/Raj-shukla-05/NeuroGuard-AI/blob/main/backend/src/models/Alert.js)
 Stores functional anomaly alerts generated by the baseline engine.
 - `id` (String, unique, indexed).
 - `userId` (String, required, indexed).
